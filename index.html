@@ -264,8 +264,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           <input type="number" id="descInput" value="0" min="0" max="100" style="width:65px" oninput="calcTotales()">
         </div>
         <div class="field-group">
-          <label>Flete (USD)</label>
-          <input type="number" id="fleteVal" value="0" min="0" style="width:100px" oninput="calcTotales()">
+          <label>Flete nacional (COP)</label>
+          <input type="number" id="fleteVal" value="0" min="0" style="width:120px" oninput="calcTotales()">
+        </div>
+        <div class="field-group">
+          <label>IVA</label>
+          <select id="ivasel" onchange="calcTotales()" style="min-width:90px">
+            <option value="0">No aplica</option>
+            <option value="19">19%</option>
+          </select>
         </div>
         <div class="totales">
           <div class="total-item">
@@ -277,6 +284,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <span class="total-label">Descuento</span>
             <span class="total-val" id="tDescUSD" style="color:#e24b4a">-USD 0</span>
             <span class="total-val sub2" id="tDescCOP" style="color:#e24b4a">-COP 0</span>
+          </div>
+          <div class="total-item">
+            <span class="total-label">IVA 19%</span>
+            <span class="total-val" id="tIVAUSD" style="color:#666">USD 0</span>
+            <span class="total-val sub2" id="tIVACOP" style="color:#666">COP 0</span>
+          </div>
+          <div class="total-item">
+            <span class="total-label">Flete nacional</span>
+            <span class="total-val" id="tFleteCOP" style="color:#666">COP 0</span>
           </div>
           <div class="total-item">
             <span class="total-label">Total oferta</span>
@@ -513,7 +529,7 @@ function renderCarrito(){
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span><input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value"></td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><input type="number" class="price-edit" value="${item.tarifa}" step="0.01" onchange="carrito[${i}].tarifa=parseFloat(this.value)||0;calcTotales();document.getElementById('pusd_${i}').textContent=fmtUSD(carrito[${i}].tarifa);document.getElementById('pcop_${i}').textContent=fmtCOP(carrito[${i}].tarifa)"></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span><input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value"></td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -521,15 +537,23 @@ function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();render
 
 function calcTotales(){
   const desc=parseFloat(document.getElementById('descInput').value)||0;
-  const flete=parseFloat(document.getElementById('fleteVal').value)||0;
+  const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
+  const ivaPct=parseFloat(document.getElementById('ivasel').value)||0;
   const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
-  const descUSD=subUSD*desc/100,totalUSD=subUSD-descUSD+flete;
+  const descUSD=subUSD*desc/100;
+  const baseUSD=subUSD-descUSD;
+  const ivaUSD=baseUSD*ivaPct/100;
+  const totalUSD=baseUSD+ivaUSD;
+  const totalCOP=Math.round(totalUSD*trm)+fleteCOP;
   document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
   document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
   document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
   document.getElementById('tDescCOP').textContent='-'+fmtCOP(descUSD);
+  document.getElementById('tIVAUSD').textContent=fmtUSD(ivaUSD);
+  document.getElementById('tIVACOP').textContent=fmtCOP(ivaUSD);
+  document.getElementById('tFleteCOP').textContent='COP '+Math.round(fleteCOP).toLocaleString('es-CO');
   document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
-  document.getElementById('tTotalCOP').textContent=fmtCOP(totalUSD);
+  document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
 
 function limpiar(){
@@ -563,12 +587,17 @@ async function guardarCotizacion(){
   const validez=document.getElementById('validezSel').value;
   const obs=document.getElementById('obsInput').value.trim();
   const desc=parseFloat(document.getElementById('descInput').value)||0;
-  const flete=parseFloat(document.getElementById('fleteVal').value)||0;
+  const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
+  const ivaPct=parseFloat(document.getElementById('ivasel').value)||0;
   if(!cliente){showToast('Ingresa el cliente','error');return;}
   if(!carrito.length){showToast('El carrito está vacío','error');return;}
   if(!listIdCotizaciones){showToast('Lista Cotizaciones no encontrada','error');return;}
   const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
-  const descUSD=subUSD*desc/100,totalUSD=subUSD-descUSD+flete,totalCOP=Math.round(totalUSD*trm);
+  const descUSD=subUSD*desc/100;
+  const baseUSD=subUSD-descUSD;
+  const ivaUSD=baseUSD*ivaPct/100;
+  const totalUSD=baseUSD+ivaUSD;
+  const totalCOP=Math.round(totalUSD*trm)+fleteCOP;
   const numOferta=document.getElementById('ofertaNum').textContent;
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
@@ -596,7 +625,7 @@ async function guardarCotizacion(){
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta guardada en SharePoint','success');
-    generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,flete,subUSD,descUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
     setTimeout(()=>limpiar(),1800);
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
@@ -620,8 +649,8 @@ function generarPDF(d){
         <span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${item.tipo==='stock'?'#E1F5EE':item.tipo==='importacion'?'#E6F1FB':'#FAEEDA'};color:${item.tipo==='stock'?'#0F6E56':item.tipo==='importacion'?'#185FA5':'#854F0B'};display:inline-block;margin-top:4px;">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
       </td>
       <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;text-align:right;">
-        <div style="font-weight:600;">${fUSD(item.tarifaUSD)}</div>
-        <div style="font-size:11px;color:#666;margin-top:2px;">${fCOP(item.tarifaUSD)}</div>
+        <div style="font-weight:600;">${fUSD(item.tarifa||0)}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">${fCOP(item.tarifa||0)}</div>
       </td>
     </tr>`;
   }).join('');
@@ -718,16 +747,19 @@ function generarPDF(d){
   <!-- TOTALES -->
   <table style="width:100%;margin-top:12px;">
     <tr>
-      <td style="width:60%"></td>
-      <td style="width:40%;">
+      <td style="width:55%"></td>
+      <td style="width:45%;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          ${d.desc>0?`<tr><td style="padding:5px 10px;color:#666;">Subtotal</td><td style="padding:5px 10px;text-align:right;">${fUSD(d.subUSD)}</td></tr><tr><td style="padding:5px 10px;color:#e24b4a;">Descuento (${d.desc}%)</td><td style="padding:5px 10px;text-align:right;color:#e24b4a;">-${fUSD(d.descUSD)}</td></tr>`:''}
-          ${d.flete>0?`<tr><td style="padding:5px 10px;color:#666;">Flete</td><td style="padding:5px 10px;text-align:right;">${fUSD(d.flete)}</td></tr>`:''}
-          <tr style="background:#f0f9f5;border-radius:6px;">
-            <td style="padding:10px 10px;font-weight:700;font-size:14px;color:#0F6E56;">TOTAL</td>
-            <td style="padding:10px 10px;text-align:right;">
-              <div style="font-weight:700;font-size:15px;color:#0F6E56;">${fUSD(d.totalUSD)}</div>
-              <div style="font-size:11px;color:#666;margin-top:2px;">${fCOP(d.totalUSD)}</div>
+          <tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;">${fUSD(d.subUSD)}<br><span style="font-size:10px;color:#999;">${fCOP(d.subUSD)}</span></td></tr>
+          ${(d.desc||0)>0?`<tr><td style="padding:5px 10px;color:#e24b4a;border-bottom:1px solid #f0f0f0;">Descuento (${d.desc}%)</td><td style="padding:5px 10px;text-align:right;color:#e24b4a;border-bottom:1px solid #f0f0f0;">-${fUSD(d.descUSD||0)}<br><span style="font-size:10px;">-${fCOP(d.descUSD||0)}</span></td></tr>`:''}
+          ${(d.ivaPct||0)>0?`<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">IVA ${d.ivaPct}%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;">${fUSD(d.ivaUSD||0)}<br><span style="font-size:10px;color:#999;">${fCOP(d.ivaUSD||0)}</span></td></tr>`:''}
+          ${(d.fleteCOP||0)>0?`<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;"><span style="font-size:11px;">COP ${Math.round(d.fleteCOP||0).toLocaleString('es-CO')}</span></td></tr>`:''}
+          <tr style="background:#f0f9f5;">
+            <td style="padding:12px 10px;font-weight:700;font-size:14px;color:#0F6E56;">TOTAL OFERTA</td>
+            <td style="padding:12px 10px;text-align:right;">
+              <div style="font-weight:700;font-size:16px;color:#0F6E56;">${fUSD(d.totalUSD||0)}</div>
+              <div style="font-size:12px;color:#555;margin-top:3px;font-weight:600;">COP ${Math.round(d.totalCOP||0).toLocaleString('es-CO')}</div>
+              <div style="font-size:10px;color:#999;margin-top:2px;">TRM ref: $ ${Math.round(d.trm||0).toLocaleString('es-CO')}</div>
             </td>
           </tr>
         </table>
