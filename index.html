@@ -401,7 +401,8 @@ function mapItem(i){
   }
   const estado_=(f.ESTADO_||'').trim().toUpperCase();
   const estadoStock=(f.ESTADO||'').trim();
-  const fichaTecnica=(f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||'').trim();
+  const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
+  const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
   return{
     id:i.id,
     title:(f.Title||'').trim(),
@@ -619,7 +620,7 @@ function renderCarrito(){
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica
-      ?`<a class="btn-pdf" href="${pdfUrl(item.fichaTecnica)}" target="_blank" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`
+      ?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`
       :'';
     const tr=document.createElement('tr');
     tr.innerHTML=`
