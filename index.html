@@ -188,6 +188,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <option value="pedido">Bajo Pedido</option>
           </select>
         </div>
+        <div class="filter-row">
+          <select id="filtroTipologia" onchange="renderCatalogo()"><option value="">Todas las tipologías</option></select>
+        </div>
       </div>
       <div class="trm-bar">
         <label><i class="ti ti-currency-dollar" style="font-size:13px;vertical-align:-1px"></i> TRM</label>
@@ -381,7 +384,7 @@ function mapItem(i){
   const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
   const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
   return{
-    id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||f.MO||'').trim(),
+    id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||'').trim(),
     tipologia:(f.Tipologia||'').trim(),estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
     estadoStock:(f.ESTADO||'').trim(),tarifa,
     ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
@@ -399,6 +402,10 @@ async function cargarMaquinas(){
     const sel=document.getElementById('filtroMarca');
     sel.innerHTML='<option value="">Todas las marcas</option>';
     marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+    const tipologias=[...new Set(rawMaquinas.map(m=>m.tipologia).filter(Boolean))].sort();
+    const selT=document.getElementById('filtroTipologia');
+    selT.innerHTML='<option value="">Todas las tipologías</option>';
+    tipologias.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;selT.appendChild(o);});
     procesarCatalogo();
     document.getElementById('catalogoCount').textContent=`${grupos.length} productos · ${bajosPedido.length} bajo pedido`;
     renderCatalogo();
@@ -429,12 +436,14 @@ function renderCatalogo(){
   const q=document.getElementById('searchInput').value.toLowerCase().trim();
   const marca=document.getElementById('filtroMarca').value;
   const tipo=document.getElementById('filtroTipo').value;
+  const tipologia=document.getElementById('filtroTipologia').value;
   const el=document.getElementById('maqList');
   el.innerHTML='';
   if(tipo!=='pedido'){
     let gF=grupos;
     if(q)gF=gF.filter(g=>g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||(g.tipologia||'').toLowerCase().includes(q)||(g.modelo||'').toLowerCase().includes(q));
     if(marca)gF=gF.filter(g=>g.marca===marca);
+    if(tipologia)gF=gF.filter(g=>g.tipologia===tipologia);
     if(gF.length){
       const lbl=document.createElement('div');lbl.className='section-label';
       lbl.innerHTML=`<i class="ti ti-package" style="font-size:11px"></i> Disponibles (${gF.length})`;
@@ -445,6 +454,7 @@ function renderCatalogo(){
     let bF=bajosPedido;
     if(q)bF=bF.filter(m=>m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q));
     if(marca)bF=bF.filter(m=>m.marca===marca);
+    if(tipologia)bF=bF.filter(m=>m.tipologia===tipologia);
     const seen=new Set();bF=bF.filter(m=>{if(seen.has(m.title.toLowerCase()))return false;seen.add(m.title.toLowerCase());return true;});
     if(bF.length){
       const lbl=document.createElement('div');lbl.className='section-label';lbl.style.marginTop='10px';
@@ -563,15 +573,28 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields:{
-      Title:numOferta,
-      NUMERO:numOferta,
-      Cliente:cliente,
-      GranTotal:Math.round(totalUSD*100)/100,
-      Fecha_x005f_Cotizacion:new Date().toISOString().split('T')[0],
-      Estado:'Enviada',
-      Vendedor:vendedor,
-    }});
+    // Detectar columnas reales de la lista Cotizaciones
+    let colMap={};
+    if(listIdCotizaciones){
+      try{
+        const cols=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
+        cols.value.forEach(c=>colMap[c.displayName.toLowerCase().replace(/\s/g,'')]=c.name);
+      }catch(e){}
+    }
+
+    // Construir fields solo con columnas que existen
+    const fields={Title:numOferta};
+    const tryField=(display,val)=>{
+      const key=display.toLowerCase().replace(/\s/g,'');
+      const internalName=colMap[key]||display;
+      fields[internalName]=val;
+    };
+    tryField('Cliente',cliente);
+    tryField('GranTotal',Math.round(totalUSD*100)/100);
+    tryField('Estado','Enviada');
+    tryField('Vendedor',vendedor);
+
+    await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta guardada en SharePoint','success');
     generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,flete,subUSD,descUSD,totalUSD,totalCOP,trm,items:[...carrito]});
     setTimeout(()=>limpiar(),1800);
