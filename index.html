@@ -7,137 +7,170 @@
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  :root{
-    --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
-    --red-light:#FCEBEB;--red:#A32D2D;
-    --amber-light:#FAEEDA;--amber:#854F0B;
-    --border:#e2e2e2;--bg:#f8f8f6;--bg2:#fff;
-    --text:#1a1a1a;--text2:#666;--text3:#999;
-    --radius:8px;--radius-lg:12px;
-  }
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);height:100vh;display:flex;flex-direction:column}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
+  --blue:#378ADD;--blue-light:#E6F1FB;--blue-dark:#185FA5;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --border:#e2e2e2;--bg:#f8f8f6;--bg2:#fff;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --radius:8px;--radius-lg:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);height:100vh;display:flex;flex-direction:column}
 
-  /* LOGIN */
-  #loginScreen{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column;gap:24px}
-  .login-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 48px;text-align:center;max-width:380px;width:90%}
-  .login-logo{font-size:22px;font-weight:600;margin-bottom:6px}
-  .login-logo span{color:var(--green)}
-  .login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
-  .btn-login{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
-  .btn-login:hover{background:var(--green-dark)}
-  .login-note{font-size:11px;color:var(--text3);margin-top:16px}
+#loginScreen{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 48px;text-align:center;max-width:380px;width:90%}
+.login-logo{font-size:22px;font-weight:600;margin-bottom:6px}
+.login-logo span{color:var(--green)}
+.login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
+.btn-login{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-login:hover{background:var(--green-dark)}
+.login-note{font-size:11px;color:var(--text3);margin-top:16px}
 
-  /* APP */
-  #appScreen{display:none;flex-direction:column;height:100vh}
-  .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:#fff}
-  .topbar-logo{font-size:15px;font-weight:600;letter-spacing:0.3px}
-  .topbar-logo span{color:var(--green)}
-  .topbar-right{display:flex;align-items:center;gap:12px}
-  .user-chip{font-size:12px;color:var(--text2);background:var(--bg);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
-  .btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:4px 8px;border-radius:var(--radius)}
-  .btn-logout:hover{color:var(--red)}
-  .nav{display:flex;gap:4px}
-  .nav button{background:none;border:none;padding:6px 14px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);font-family:inherit}
-  .nav button.active{background:var(--bg);color:var(--text);font-weight:500}
-  .nav button:hover:not(.active){background:var(--bg)}
+#appScreen{display:none;flex-direction:column;height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
+.topbar-logo{font-size:15px;font-weight:600}
+.topbar-logo span{color:var(--green)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-chip{font-size:12px;color:var(--text2);background:var(--bg);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
+.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:4px 8px;border-radius:var(--radius)}
+.btn-logout:hover{color:var(--red)}
+.nav{display:flex;gap:4px}
+.nav button{background:none;border:none;padding:6px 14px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);font-family:inherit}
+.nav button.active{background:var(--bg);color:var(--text);font-weight:500}
+.nav button:hover:not(.active){background:var(--bg)}
 
-  .main{display:flex;flex:1;overflow:hidden}
+.main{display:flex;flex:1;overflow:hidden}
 
-  /* SIDEBAR */
-  .sidebar{width:270px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;overflow:hidden}
-  .sidebar-header{padding:14px 16px;border-bottom:1px solid var(--border)}
-  .sidebar-header strong{font-size:13px}
-  .sidebar-header p{font-size:11px;color:var(--text2);margin-top:3px}
-  .search-wrap{position:relative;margin-top:10px}
-  .search-wrap input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:13px;font-family:inherit}
-  .search-wrap i{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px}
-  .filter-row{display:flex;gap:6px;margin-top:8px}
-  .filter-row select{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:12px;font-family:inherit}
-  .maq-list{flex:1;overflow-y:auto;padding:8px}
-  .loading-list{text-align:center;padding:30px;color:var(--text3);font-size:13px}
-  .maq-card{padding:10px 12px;border-radius:var(--radius);border:1px solid var(--border);margin-bottom:6px;cursor:pointer;background:#fff;transition:border-color 0.15s}
-  .maq-card:hover{border-color:#aaa}
-  .maq-card.selected{border-color:var(--green);background:var(--green-light)}
-  .maq-card-top{display:flex;justify-content:space-between;align-items:flex-start}
-  .maq-name{font-size:13px;font-weight:500;line-height:1.3}
-  .maq-modelo{font-size:11px;color:var(--text2);margin-top:2px}
-  .maq-precio{font-size:12px;font-weight:500;color:var(--green-dark);white-space:nowrap;margin-left:8px}
-  .maq-tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
-  .tag{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--bg);color:var(--text2)}
-  .tag.disponible{background:var(--green-light);color:var(--green-dark)}
-  .tag.reservado{background:var(--amber-light);color:var(--amber)}
-  .tag.vendido{background:var(--red-light);color:var(--red)}
-  .btn-add{margin-top:8px;width:100%;padding:5px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);font-size:12px;cursor:pointer;font-family:inherit}
-  .btn-add:hover{background:var(--green-light)}
-  .btn-add.quitar{border-color:#e24b4a;color:#a32d2d}
-  .btn-add.quitar:hover{background:var(--red-light)}
+/* SIDEBAR */
+.sidebar{width:300px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sidebar-header{padding:12px 14px;border-bottom:1px solid var(--border)}
+.sidebar-header strong{font-size:13px}
+.sidebar-header p{font-size:11px;color:var(--text2);margin-top:2px}
+.search-wrap{position:relative;margin-top:8px}
+.search-wrap input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:13px;font-family:inherit}
+.search-wrap i{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px}
+.filter-row{display:flex;gap:6px;margin-top:6px}
+.filter-row select{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:12px;font-family:inherit}
 
-  /* CONTENT */
-  .content{flex:1;display:flex;flex-direction:column;overflow:hidden}
-  .content-top{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;background:#fff}
-  .field-group{display:flex;flex-direction:column;gap:4px}
-  .field-group label{font-size:11px;color:var(--text2);font-weight:500}
-  .field-group input,.field-group select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;min-width:140px}
-  .oferta-badge{margin-left:auto;align-self:center;background:var(--green-light);color:var(--green-dark);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px}
-  .cot-area{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
-  .empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
-  .empty-state i{font-size:40px;display:block;margin-bottom:12px}
-  .items-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-  .items-table{width:100%;border-collapse:collapse}
-  .items-table th{font-size:11px;color:var(--text2);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg)}
-  .items-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
-  .items-table tr:last-child td{border-bottom:none}
-  .item-name{font-weight:500}
-  .item-sub{font-size:11px;color:var(--text2);margin-top:2px}
-  .desc-input{width:100%;border:none;background:none;font-size:12px;color:var(--text2);font-family:inherit;padding:2px 0;outline:none;margin-top:4px}
-  .desc-input:focus{color:var(--text)}
-  .price-input{width:110px;border:1px solid var(--border);border-radius:var(--radius);padding:5px 8px;text-align:right;font-size:13px;font-family:inherit}
-  .btn-remove{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 6px;border-radius:4px}
-  .btn-remove:hover{color:var(--red);background:var(--red-light)}
+/* TRM BAR */
+.trm-bar{padding:8px 14px;border-bottom:1px solid var(--border);background:#f0f9f5;display:flex;align-items:center;gap:8px}
+.trm-bar label{font-size:11px;color:var(--green-dark);font-weight:500;white-space:nowrap}
+.trm-bar input{width:110px;padding:5px 8px;border:1px solid #9FE1CB;border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;text-align:right}
+.trm-bar span{font-size:11px;color:var(--text2)}
 
-  /* FOOTER */
-  .footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px;background:#fff;flex-wrap:wrap}
-  .totales{margin-left:auto;display:flex;gap:20px;align-items:center}
-  .total-item{display:flex;flex-direction:column;align-items:flex-end}
-  .total-label{font-size:11px;color:var(--text2)}
-  .total-val{font-size:14px;font-weight:500}
-  .total-val.big{font-size:20px;color:var(--green-dark);font-weight:600}
-  .btn-primary{padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;gap:6px}
-  .btn-primary:hover{background:var(--green-dark)}
-  .btn-primary:disabled{background:#ccc;cursor:not-allowed}
-  .btn-sec{padding:9px 16px;background:none;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
-  .btn-sec:hover{background:var(--bg)}
+.maq-list{flex:1;overflow-y:auto;padding:8px}
+.loading-list{text-align:center;padding:30px;color:var(--text3);font-size:13px}
 
-  /* HISTORIAL */
-  #historialView{display:none;flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
-  .hist-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:10px}
-  .hist-top{display:flex;justify-content:space-between;align-items:center}
-  .hist-num{font-weight:600;color:var(--green-dark);font-size:14px}
-  .hist-fecha{font-size:12px;color:var(--text3)}
-  .hist-body{margin-top:10px;display:flex;gap:24px;flex-wrap:wrap}
-  .hist-field{font-size:12px;color:var(--text2)}
-  .hist-field strong{color:var(--text);display:block;font-size:13px}
-  .hist-total{font-size:16px;font-weight:600;color:var(--green-dark);margin-left:auto;align-self:center}
+/* SECCIÓN EN LISTA */
+.section-label{font-size:10px;font-weight:600;letter-spacing:0.8px;color:var(--text3);padding:8px 6px 4px;text-transform:uppercase}
 
-  /* TOAST */
-  .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;max-width:320px}
-  .toast.show{opacity:1}
-  .toast.success{background:var(--green-dark)}
-  .toast.error{background:var(--red)}
+/* CARD AGRUPADA (Disponible) */
+.grupo-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#fff;overflow:hidden}
+.grupo-card.selected{border-color:var(--green)}
+.grupo-header{padding:10px 12px;cursor:pointer}
+.grupo-header:hover{background:var(--bg)}
+.grupo-top{display:flex;justify-content:space-between;align-items:flex-start}
+.grupo-name{font-size:13px;font-weight:500}
+.grupo-marca{font-size:11px;color:var(--text2);margin-top:2px}
+.grupo-precio{text-align:right}
+.precio-usd{font-size:12px;font-weight:600;color:var(--green-dark)}
+.precio-cop{font-size:10px;color:var(--text2);margin-top:1px}
+.stock-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.stock-badge{font-size:10px;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.stock-badge.stock{background:var(--green-light);color:var(--green-dark)}
+.stock-badge.importacion{background:var(--blue-light);color:var(--blue-dark)}
+.grupo-actions{padding:0 12px 10px;display:flex;gap:6px}
+.btn-add-tipo{flex:1;padding:5px 8px;border-radius:var(--radius);font-size:11px;cursor:pointer;font-family:inherit;border:1px solid var(--green);color:var(--green-dark);background:none;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-add-tipo:hover{background:var(--green-light)}
+.btn-add-tipo.import{border-color:var(--blue);color:var(--blue-dark)}
+.btn-add-tipo.import:hover{background:var(--blue-light)}
+.btn-add-tipo:disabled{opacity:0.4;cursor:not-allowed}
 
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-2px}
-  .spinner.dark{border-color:rgba(0,0,0,0.15);border-top-color:var(--green)}
-  @keyframes spin{to{transform:rotate(360deg)}}
+/* CARD BAJO PEDIDO */
+.bp-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;background:#fff;padding:10px 12px}
+.bp-card.selected{border-color:var(--green)}
+.bp-top{display:flex;justify-content:space-between;align-items:flex-start}
+.bp-name{font-size:13px;font-weight:500}
+.bp-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.bp-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--amber-light);color:var(--amber);margin-top:6px;display:inline-block}
+.btn-add-bp{margin-top:8px;width:100%;padding:5px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);font-size:12px;cursor:pointer;font-family:inherit}
+.btn-add-bp:hover{background:var(--green-light)}
+.btn-add-bp.quitar{border-color:#e24b4a;color:var(--red)}
+.btn-add-bp.quitar:hover{background:var(--red-light)}
+
+/* CONTENT */
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.content-top{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:#fff;flex-shrink:0}
+.field-group{display:flex;flex-direction:column;gap:3px}
+.field-group label{font-size:11px;color:var(--text2);font-weight:500}
+.field-group input,.field-group select{padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;min-width:130px}
+.oferta-badge{margin-left:auto;align-self:center;background:var(--green-light);color:var(--green-dark);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;white-space:nowrap}
+.cot-area{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-state i{font-size:40px;display:block;margin-bottom:12px}
+.items-wrap{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.items-table{width:100%;border-collapse:collapse}
+.items-table th{font-size:11px;color:var(--text2);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg)}
+.items-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
+.items-table tr:last-child td{border-bottom:none}
+.item-name{font-weight:500}
+.item-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.item-tipo-badge{font-size:10px;padding:1px 7px;border-radius:20px;display:inline-block;margin-top:4px}
+.item-tipo-badge.stock{background:var(--green-light);color:var(--green-dark)}
+.item-tipo-badge.importacion{background:var(--blue-light);color:var(--blue-dark)}
+.item-tipo-badge.pedido{background:var(--amber-light);color:var(--amber)}
+.desc-input{width:100%;border:none;background:none;font-size:12px;color:var(--text2);font-family:inherit;padding:2px 0;outline:none;margin-top:4px}
+.price-cell{text-align:right}
+.price-usd-item{font-size:13px;font-weight:500}
+.price-cop-item{font-size:11px;color:var(--text2);margin-top:1px}
+.btn-remove{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 6px;border-radius:4px}
+.btn-remove:hover{color:var(--red);background:var(--red-light)}
+
+/* FOOTER */
+.footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff;flex-wrap:wrap;flex-shrink:0}
+.totales{margin-left:auto;display:flex;gap:16px;align-items:center}
+.total-item{display:flex;flex-direction:column;align-items:flex-end}
+.total-label{font-size:10px;color:var(--text2)}
+.total-val{font-size:13px;font-weight:500}
+.total-val.sub2{font-size:11px;color:var(--text2)}
+.total-val.big{font-size:18px;color:var(--green-dark);font-weight:600}
+.total-val.big2{font-size:11px;color:var(--text2)}
+.btn-primary{padding:9px 18px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-sec{padding:8px 14px;background:none;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+.btn-sec:hover{background:var(--bg)}
+
+/* HISTORIAL */
+#historialView{display:none;flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+.hist-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:10px}
+.hist-top{display:flex;justify-content:space-between;align-items:center}
+.hist-num{font-weight:600;color:var(--green-dark);font-size:14px}
+.hist-fecha{font-size:12px;color:var(--text3)}
+.hist-body{margin-top:10px;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.hist-field{font-size:12px;color:var(--text2)}
+.hist-field strong{color:var(--text);display:block;font-size:13px}
+.hist-totales{margin-left:auto;text-align:right}
+.hist-total-usd{font-size:13px;font-weight:600;color:var(--green-dark)}
+.hist-total-cop{font-size:11px;color:var(--text2)}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+.toast.success{background:var(--green-dark)}
+.toast.error{background:var(--red)}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-2px}
+.spinner.dark{border-color:rgba(0,0,0,0.12);border-top-color:var(--green)}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">AYJ <span>Cotizador</span></div>
-    <p class="login-sub">Inicia sesión con tu cuenta Microsoft de AYJ para acceder al catálogo y gestionar tus ofertas.</p>
+    <p class="login-sub">Inicia sesión con tu cuenta Microsoft de AYJ para acceder al catálogo y gestionar ofertas.</p>
     <button class="btn-login" onclick="login()">
       <svg width="18" height="18" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>
       Iniciar sesión con Microsoft
@@ -146,7 +179,6 @@
   </div>
 </div>
 
-<!-- APP -->
 <div id="appScreen">
   <div class="topbar">
     <div class="topbar-logo">AYJ <span>Cotizador</span></div>
@@ -161,30 +193,37 @@
   </div>
 
   <div class="main">
+    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-header">
         <strong>Catálogo · TODAS_2025</strong>
-        <p>Selecciona máquinas para agregar</p>
+        <p>Disponibles y Bajo Pedido</p>
         <div class="search-wrap">
           <i class="ti ti-search"></i>
-          <input type="text" id="searchInput" placeholder="Buscar modelo o marca..." oninput="filtrarMaquinas()">
+          <input type="text" id="searchInput" placeholder="Buscar nombre o marca..." oninput="renderCatalogo()">
         </div>
         <div class="filter-row">
-          <select id="filtroMarca" onchange="filtrarMaquinas()">
+          <select id="filtroMarca" onchange="renderCatalogo()">
             <option value="">Todas las marcas</option>
           </select>
-          <select id="filtroEstado" onchange="filtrarMaquinas()">
+          <select id="filtroTipo" onchange="renderCatalogo()">
             <option value="">Todos</option>
-            <option value="Disponible">Disponible</option>
-            <option value="Reservado">Reservado</option>
+            <option value="disponible">Disponibles</option>
+            <option value="pedido">Bajo Pedido</option>
           </select>
         </div>
+      </div>
+      <div class="trm-bar">
+        <label><i class="ti ti-currency-dollar" style="font-size:13px;vertical-align:-1px"></i> TRM</label>
+        <input type="number" id="trmInput" value="4200" step="10" oninput="onTrmChange()">
+        <span id="trmLabel">$ 4.200 COP/USD</span>
       </div>
       <div class="maq-list" id="maqList">
         <div class="loading-list"><span class="spinner dark"></span> Cargando catálogo...</div>
       </div>
     </div>
 
+    <!-- CONTENT -->
     <div class="content" id="nuevaView">
       <div class="content-top">
         <div class="field-group">
@@ -203,14 +242,6 @@
           </select>
         </div>
         <div class="field-group">
-          <label>Moneda</label>
-          <select id="monedaSel" onchange="calcTotales()">
-            <option value="USD">USD</option>
-            <option value="COP">COP</option>
-            <option value="EUR">EUR</option>
-          </select>
-        </div>
-        <div class="field-group">
           <label>Condición de pago</label>
           <select id="condPagoSel">
             <option>30% anticipo, 70% entrega</option>
@@ -219,6 +250,10 @@
             <option>Crédito 60 días</option>
           </select>
         </div>
+        <div class="field-group">
+          <label>Observaciones</label>
+          <input type="text" id="obsInput" placeholder="Notas internas..." style="min-width:160px">
+        </div>
         <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
       </div>
 
@@ -226,17 +261,17 @@
         <div class="empty-state" id="emptyState">
           <i class="ti ti-file-plus"></i>
           <p style="font-weight:500;margin-bottom:6px;font-size:15px">Sin items aún</p>
-          <p style="font-size:12px">Selecciona máquinas del catálogo para agregarlas a la oferta</p>
+          <p style="font-size:12px">Selecciona máquinas del catálogo para agregarlas</p>
         </div>
         <div class="items-wrap" id="itemsWrap" style="display:none">
           <table class="items-table">
             <thead>
               <tr>
-                <th style="width:32px">#</th>
-                <th>Máquina / Descripción</th>
-                <th style="width:120px;text-align:right">Precio unit.</th>
-                <th style="width:90px;text-align:right">Subtotal</th>
-                <th style="width:36px"></th>
+                <th style="width:28px">#</th>
+                <th>Máquina</th>
+                <th style="width:130px;text-align:right">Precio USD</th>
+                <th style="width:130px;text-align:right">Precio COP</th>
+                <th style="width:30px"></th>
               </tr>
             </thead>
             <tbody id="itemsBody"></tbody>
@@ -247,28 +282,27 @@
       <div class="footer">
         <div class="field-group">
           <label>Descuento (%)</label>
-          <input type="number" id="descInput" value="0" min="0" max="100" style="width:70px" oninput="calcTotales()">
+          <input type="number" id="descInput" value="0" min="0" max="100" style="width:65px" oninput="calcTotales()">
         </div>
         <div class="field-group">
-          <label>Flete</label>
-          <input type="number" id="fleteVal" value="0" min="0" style="width:110px" placeholder="0" oninput="calcTotales()">
-        </div>
-        <div class="field-group">
-          <label>Observaciones</label>
-          <input type="text" id="obsInput" placeholder="Notas internas..." style="min-width:180px">
+          <label>Flete (USD)</label>
+          <input type="number" id="fleteVal" value="0" min="0" style="width:100px" oninput="calcTotales()">
         </div>
         <div class="totales">
           <div class="total-item">
             <span class="total-label">Subtotal</span>
-            <span class="total-val" id="tSubtotal">USD 0</span>
+            <span class="total-val" id="tSubUSD">USD 0</span>
+            <span class="total-val sub2" id="tSubCOP">COP 0</span>
           </div>
           <div class="total-item">
             <span class="total-label">Descuento</span>
-            <span class="total-val" id="tDescuento" style="color:#e24b4a">-USD 0</span>
+            <span class="total-val" id="tDescUSD" style="color:#e24b4a">-USD 0</span>
+            <span class="total-val sub2" id="tDescCOP" style="color:#e24b4a">-COP 0</span>
           </div>
           <div class="total-item">
             <span class="total-label">Total oferta</span>
-            <span class="total-val big" id="tTotal">USD 0</span>
+            <span class="total-val big" id="tTotalUSD">USD 0</span>
+            <span class="total-val big2" id="tTotalCOP">COP 0</span>
           </div>
           <button class="btn-sec" onclick="limpiar()"><i class="ti ti-trash"></i> Limpiar</button>
           <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar oferta</button>
@@ -295,196 +329,289 @@ const SP_HOST   = 'ayjcsp.sharepoint.com';
 const SP_SITE   = 'comercial';
 
 const msalConfig = {
-  auth:{
-    clientId: CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
-    redirectUri: window.location.origin + window.location.pathname,
-  },
+  auth:{clientId:CLIENT_ID, authority:`https://login.microsoftonline.com/${TENANT_ID}`, redirectUri:window.location.origin+window.location.pathname},
   cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
 };
-
 const loginRequest = {scopes:['Sites.ReadWrite.All','User.Read']};
 
-let msalInstance, accessToken, siteId, listIdMaquinas, listIdClientes, listIdCotizaciones;
-let maquinas = [], items = [], cotNum = 1;
+let msalInstance, siteId, listIdMaquinas, listIdClientes, listIdCotizaciones;
+let rawMaquinas=[], grupos=[], bajosPedido=[], items=[], cotNum=1;
+let trm=4200;
 
 async function initMsal(){
   msalInstance = new msal.PublicClientApplication(msalConfig);
   await msalInstance.initialize();
   const resp = await msalInstance.handleRedirectPromise();
-  if(resp){ accessToken = resp.accessToken; showApp(resp.account); return; }
+  if(resp){ showApp(resp.account); return; }
   const accounts = msalInstance.getAllAccounts();
-  if(accounts.length > 0){
-    try{
-      const silent = await msalInstance.acquireTokenSilent({...loginRequest, account:accounts[0]});
-      accessToken = silent.accessToken;
-      showApp(accounts[0]);
-    }catch(e){ /* show login */ }
-  }
+  if(accounts.length>0){ try{ await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); showApp(accounts[0]); }catch(e){} }
 }
 
-async function login(){
-  try{
-    await msalInstance.loginRedirect(loginRequest);
-  }catch(e){ showToast('Error al iniciar sesión: '+e.message,'error'); }
-}
-
-function logout(){
-  msalInstance.logoutRedirect();
-}
+async function login(){ await msalInstance.loginRedirect(loginRequest); }
+function logout(){ msalInstance.logoutRedirect(); }
 
 async function getToken(){
   const accounts = msalInstance.getAllAccounts();
   if(!accounts.length) return null;
-  try{
-    const r = await msalInstance.acquireTokenSilent({...loginRequest, account:accounts[0]});
-    return r.accessToken;
-  }catch(e){
-    const r = await msalInstance.acquireTokenRedirect(loginRequest);
-    return null;
-  }
+  try{ const r=await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); return r.accessToken; }
+  catch(e){ await msalInstance.acquireTokenRedirect(loginRequest); return null; }
 }
 
 async function graphGet(url){
-  const token = await getToken();
-  const r = await fetch('https://graph.microsoft.com/v1.0'+url,{headers:{Authorization:'Bearer '+token}});
-  if(!r.ok) throw new Error('Graph error '+r.status+' '+url);
+  const token=await getToken();
+  const r=await fetch('https://graph.microsoft.com/v1.0'+url,{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok) throw new Error('Graph '+r.status+' '+url);
   return r.json();
 }
 
-async function graphPost(url, body){
-  const token = await getToken();
-  const r = await fetch('https://graph.microsoft.com/v1.0'+url,{
-    method:'POST',
-    headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-    body:JSON.stringify(body)
-  });
-  if(!r.ok){ const t=await r.text(); throw new Error('Graph POST error '+r.status+': '+t); }
+async function graphPost(url,body){
+  const token=await getToken();
+  const r=await fetch('https://graph.microsoft.com/v1.0'+url,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){ const t=await r.text(); throw new Error('POST '+r.status+': '+t); }
   return r.json();
 }
 
 async function showApp(account){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
-  document.getElementById('userChip').textContent = account.name || account.username;
+  document.getElementById('userChip').textContent=account.name||account.username;
   await resolverSite();
-  await cargarMaquinas();
-  await cargarClientes();
+  await Promise.all([cargarMaquinas(), cargarClientes()]);
   generarNumOferta();
 }
 
 async function resolverSite(){
   try{
-    const site = await graphGet(`/sites/${SP_HOST}:/sites/${SP_SITE}`);
-    siteId = site.id;
-    const lists = await graphGet(`/sites/${siteId}/lists?$select=id,displayName`);
+    const site=await graphGet(`/sites/${SP_HOST}:/sites/${SP_SITE}`);
+    siteId=site.id;
+    const lists=await graphGet(`/sites/${siteId}/lists?$select=id,displayName`);
     lists.value.forEach(l=>{
-      const n = l.displayName.toLowerCase();
-      if(n.includes('todas_2025')) listIdMaquinas = l.id;
-      else if(n.includes('cliente')) listIdClientes = l.id;
-      else if(n.includes('cotizaci')) listIdCotizaciones = l.id;
+      const n=l.displayName.toLowerCase();
+      if(n.includes('todas_2025')) listIdMaquinas=l.id;
+      else if(n.includes('cliente')) listIdClientes=l.id;
+      else if(n.includes('cotizaci')) listIdCotizaciones=l.id;
     });
-  }catch(e){ showToast('Error conectando a SharePoint: '+e.message,'error'); }
+  }catch(e){ showToast('Error conectando SharePoint: '+e.message,'error'); }
 }
 
 async function cargarMaquinas(){
-  if(!siteId||!listIdMaquinas){ document.getElementById('maqList').innerHTML='<div class="loading-list">Lista TODAS_2025 no encontrada</div>'; return; }
+  if(!siteId||!listIdMaquinas){ document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>'; return; }
   try{
-    const data = await graphGet(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
-    maquinas = data.value.map(i=>({
-      id: i.id,
-      title: i.fields.Title||'Sin nombre',
-      modelo: i.fields.Modelo||'',
-      marca: i.fields.Marca||'',
-      tipologia: i.fields.Tipologia||'',
-      estado: i.fields.ESTADO_||i.fields.ESTADO||'Disponible',
-      moneda: i.fields.MODEDA||'USD',
-      tarifa: parseFloat(i.fields.TARIFA)||0,
-      ubicacion: i.fields.Ubicaci_x00f3_n||i.fields.Ubicacion||'',
-      descripcion: i.fields.Descripci_x00f3_n||i.fields.Descripcion||'',
+    // Traer solo DISPONIBLE y BAJO PEDIDO via filter
+    const url=`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=500&$filter=fields/ESTADO_ eq 'DISPONIBLE' or fields/ESTADO_ eq 'BAJO PEDIDO'`;
+    const data=await graphGet(url);
+    rawMaquinas=data.value.map(i=>({
+      id:i.id,
+      title:i.fields.Title||'Sin nombre',
+      modelo:i.fields.Modelo||'',
+      marca:i.fields.Marca||'',
+      tipologia:i.fields.Tipologia||'',
+      estadoDisp:i.fields.ESTADO_||'',   // DISPONIBLE / BAJO PEDIDO
+      estadoStock:i.fields.ESTADO||'',   // En Stock / En Importación
+      moneda:i.fields.MODEDA||'USD',
+      tarifa:parseFloat(i.fields.TARIFA)||0,
+      ubicacion:i.fields.Ubicaci_x00f3_n||i.fields.Ubicacion||'',
+      descripcion:i.fields.Descripci_x00f3_n||i.fields.Descripcion||'',
     }));
-    const marcas=[...new Set(maquinas.map(m=>m.marca).filter(Boolean))];
+
+    // Poblar filtro marcas
+    const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
     const sel=document.getElementById('filtroMarca');
     sel.innerHTML='<option value="">Todas las marcas</option>';
     marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
-    renderMaquinas(maquinas);
-  }catch(e){ document.getElementById('maqList').innerHTML='<div class="loading-list">Error cargando catálogo</div>'; }
+
+    procesarCatalogo();
+    renderCatalogo();
+  }catch(e){
+    // Si el filter falla (permisos OData), traer todo y filtrar en cliente
+    try{
+      const data2=await graphGet(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=500`);
+      rawMaquinas=data2.value
+        .filter(i=>['DISPONIBLE','BAJO PEDIDO'].includes((i.fields.ESTADO_||'').toUpperCase()))
+        .map(i=>({
+          id:i.id, title:i.fields.Title||'Sin nombre', modelo:i.fields.Modelo||'',
+          marca:i.fields.Marca||'', tipologia:i.fields.Tipologia||'',
+          estadoDisp:i.fields.ESTADO_||'', estadoStock:i.fields.ESTADO||'',
+          moneda:i.fields.MODEDA||'USD', tarifa:parseFloat(i.fields.TARIFA)||0,
+          ubicacion:i.fields.Ubicaci_x00f3_n||i.fields.Ubicacion||'',
+          descripcion:i.fields.Descripci_x00f3_n||i.fields.Descripcion||'',
+        }));
+      const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
+      const sel=document.getElementById('filtroMarca');
+      sel.innerHTML='<option value="">Todas las marcas</option>';
+      marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+      procesarCatalogo();
+      renderCatalogo();
+    }catch(e2){ document.getElementById('maqList').innerHTML='<div class="loading-list">Error cargando catálogo</div>'; }
+  }
 }
 
-async function cargarClientes(){
-  if(!siteId||!listIdClientes) return;
-  try{
-    const data = await graphGet(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
-    const dl = document.getElementById('clientesList');
-    dl.innerHTML='';
-    data.value.forEach(i=>{
-      const nombre = i.fields.Title||i.fields.RazonSocial||'';
-      if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}
-    });
-  }catch(e){}
+function procesarCatalogo(){
+  // Separar disponibles y bajo pedido
+  const disponibles=rawMaquinas.filter(m=>m.estadoDisp.toUpperCase()==='DISPONIBLE');
+  bajosPedido=rawMaquinas.filter(m=>m.estadoDisp.toUpperCase()==='BAJO PEDIDO');
+
+  // Agrupar disponibles por title
+  const mapa={};
+  disponibles.forEach(m=>{
+    const key=m.title.trim().toLowerCase();
+    if(!mapa[key]){
+      mapa[key]={
+        key, title:m.title, marca:m.marca, modelo:m.modelo,
+        tipologia:m.tipologia, tarifa:m.tarifa, moneda:m.moneda,
+        descripcion:m.descripcion,
+        stockCount:0, importCount:0,
+        stockItems:[], importItems:[]
+      };
+    }
+    const stock=(m.estadoStock||'').toLowerCase();
+    if(stock.includes('stock')){ mapa[key].stockCount++; mapa[key].stockItems.push(m); }
+    else if(stock.includes('importa')){ mapa[key].importCount++; mapa[key].importItems.push(m); }
+    else { mapa[key].stockCount++; mapa[key].stockItems.push(m); }
+  });
+  grupos=Object.values(mapa);
 }
 
-async function generarNumOferta(){
-  if(!siteId||!listIdCotizaciones){ document.getElementById('ofertaNum').textContent='COT-2026-001'; return; }
-  try{
-    const data = await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=1&$orderby=id desc`);
-    cotNum = (data.value.length>0 ? parseInt(data.value[0].id) : 0) + 1;
-  }catch(e){ cotNum=1; }
-  document.getElementById('ofertaNum').textContent = 'COT-2026-'+String(cotNum).padStart(3,'0');
+function onTrmChange(){
+  trm=parseFloat(document.getElementById('trmInput').value)||1;
+  document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
+  renderCatalogo();
+  calcTotales();
+  renderItems();
 }
 
-function filtrarMaquinas(){
+function renderCatalogo(){
   const q=document.getElementById('searchInput').value.toLowerCase();
   const marca=document.getElementById('filtroMarca').value;
-  const estado=document.getElementById('filtroEstado').value;
-  const res=maquinas.filter(m=>{
-    const matchQ=!q||m.title.toLowerCase().includes(q)||m.modelo.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q);
-    const matchM=!marca||m.marca===marca;
-    const matchE=!estado||m.estado===estado;
-    return matchQ&&matchM&&matchE;
-  });
-  renderMaquinas(res);
-}
-
-function renderMaquinas(list){
+  const tipo=document.getElementById('filtroTipo').value;
   const el=document.getElementById('maqList');
-  if(!list.length){el.innerHTML='<div class="loading-list">Sin resultados</div>';return;}
   el.innerHTML='';
-  list.forEach(m=>{
-    const inCart=items.some(i=>i.id===m.id);
-    const div=document.createElement('div');
-    div.className='maq-card'+(inCart?' selected':'');
-    div.innerHTML=`
-      <div class="maq-card-top">
+
+  // DISPONIBLES
+  if(tipo!=='pedido'){
+    const gFilt=grupos.filter(g=>{
+      const matchQ=!q||g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||g.modelo.toLowerCase().includes(q);
+      const matchM=!marca||g.marca===marca;
+      return matchQ&&matchM;
+    });
+    if(gFilt.length){
+      const lbl=document.createElement('div');
+      lbl.className='section-label';
+      lbl.innerHTML='<i class="ti ti-package" style="font-size:11px;vertical-align:-1px"></i> Disponibles';
+      el.appendChild(lbl);
+      gFilt.forEach(g=>el.appendChild(buildGrupoCard(g)));
+    }
+  }
+
+  // BAJO PEDIDO
+  if(tipo!=='disponible'){
+    const bpFilt=bajosPedido.filter(m=>{
+      const matchQ=!q||m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q);
+      const matchM=!marca||m.marca===marca;
+      return matchQ&&matchM;
+    });
+    if(bpFilt.length){
+      const lbl=document.createElement('div');
+      lbl.className='section-label';
+      lbl.style.marginTop='8px';
+      lbl.innerHTML='<i class="ti ti-truck" style="font-size:11px;vertical-align:-1px"></i> Bajo Pedido';
+      el.appendChild(lbl);
+      bpFilt.forEach(m=>el.appendChild(buildBpCard(m)));
+    }
+  }
+
+  if(!el.children.length) el.innerHTML='<div class="loading-list">Sin resultados</div>';
+}
+
+function copUSD(usd){ return Math.round(usd*trm); }
+function fmtUSD(n){ return 'USD '+Math.round(n).toLocaleString('es-CO'); }
+function fmtCOP(n){ return 'COP '+Math.round(n).toLocaleString('es-CO'); }
+
+function buildGrupoCard(g){
+  const inStock=items.some(i=>i.grupoKey===g.key&&i.tipo==='stock');
+  const inImport=items.some(i=>i.grupoKey===g.key&&i.tipo==='importacion');
+  const div=document.createElement('div');
+  div.className='grupo-card'+(inStock||inImport?' selected':'');
+  const cop=copUSD(g.tarifa);
+  div.innerHTML=`
+    <div class="grupo-header">
+      <div class="grupo-top">
         <div>
-          <div class="maq-name">${m.title}</div>
-          <div class="maq-modelo">${m.marca}${m.modelo?' · '+m.modelo:''}</div>
+          <div class="grupo-name">${g.title}</div>
+          <div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}</div>
         </div>
-        <div class="maq-precio">${m.moneda} ${m.tarifa.toLocaleString()}</div>
+        <div class="grupo-precio">
+          <div class="precio-usd">${fmtUSD(g.tarifa)}</div>
+          <div class="precio-cop">${fmtCOP(cop)}</div>
+        </div>
       </div>
-      <div class="maq-tags">
-        <span class="tag ${(m.estado||'').toLowerCase()}">${m.estado||'—'}</span>
-        ${m.tipologia?`<span class="tag">${m.tipologia}</span>`:''}
-        ${m.ubicacion?`<span class="tag"><i class="ti ti-map-pin" style="font-size:10px"></i> ${m.ubicacion}</span>`:''}
+      <div class="stock-row">
+        ${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:11px"></i> En Stock: ${g.stockCount}</span>`:''}
+        ${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:11px"></i> En Importación: ${g.importCount}</span>`:''}
       </div>
-      ${m.estado!=='Vendido'&&!inCart?`<button class="btn-add" onclick="agregarItem('${m.id}')"><i class="ti ti-plus"></i> Agregar a oferta</button>`:''}
-      ${inCart?`<button class="btn-add quitar" onclick="quitarItem('${m.id}')"><i class="ti ti-x"></i> Quitar</button>`:''}
-    `;
-    el.appendChild(div);
-  });
+    </div>
+    <div class="grupo-actions">
+      ${g.stockCount>0?`<button class="btn-add-tipo ${inStock?'quitar':''}" onclick="toggleGrupo('${g.key}','stock')" ${inStock?'style="border-color:#e24b4a;color:var(--red)"':''}>
+        <i class="ti ti-${inStock?'x':'plus'}"></i> ${inStock?'Quitar':'Agregar'} En Stock
+      </button>`:''}
+      ${g.importCount>0?`<button class="btn-add-tipo import ${inImport?'quitar':''}" onclick="toggleGrupo('${g.key}','importacion')" ${inImport?'style="border-color:#e24b4a;color:var(--red)"':''}>
+        <i class="ti ti-${inImport?'x':'plus'}"></i> ${inImport?'Quitar':'Agregar'} Importación
+      </button>`:''}
+    </div>
+  `;
+  return div;
 }
 
-function agregarItem(id){
-  const m=maquinas.find(x=>x.id===id);
-  if(!m||items.some(i=>i.id===id)) return;
-  items.push({id:m.id,nombre:m.title,modelo:m.modelo,marca:m.marca,precio:m.tarifa,moneda:m.moneda,desc:m.descripcion});
-  renderItems(); filtrarMaquinas(); calcTotales();
-  showToast('Agregado: '+m.title,'success');
+function buildBpCard(m){
+  const inCart=items.some(i=>i.id===m.id);
+  const cop=copUSD(m.tarifa);
+  const div=document.createElement('div');
+  div.className='bp-card'+(inCart?' selected':'');
+  div.innerHTML=`
+    <div class="bp-top">
+      <div>
+        <div class="bp-name">${m.title}</div>
+        <div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}</div>
+        <span class="bp-badge">Bajo Pedido</span>
+      </div>
+      <div class="grupo-precio">
+        <div class="precio-usd">${fmtUSD(m.tarifa)}</div>
+        <div class="precio-cop">${fmtCOP(cop)}</div>
+      </div>
+    </div>
+    <button class="btn-add-bp ${inCart?'quitar':''}" onclick="toggleBP('${m.id}')">
+      <i class="ti ti-${inCart?'x':'plus'}"></i> ${inCart?'Quitar de oferta':'Agregar a oferta'}
+    </button>
+  `;
+  return div;
 }
 
-function quitarItem(id){
-  items=items.filter(i=>i.id!==id);
-  renderItems(); filtrarMaquinas(); calcTotales();
+function toggleGrupo(key, tipo){
+  const exists=items.findIndex(i=>i.grupoKey===key&&i.tipo===tipo);
+  if(exists>=0){ items.splice(exists,1); }
+  else {
+    const g=grupos.find(x=>x.key===key);
+    if(!g) return;
+    const cant=tipo==='stock'?g.stockCount:g.importCount;
+    items.push({
+      id:'g_'+key+'_'+tipo, grupoKey:key, tipo,
+      nombre:g.title, marca:g.marca, modelo:g.modelo,
+      tarifa:g.tarifa, descripcion:g.descripcion,
+      cantidad:cant
+    });
+  }
+  renderItems(); calcTotales(); renderCatalogo();
+}
+
+function toggleBP(id){
+  const exists=items.findIndex(i=>i.id===id);
+  if(exists>=0){ items.splice(exists,1); }
+  else {
+    const m=bajosPedido.find(x=>x.id===id);
+    if(!m) return;
+    items.push({id:m.id, grupoKey:null, tipo:'pedido', nombre:m.title, marca:m.marca, modelo:m.modelo, tarifa:m.tarifa, descripcion:m.descripcion, cantidad:1});
+  }
+  renderItems(); calcTotales(); renderCatalogo();
 }
 
 function renderItems(){
@@ -492,36 +619,58 @@ function renderItems(){
   const wrap=document.getElementById('itemsWrap');
   const tbody=document.getElementById('itemsBody');
   if(!items.length){empty.style.display='block';wrap.style.display='none';return;}
-  empty.style.display='none';wrap.style.display='block';
+  empty.style.display='none'; wrap.style.display='block';
   tbody.innerHTML='';
   items.forEach((item,i)=>{
+    const cop=copUSD(item.tarifa);
+    const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
+    const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td style="color:var(--text3);font-size:12px">${i+1}</td>
       <td>
         <div class="item-name">${item.nombre}</div>
         <div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
-        <input class="desc-input" value="${item.desc||''}" placeholder="Descripción adicional..." onchange="items[${i}].desc=this.value">
+        <span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · cant. '+item.cantidad:''}</span>
+        <input class="desc-input" value="${item.descripcion||''}" placeholder="Descripción adicional..." onchange="items[${i}].descripcion=this.value">
       </td>
-      <td style="text-align:right"><input class="price-input" type="number" value="${item.precio}" onchange="items[${i}].precio=parseFloat(this.value)||0;calcTotales();document.getElementById('sub_${item.id}').textContent=fmt(items[${i}].precio)"></td>
-      <td style="text-align:right;font-weight:500" id="sub_${item.id}">${fmt(item.precio)}</td>
-      <td><button class="btn-remove" onclick="quitarItem('${item.id}')" title="Quitar"><i class="ti ti-x"></i></button></td>
+      <td class="price-cell">
+        <div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div>
+        <input type="number" value="${item.tarifa}" style="width:100px;border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;text-align:right;font-size:12px;font-family:inherit;margin-top:3px" 
+          onchange="items[${i}].tarifa=parseFloat(this.value)||0;calcTotales();renderItemPrices()">
+      </td>
+      <td class="price-cell">
+        <div class="price-usd-item" id="pcop_${i}">${fmtCOP(cop)}</div>
+      </td>
+      <td><button class="btn-remove" onclick="removeItem(${i})" title="Quitar"><i class="ti ti-x"></i></button></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-function fmt(n){ const m=document.getElementById('monedaSel').value; return m+' '+Math.round(n).toLocaleString('es-CO'); }
+function renderItemPrices(){
+  items.forEach((item,i)=>{
+    const pu=document.getElementById('pusd_'+i);
+    const pc=document.getElementById('pcop_'+i);
+    if(pu) pu.textContent=fmtUSD(item.tarifa);
+    if(pc) pc.textContent=fmtCOP(copUSD(item.tarifa));
+  });
+}
+
+function removeItem(i){ items.splice(i,1); renderItems(); calcTotales(); renderCatalogo(); }
 
 function calcTotales(){
   const desc=parseFloat(document.getElementById('descInput').value)||0;
   const flete=parseFloat(document.getElementById('fleteVal').value)||0;
-  const subtotal=items.reduce((s,i)=>s+i.precio,0);
-  const descVal=subtotal*desc/100;
-  const total=subtotal-descVal+flete;
-  document.getElementById('tSubtotal').textContent=fmt(subtotal);
-  document.getElementById('tDescuento').textContent='-'+fmt(descVal);
-  document.getElementById('tTotal').textContent=fmt(total);
+  const subUSD=items.reduce((s,i)=>s+i.tarifa,0);
+  const descUSD=subUSD*desc/100;
+  const totalUSD=subUSD-descUSD+flete;
+  document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
+  document.getElementById('tSubCOP').textContent=fmtCOP(copUSD(subUSD));
+  document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
+  document.getElementById('tDescCOP').textContent='-'+fmtCOP(copUSD(descUSD));
+  document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
+  document.getElementById('tTotalCOP').textContent=fmtCOP(copUSD(totalUSD));
 }
 
 function limpiar(){
@@ -530,13 +679,34 @@ function limpiar(){
   document.getElementById('descInput').value='0';
   document.getElementById('fleteVal').value='0';
   document.getElementById('obsInput').value='';
-  renderItems(); filtrarMaquinas(); calcTotales(); generarNumOferta();
+  renderItems(); calcTotales(); renderCatalogo(); generarNumOferta();
+}
+
+async function cargarClientes(){
+  if(!siteId||!listIdClientes) return;
+  try{
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
+    const dl=document.getElementById('clientesList');
+    dl.innerHTML='';
+    data.value.forEach(i=>{
+      const nombre=i.fields.Title||i.fields.RazonSocial||'';
+      if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}
+    });
+  }catch(e){}
+}
+
+async function generarNumOferta(){
+  if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
+  try{
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=1&$orderby=id desc`);
+    cotNum=(data.value.length>0?parseInt(data.value[0].id):0)+1;
+  }catch(e){cotNum=1;}
+  document.getElementById('ofertaNum').textContent='COT-2026-'+String(cotNum).padStart(3,'0');
 }
 
 async function guardarCotizacion(){
   const cliente=document.getElementById('clienteInput').value.trim();
   const vendedor=document.getElementById('vendedorSel').value;
-  const moneda=document.getElementById('monedaSel').value;
   const condPago=document.getElementById('condPagoSel').value;
   const obs=document.getElementById('obsInput').value.trim();
   const desc=parseFloat(document.getElementById('descInput').value)||0;
@@ -544,50 +714,36 @@ async function guardarCotizacion(){
   if(!cliente){showToast('Ingresa el cliente','error');return;}
   if(!vendedor){showToast('Selecciona el vendedor','error');return;}
   if(!items.length){showToast('Agrega al menos una máquina','error');return;}
-  if(!listIdCotizaciones){showToast('Lista Cotizaciones no encontrada en SharePoint','error');return;}
-
-  const subtotal=items.reduce((s,i)=>s+i.precio,0);
-  const descVal=subtotal*desc/100;
-  const total=subtotal-descVal+flete;
+  if(!listIdCotizaciones){showToast('Lista Cotizaciones no encontrada','error');return;}
+  const subUSD=items.reduce((s,i)=>s+i.tarifa,0);
+  const descUSD=subUSD*desc/100;
+  const totalUSD=subUSD-descUSD+flete;
+  const totalCOP=copUSD(totalUSD);
   const numOferta=document.getElementById('ofertaNum').textContent;
-
   const btn=document.getElementById('btnGuardar');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
-
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    const fields={
-      Title: numOferta,
-      Cliente: cliente,
-      Vendedor: vendedor,
-      Moneda: moneda,
-      CondicionPago: condPago,
-      Subtotal: subtotal,
-      Descuento: desc,
-      Flete: flete,
-      Total: total,
-      Observaciones: obs,
-      Items: JSON.stringify(items.map(i=>({nombre:i.nombre,modelo:i.modelo,precio:i.precio}))),
-      FechaCotizacion: new Date().toISOString(),
-      Estado: 'Enviada'
-    };
-    await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
-    showToast('✓ Oferta '+numOferta+' guardada en SharePoint','success');
+    await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields:{
+      Title:numOferta, Cliente:cliente, Vendedor:vendedor,
+      CondicionPago:condPago, TRM:trm,
+      SubtotalUSD:subUSD, DescuentoPct:desc, FleteUSD:flete,
+      TotalUSD:totalUSD, TotalCOP:totalCOP,
+      Observaciones:obs,
+      Items:JSON.stringify(items.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
+      FechaCotizacion:new Date().toISOString(), Estado:'Enviada'
+    }});
+    showToast('✓ Oferta '+numOferta+' guardada','success');
     setTimeout(()=>limpiar(),1500);
-  }catch(e){
-    showToast('Error al guardar: '+e.message,'error');
-  }finally{
-    btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar oferta';
-  }
+  }catch(e){showToast('Error: '+e.message,'error');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar oferta';}
 }
 
 async function cargarHistorial(){
-  if(!siteId||!listIdCotizaciones){
-    document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista Cotizaciones no disponible</div>';return;
-  }
+  if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
   document.getElementById('historialBody').innerHTML='<div class="loading-list"><span class="spinner dark"></span> Cargando...</div>';
   try{
     const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$orderby=fields/FechaCotizacion desc&$top=50`);
-    if(!data.value.length){document.getElementById('historialBody').innerHTML='<div class="loading-list">Sin ofertas guardadas aún</div>';return;}
+    if(!data.value.length){document.getElementById('historialBody').innerHTML='<div class="loading-list">Sin ofertas aún</div>';return;}
     document.getElementById('historialBody').innerHTML='';
     data.value.forEach(i=>{
       const f=i.fields;
@@ -595,21 +751,21 @@ async function cargarHistorial(){
       const div=document.createElement('div');
       div.className='hist-card';
       div.innerHTML=`
-        <div class="hist-top">
-          <span class="hist-num">${f.Title||'—'}</span>
-          <span class="hist-fecha">${fecha}</span>
-        </div>
+        <div class="hist-top"><span class="hist-num">${f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div>
         <div class="hist-body">
           <div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div>
           <div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div>
           <div class="hist-field"><strong>${f.CondicionPago||'—'}</strong>Pago</div>
           <div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div>
-          <div class="hist-total">${f.Moneda||'USD'} ${Math.round(f.Total||0).toLocaleString('es-CO')}</div>
+          <div class="hist-totales">
+            <div class="hist-total-usd">USD ${Math.round(f.TotalUSD||0).toLocaleString('es-CO')}</div>
+            <div class="hist-total-cop">COP ${Math.round(f.TotalCOP||0).toLocaleString('es-CO')}</div>
+          </div>
         </div>
       `;
       document.getElementById('historialBody').appendChild(div);
     });
-  }catch(e){ document.getElementById('historialBody').innerHTML='<div class="loading-list">Error: '+e.message+'</div>'; }
+  }catch(e){document.getElementById('historialBody').innerHTML='<div class="loading-list">Error: '+e.message+'</div>';}
 }
 
 function switchView(v){
@@ -622,8 +778,8 @@ function switchView(v){
 
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
-  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
 
 initMsal();
