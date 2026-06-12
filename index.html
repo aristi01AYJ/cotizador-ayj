@@ -18,20 +18,16 @@
   --radius:8px;--radius-lg:12px;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;color:var(--text);background:var(--bg);height:100vh;display:flex;flex-direction:column}
-
-#loginScreen{display:flex;align-items:center;justify-content:center;flex:1;flex-direction:column}
+#loginScreen{display:flex;align-items:center;justify-content:center;flex:1}
 .login-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px 48px;text-align:center;max-width:380px;width:90%}
-.login-logo{font-size:22px;font-weight:600;margin-bottom:6px}
-.login-logo span{color:var(--green)}
+.login-logo{font-size:22px;font-weight:600;margin-bottom:6px}.login-logo span{color:var(--green)}
 .login-sub{font-size:13px;color:var(--text2);margin-bottom:28px}
 .btn-login{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-login:hover{background:var(--green-dark)}
 .login-note{font-size:11px;color:var(--text3);margin-top:16px}
-
 #appScreen{display:none;flex-direction:column;height:100vh}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
-.topbar-logo{font-size:15px;font-weight:600}
-.topbar-logo span{color:var(--green)}
+.topbar-logo{font-size:15px;font-weight:600}.topbar-logo span{color:var(--green)}
 .topbar-right{display:flex;align-items:center;gap:10px}
 .user-chip{font-size:12px;color:var(--text2);background:var(--bg);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
 .btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:4px 8px;border-radius:var(--radius)}
@@ -40,10 +36,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .nav button{background:none;border:none;padding:6px 14px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);font-family:inherit}
 .nav button.active{background:var(--bg);color:var(--text);font-weight:500}
 .nav button:hover:not(.active){background:var(--bg)}
-
 .main{display:flex;flex:1;overflow:hidden}
-
-/* SIDEBAR */
 .sidebar{width:300px;border-right:1px solid var(--border);background:#fff;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sidebar-header{padding:12px 14px;border-bottom:1px solid var(--border)}
 .sidebar-header strong{font-size:13px}
@@ -53,54 +46,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .search-wrap i{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px}
 .filter-row{display:flex;gap:6px;margin-top:6px}
 .filter-row select{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);font-size:12px;font-family:inherit}
-
-/* TRM BAR */
 .trm-bar{padding:8px 14px;border-bottom:1px solid var(--border);background:#f0f9f5;display:flex;align-items:center;gap:8px}
 .trm-bar label{font-size:11px;color:var(--green-dark);font-weight:500;white-space:nowrap}
 .trm-bar input{width:110px;padding:5px 8px;border:1px solid #9FE1CB;border-radius:var(--radius);font-size:13px;font-family:inherit;background:#fff;text-align:right}
 .trm-bar span{font-size:11px;color:var(--text2)}
-
 .maq-list{flex:1;overflow-y:auto;padding:8px}
 .loading-list{text-align:center;padding:30px;color:var(--text3);font-size:13px}
-
-/* SECCIÓN EN LISTA */
-.section-label{font-size:10px;font-weight:600;letter-spacing:0.8px;color:var(--text3);padding:8px 6px 4px;text-transform:uppercase}
-
-/* CARD AGRUPADA (Disponible) */
-.grupo-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:#fff;overflow:hidden}
-.grupo-card.selected{border-color:var(--green)}
-.grupo-header{padding:10px 12px;cursor:pointer}
-.grupo-header:hover{background:var(--bg)}
+.section-label{font-size:10px;font-weight:600;letter-spacing:0.8px;color:var(--text3);padding:8px 6px 4px;text-transform:uppercase;display:flex;align-items:center;gap:4px}
+.grupo-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;background:#fff;overflow:hidden}
+.grupo-card.en-carrito{border-color:var(--green);background:#fafffe}
+.grupo-header{padding:10px 12px}
 .grupo-top{display:flex;justify-content:space-between;align-items:flex-start}
-.grupo-name{font-size:13px;font-weight:500}
+.grupo-name{font-size:13px;font-weight:500;line-height:1.3}
 .grupo-marca{font-size:11px;color:var(--text2);margin-top:2px}
-.grupo-precio{text-align:right}
+.grupo-precio{text-align:right;flex-shrink:0;margin-left:8px}
 .precio-usd{font-size:12px;font-weight:600;color:var(--green-dark)}
 .precio-cop{font-size:10px;color:var(--text2);margin-top:1px}
-.stock-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.stock-badge{font-size:10px;padding:3px 8px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.stock-row{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+.stock-badge{font-size:10px;padding:2px 8px;border-radius:20px;display:flex;align-items:center;gap:3px}
 .stock-badge.stock{background:var(--green-light);color:var(--green-dark)}
 .stock-badge.importacion{background:var(--blue-light);color:var(--blue-dark)}
-.grupo-actions{padding:0 12px 10px;display:flex;gap:6px}
-.btn-add-tipo{flex:1;padding:5px 8px;border-radius:var(--radius);font-size:11px;cursor:pointer;font-family:inherit;border:1px solid var(--green);color:var(--green-dark);background:none;display:flex;align-items:center;justify-content:center;gap:4px}
-.btn-add-tipo:hover{background:var(--green-light)}
-.btn-add-tipo.import{border-color:var(--blue);color:var(--blue-dark)}
-.btn-add-tipo.import:hover{background:var(--blue-light)}
-.btn-add-tipo:disabled{opacity:0.4;cursor:not-allowed}
-
-/* CARD BAJO PEDIDO */
+.grupo-actions{padding:0 10px 10px;display:flex;gap:5px}
+.btn-cat{flex:1;padding:5px 6px;border-radius:var(--radius);font-size:11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:3px;transition:all .15s}
+.btn-cat.add-stock{border:1px solid var(--green);color:var(--green-dark);background:none}
+.btn-cat.add-stock:hover{background:var(--green-light)}
+.btn-cat.add-import{border:1px solid var(--blue);color:var(--blue-dark);background:none}
+.btn-cat.add-import:hover{background:var(--blue-light)}
+.btn-cat.remove{border:1px solid #e24b4a;color:var(--red);background:none}
+.btn-cat.remove:hover{background:var(--red-light)}
 .bp-card{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;background:#fff;padding:10px 12px}
-.bp-card.selected{border-color:var(--green)}
+.bp-card.en-carrito{border-color:var(--green);background:#fafffe}
 .bp-top{display:flex;justify-content:space-between;align-items:flex-start}
-.bp-name{font-size:13px;font-weight:500}
+.bp-name{font-size:13px;font-weight:500;line-height:1.3}
 .bp-sub{font-size:11px;color:var(--text2);margin-top:2px}
 .bp-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--amber-light);color:var(--amber);margin-top:6px;display:inline-block}
-.btn-add-bp{margin-top:8px;width:100%;padding:5px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);font-size:12px;cursor:pointer;font-family:inherit}
+.btn-add-bp{margin-top:8px;width:100%;padding:5px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:4px}
 .btn-add-bp:hover{background:var(--green-light)}
-.btn-add-bp.quitar{border-color:#e24b4a;color:var(--red)}
-.btn-add-bp.quitar:hover{background:var(--red-light)}
-
-/* CONTENT */
+.btn-add-bp.remove{border-color:#e24b4a;color:var(--red)}
+.btn-add-bp.remove:hover{background:var(--red-light)}
 .content{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .content-top{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;background:#fff;flex-shrink:0}
 .field-group{display:flex;flex-direction:column;gap:3px}
@@ -115,20 +98,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .items-table th{font-size:11px;color:var(--text2);font-weight:500;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg)}
 .items-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:top}
 .items-table tr:last-child td{border-bottom:none}
-.item-name{font-weight:500}
+.item-name{font-weight:500;line-height:1.3}
 .item-sub{font-size:11px;color:var(--text2);margin-top:2px}
 .item-tipo-badge{font-size:10px;padding:1px 7px;border-radius:20px;display:inline-block;margin-top:4px}
 .item-tipo-badge.stock{background:var(--green-light);color:var(--green-dark)}
 .item-tipo-badge.importacion{background:var(--blue-light);color:var(--blue-dark)}
 .item-tipo-badge.pedido{background:var(--amber-light);color:var(--amber)}
 .desc-input{width:100%;border:none;background:none;font-size:12px;color:var(--text2);font-family:inherit;padding:2px 0;outline:none;margin-top:4px}
-.price-cell{text-align:right}
+.price-cell{text-align:right;white-space:nowrap}
 .price-usd-item{font-size:13px;font-weight:500}
-.price-cop-item{font-size:11px;color:var(--text2);margin-top:1px}
+.price-cop-item{font-size:11px;color:var(--text2);margin-top:2px}
+.price-edit{width:100px;border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;text-align:right;font-size:12px;font-family:inherit;margin-top:4px;display:block;margin-left:auto}
 .btn-remove{background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 6px;border-radius:4px}
 .btn-remove:hover{color:var(--red);background:var(--red-light)}
-
-/* FOOTER */
+.btn-pdf{background:none;border:none;cursor:pointer;color:var(--red);font-size:15px;padding:2px 4px;border-radius:4px;text-decoration:none;display:inline-flex;align-items:center}
+.btn-pdf:hover{background:var(--red-light)}
 .footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff;flex-wrap:wrap;flex-shrink:0}
 .totales{margin-left:auto;display:flex;gap:16px;align-items:center}
 .total-item{display:flex;flex-direction:column;align-items:flex-end}
@@ -142,8 +126,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .btn-primary:disabled{background:#ccc;cursor:not-allowed}
 .btn-sec{padding:8px 14px;background:none;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
 .btn-sec:hover{background:var(--bg)}
-
-/* HISTORIAL */
 #historialView{display:none;flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
 .hist-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:10px}
 .hist-top{display:flex;justify-content:space-between;align-items:center}
@@ -155,12 +137,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .hist-totales{margin-left:auto;text-align:right}
 .hist-total-usd{font-size:13px;font-weight:600;color:var(--green-dark)}
 .hist-total-cop{font-size:11px;color:var(--text2)}
-
 .toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:var(--radius);font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999}
-.toast.show{opacity:1}
-.toast.success{background:var(--green-dark)}
-.toast.error{background:var(--red)}
-.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:-2px}
+.toast.show{opacity:1}.toast.success{background:var(--green-dark)}.toast.error{background:var(--red)}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
 .spinner.dark{border-color:rgba(0,0,0,0.12);border-top-color:var(--green)}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
@@ -170,12 +149,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">AYJ <span>Cotizador</span></div>
-    <p class="login-sub">Inicia sesión con tu cuenta Microsoft de AYJ para acceder al catálogo y gestionar ofertas.</p>
+    <p class="login-sub">Inicia sesión con tu cuenta Microsoft de AYJ para acceder al catálogo.</p>
     <button class="btn-login" onclick="login()">
       <svg width="18" height="18" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#F25022"/><rect x="11" y="1" width="9" height="9" fill="#7FBA00"/><rect x="1" y="11" width="9" height="9" fill="#00A4EF"/><rect x="11" y="11" width="9" height="9" fill="#FFB900"/></svg>
       Iniciar sesión con Microsoft
     </button>
-    <p class="login-note">Solo cuentas @ayjcsp — tus datos quedan en SharePoint de AYJ</p>
+    <p class="login-note">Solo cuentas @ayjcsp — datos en SharePoint de AYJ</p>
   </div>
 </div>
 
@@ -193,19 +172,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 
   <div class="main">
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-header">
         <strong>Catálogo · TODAS_2025</strong>
-        <p>Disponibles y Bajo Pedido</p>
+        <p id="catalogoCount">Cargando...</p>
         <div class="search-wrap">
           <i class="ti ti-search"></i>
-          <input type="text" id="searchInput" placeholder="Buscar nombre o marca..." oninput="renderCatalogo()">
+          <input type="text" id="searchInput" placeholder="Buscar nombre, marca, tipología..." oninput="renderCatalogo()">
         </div>
         <div class="filter-row">
-          <select id="filtroMarca" onchange="renderCatalogo()">
-            <option value="">Todas las marcas</option>
-          </select>
+          <select id="filtroMarca" onchange="renderCatalogo()"><option value="">Todas las marcas</option></select>
           <select id="filtroTipo" onchange="renderCatalogo()">
             <option value="">Todos</option>
             <option value="disponible">Disponibles</option>
@@ -223,7 +199,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="content" id="nuevaView">
       <div class="content-top">
         <div class="field-group">
@@ -239,6 +214,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <option>Wilson Valencia</option>
             <option>Arnulfo Villadiego</option>
             <option>Jorge Salamanca</option>
+            <option>Jorge Pulido</option>
+            <option id="optVendedorLogin">Adolfo Aristizábal</option>
           </select>
         </div>
         <div class="field-group">
@@ -259,9 +236,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
-          <i class="ti ti-file-plus"></i>
-          <p style="font-weight:500;margin-bottom:6px;font-size:15px">Sin items aún</p>
-          <p style="font-size:12px">Selecciona máquinas del catálogo para agregarlas</p>
+          <i class="ti ti-shopping-cart"></i>
+          <p style="font-weight:500;margin-bottom:6px;font-size:15px">Carrito vacío</p>
+          <p style="font-size:12px">Selecciona máquinas del catálogo para agregarlas al carrito</p>
         </div>
         <div class="items-wrap" id="itemsWrap" style="display:none">
           <table class="items-table">
@@ -269,8 +246,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
               <tr>
                 <th style="width:28px">#</th>
                 <th>Máquina</th>
-                <th style="width:130px;text-align:right">Precio USD</th>
-                <th style="width:130px;text-align:right">Precio COP</th>
+                <th style="width:30px;text-align:center">PDF</th>
+                <th style="width:130px;text-align:right">USD</th>
+                <th style="width:130px;text-align:right">COP</th>
                 <th style="width:30px"></th>
               </tr>
             </thead>
@@ -315,7 +293,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <strong style="font-size:15px">Historial de ofertas</strong>
         <button class="btn-sec" onclick="cargarHistorial()"><i class="ti ti-refresh"></i> Actualizar</button>
       </div>
-      <div id="historialBody"><div class="loading-list"><span class="spinner dark"></span> Cargando...</div></div>
+      <div id="historialBody"></div>
     </div>
   </div>
 </div>
@@ -327,16 +305,16 @@ const CLIENT_ID = 'b6bd7a6e-4cb6-405f-addf-e1b0ae4ee7ce';
 const TENANT_ID = 'c03f8e40-2600-4b72-bd82-3d604e8a9aac';
 const SP_HOST   = 'ayjcsp.sharepoint.com';
 const SP_SITE   = 'comercial';
+const PDF_BASE  = 'https://ayjcsp.sharepoint.com/sites/comercial/Shared%20Documents/General/MODELO%20OFERTAS/COTIZADOR/';
 
 const msalConfig = {
-  auth:{clientId:CLIENT_ID, authority:`https://login.microsoftonline.com/${TENANT_ID}`, redirectUri:window.location.origin+window.location.pathname},
+  auth:{clientId:CLIENT_ID,authority:`https://login.microsoftonline.com/${TENANT_ID}`,redirectUri:window.location.origin+window.location.pathname},
   cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
 };
 const loginRequest = {scopes:['Sites.ReadWrite.All','User.Read']};
-
 let msalInstance, siteId, listIdMaquinas, listIdClientes, listIdCotizaciones;
-let rawMaquinas=[], grupos=[], bajosPedido=[], items=[], cotNum=1;
-let trm=4200;
+let rawMaquinas=[], grupos=[], bajosPedido=[], carrito=[], cotNum=1, trm=4200;
+let currentUserName='', currentUserEmail='';
 
 async function initMsal(){
   msalInstance = new msal.PublicClientApplication(msalConfig);
@@ -344,39 +322,57 @@ async function initMsal(){
   const resp = await msalInstance.handleRedirectPromise();
   if(resp){ showApp(resp.account); return; }
   const accounts = msalInstance.getAllAccounts();
-  if(accounts.length>0){ try{ await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); showApp(accounts[0]); }catch(e){} }
+  if(accounts.length>0){
+    try{ await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); showApp(accounts[0]); }catch(e){}
+  }
 }
-
 async function login(){ await msalInstance.loginRedirect(loginRequest); }
 function logout(){ msalInstance.logoutRedirect(); }
-
 async function getToken(){
-  const accounts = msalInstance.getAllAccounts();
+  const accounts=msalInstance.getAllAccounts();
   if(!accounts.length) return null;
   try{ const r=await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); return r.accessToken; }
   catch(e){ await msalInstance.acquireTokenRedirect(loginRequest); return null; }
 }
-
 async function graphGet(url){
   const token=await getToken();
   const r=await fetch('https://graph.microsoft.com/v1.0'+url,{headers:{Authorization:'Bearer '+token}});
-  if(!r.ok) throw new Error('Graph '+r.status+' '+url);
+  if(!r.ok) throw new Error('Graph '+r.status);
   return r.json();
 }
-
 async function graphPost(url,body){
   const token=await getToken();
   const r=await fetch('https://graph.microsoft.com/v1.0'+url,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok){ const t=await r.text(); throw new Error('POST '+r.status+': '+t); }
+  if(!r.ok){const t=await r.text();throw new Error('POST '+r.status+': '+t);}
   return r.json();
+}
+
+// Paginación completa
+async function graphGetAll(url){
+  let results=[], nextUrl='https://graph.microsoft.com/v1.0'+url;
+  while(nextUrl){
+    const token=await getToken();
+    const r=await fetch(nextUrl,{headers:{Authorization:'Bearer '+token}});
+    if(!r.ok) throw new Error('Graph '+r.status);
+    const data=await r.json();
+    results=results.concat(data.value||[]);
+    nextUrl=data['@odata.nextLink']||null;
+  }
+  return results;
 }
 
 async function showApp(account){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
-  document.getElementById('userChip').textContent=account.name||account.username;
+  currentUserName=account.name||account.username;
+  currentUserEmail=account.username||'';
+  document.getElementById('userChip').textContent=currentUserName;
+  // Pre-seleccionar vendedor si es Adolfo
+  if(currentUserName.toLowerCase().includes('adolfo')||currentUserEmail.toLowerCase().includes('adolfo')){
+    document.getElementById('vendedorSel').value='Adolfo Aristizábal';
+  }
   await resolverSite();
-  await Promise.all([cargarMaquinas(), cargarClientes()]);
+  await Promise.all([cargarMaquinas(),cargarClientes()]);
   generarNumOferta();
 }
 
@@ -394,82 +390,84 @@ async function resolverSite(){
   }catch(e){ showToast('Error conectando SharePoint: '+e.message,'error'); }
 }
 
-async function cargarMaquinas(){
-  if(!siteId||!listIdMaquinas){ document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>'; return; }
-  try{
-    // Traer solo DISPONIBLE y BAJO PEDIDO via filter
-    const url=`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=500&$filter=fields/ESTADO_ eq 'DISPONIBLE' or fields/ESTADO_ eq 'BAJO PEDIDO'`;
-    const data=await graphGet(url);
-    rawMaquinas=data.value.map(i=>({
-      id:i.id,
-      title:i.fields.Title||'Sin nombre',
-      modelo:i.fields.Modelo||'',
-      marca:i.fields.Marca||'',
-      tipologia:i.fields.Tipologia||'',
-      estadoDisp:i.fields.ESTADO_||'',   // DISPONIBLE / BAJO PEDIDO
-      estadoStock:i.fields.ESTADO||'',   // En Stock / En Importación
-      moneda:i.fields.MODEDA||'USD',
-      tarifa:parseFloat(i.fields.TARIFA)||0,
-      ubicacion:i.fields.Ubicaci_x00f3_n||i.fields.Ubicacion||'',
-      descripcion:i.fields.Descripci_x00f3_n||i.fields.Descripcion||'',
-    }));
+function mapItem(i){
+  const f=i.fields;
+  // Parsear TARIFA: puede venir como "$1.151,00" o "1151" etc.
+  let tarifa=0;
+  if(f.TARIFA){
+    const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(',','.');
+    // Si tiene puntos de miles (ej 1.151) y valor < 100000 probablemente es USD
+    tarifa=parseFloat(clean.replace(/\.(?=\d{3})/g,''))||0;
+  }
+  const estado_=(f.ESTADO_||'').trim().toUpperCase();
+  const estadoStock=(f.ESTADO||'').trim();
+  const fichaTecnica=(f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||'').trim();
+  return{
+    id:i.id,
+    title:(f.Title||'').trim(),
+    modelo:(f.Modelo||'').trim(),
+    marca:(f.Marca||'').trim(),
+    tipologia:(f.Tipologia||'').trim(),
+    estadoDisp: estado_,        // 'DISPONIBLE' | 'BAJO PEDIDO'
+    estadoStock: estadoStock,   // 'En Stock' | 'En Importación' | 'Bajo Pedido'
+    tarifa: tarifa,
+    ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
+    descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
+    fichaTecnica: fichaTecnica,
+    observaciones:(f.Observaciones||'').trim(),
+  };
+}
 
-    // Poblar filtro marcas
+async function cargarMaquinas(){
+  if(!siteId||!listIdMaquinas){
+    document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>'; return;
+  }
+  try{
+    // Traer TODOS los items con paginación y filtrar en cliente
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
+    rawMaquinas=todos
+      .map(mapItem)
+      .filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
+
+    // Marcas únicas
     const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
     const sel=document.getElementById('filtroMarca');
     sel.innerHTML='<option value="">Todas las marcas</option>';
     marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
 
     procesarCatalogo();
+    document.getElementById('catalogoCount').textContent=
+      `${grupos.length} productos · ${bajosPedido.length} bajo pedido`;
     renderCatalogo();
   }catch(e){
-    // Si el filter falla (permisos OData), traer todo y filtrar en cliente
-    try{
-      const data2=await graphGet(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=500`);
-      rawMaquinas=data2.value
-        .filter(i=>['DISPONIBLE','BAJO PEDIDO'].includes((i.fields.ESTADO_||'').toUpperCase()))
-        .map(i=>({
-          id:i.id, title:i.fields.Title||'Sin nombre', modelo:i.fields.Modelo||'',
-          marca:i.fields.Marca||'', tipologia:i.fields.Tipologia||'',
-          estadoDisp:i.fields.ESTADO_||'', estadoStock:i.fields.ESTADO||'',
-          moneda:i.fields.MODEDA||'USD', tarifa:parseFloat(i.fields.TARIFA)||0,
-          ubicacion:i.fields.Ubicaci_x00f3_n||i.fields.Ubicacion||'',
-          descripcion:i.fields.Descripci_x00f3_n||i.fields.Descripcion||'',
-        }));
-      const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
-      const sel=document.getElementById('filtroMarca');
-      sel.innerHTML='<option value="">Todas las marcas</option>';
-      marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
-      procesarCatalogo();
-      renderCatalogo();
-    }catch(e2){ document.getElementById('maqList').innerHTML='<div class="loading-list">Error cargando catálogo</div>'; }
+    document.getElementById('maqList').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;
   }
 }
 
 function procesarCatalogo(){
-  // Separar disponibles y bajo pedido
-  const disponibles=rawMaquinas.filter(m=>m.estadoDisp.toUpperCase()==='DISPONIBLE');
-  bajosPedido=rawMaquinas.filter(m=>m.estadoDisp.toUpperCase()==='BAJO PEDIDO');
+  const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
+  bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO');
 
-  // Agrupar disponibles por title
+  // Agrupar disponibles por title (trim + lowercase)
   const mapa={};
   disponibles.forEach(m=>{
-    const key=m.title.trim().toLowerCase();
+    const key=m.title.toLowerCase().trim();
     if(!mapa[key]){
       mapa[key]={
-        key, title:m.title, marca:m.marca, modelo:m.modelo,
-        tipologia:m.tipologia, tarifa:m.tarifa, moneda:m.moneda,
-        descripcion:m.descripcion,
-        stockCount:0, importCount:0,
-        stockItems:[], importItems:[]
+        key,title:m.title,marca:m.marca,modelo:m.modelo,
+        tipologia:m.tipologia,tarifa:m.tarifa,
+        descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,
+        stockCount:0,importCount:0,
+        stockItems:[],importItems:[]
       };
     }
-    const stock=(m.estadoStock||'').toLowerCase();
-    if(stock.includes('stock')){ mapa[key].stockCount++; mapa[key].stockItems.push(m); }
-    else if(stock.includes('importa')){ mapa[key].importCount++; mapa[key].importItems.push(m); }
-    else { mapa[key].stockCount++; mapa[key].stockItems.push(m); }
+    const st=m.estadoStock.toLowerCase();
+    if(st.includes('importa')){mapa[key].importCount++;mapa[key].importItems.push(m);}
+    else{mapa[key].stockCount++;mapa[key].stockItems.push(m);}
+    // Si este item tiene ficha, usarla
+    if(m.fichaTecnica&&!mapa[key].fichaTecnica) mapa[key].fichaTecnica=m.fichaTecnica;
   });
-  grupos=Object.values(mapa);
+  grupos=Object.values(mapa).sort((a,b)=>a.title.localeCompare(b.title));
 }
 
 function onTrmChange(){
@@ -477,218 +475,212 @@ function onTrmChange(){
   document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
   renderCatalogo();
   calcTotales();
-  renderItems();
+  renderCarrito();
 }
 
 function renderCatalogo(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
+  const q=document.getElementById('searchInput').value.toLowerCase().trim();
   const marca=document.getElementById('filtroMarca').value;
   const tipo=document.getElementById('filtroTipo').value;
   const el=document.getElementById('maqList');
   el.innerHTML='';
 
-  // DISPONIBLES
   if(tipo!=='pedido'){
-    const gFilt=grupos.filter(g=>{
-      const matchQ=!q||g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||g.modelo.toLowerCase().includes(q);
-      const matchM=!marca||g.marca===marca;
-      return matchQ&&matchM;
-    });
+    let gFilt=grupos;
+    if(q) gFilt=gFilt.filter(g=>g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||(g.tipologia||'').toLowerCase().includes(q)||(g.modelo||'').toLowerCase().includes(q));
+    if(marca) gFilt=gFilt.filter(g=>g.marca===marca);
     if(gFilt.length){
       const lbl=document.createElement('div');
       lbl.className='section-label';
-      lbl.innerHTML='<i class="ti ti-package" style="font-size:11px;vertical-align:-1px"></i> Disponibles';
+      lbl.innerHTML=`<i class="ti ti-package" style="font-size:11px"></i> Disponibles (${gFilt.length})`;
       el.appendChild(lbl);
       gFilt.forEach(g=>el.appendChild(buildGrupoCard(g)));
     }
   }
 
-  // BAJO PEDIDO
   if(tipo!=='disponible'){
-    const bpFilt=bajosPedido.filter(m=>{
-      const matchQ=!q||m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q);
-      const matchM=!marca||m.marca===marca;
-      return matchQ&&matchM;
-    });
-    if(bpFilt.length){
+    let bFilt=bajosPedido;
+    if(q) bFilt=bFilt.filter(m=>m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q)||(m.tipologia||'').toLowerCase().includes(q));
+    if(marca) bFilt=bFilt.filter(m=>m.marca===marca);
+    // Dedup bajo pedido por title
+    const seen=new Set(); bFilt=bFilt.filter(m=>{if(seen.has(m.title.toLowerCase())){return false;}seen.add(m.title.toLowerCase());return true;});
+    if(bFilt.length){
       const lbl=document.createElement('div');
       lbl.className='section-label';
-      lbl.style.marginTop='8px';
-      lbl.innerHTML='<i class="ti ti-truck" style="font-size:11px;vertical-align:-1px"></i> Bajo Pedido';
+      lbl.style.marginTop='10px';
+      lbl.innerHTML=`<i class="ti ti-truck" style="font-size:11px"></i> Bajo Pedido (${bFilt.length})`;
       el.appendChild(lbl);
-      bpFilt.forEach(m=>el.appendChild(buildBpCard(m)));
+      bFilt.forEach(m=>el.appendChild(buildBpCard(m)));
     }
   }
-
-  if(!el.children.length) el.innerHTML='<div class="loading-list">Sin resultados</div>';
+  if(!el.querySelector('.grupo-card')&&!el.querySelector('.bp-card'))
+    el.innerHTML='<div class="loading-list">Sin resultados</div>';
 }
 
-function copUSD(usd){ return Math.round(usd*trm); }
-function fmtUSD(n){ return 'USD '+Math.round(n).toLocaleString('es-CO'); }
-function fmtCOP(n){ return 'COP '+Math.round(n).toLocaleString('es-CO'); }
+function fmtUSD(n){return 'USD '+Math.round(n).toLocaleString('es-CO');}
+function fmtCOP(n){return 'COP '+Math.round(n*trm).toLocaleString('es-CO');}
+function pdfUrl(nombre){return PDF_BASE+encodeURIComponent(nombre)+'.pdf';}
 
 function buildGrupoCard(g){
-  const inStock=items.some(i=>i.grupoKey===g.key&&i.tipo==='stock');
-  const inImport=items.some(i=>i.grupoKey===g.key&&i.tipo==='importacion');
+  const inStock=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='stock');
+  const inImport=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='importacion');
   const div=document.createElement('div');
-  div.className='grupo-card'+(inStock||inImport?' selected':'');
-  const cop=copUSD(g.tarifa);
+  div.className='grupo-card'+(inStock||inImport?' en-carrito':'');
+
+  const acciones=[];
+  if(g.stockCount>0){
+    if(inStock) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(`<button class="btn-cat add-stock" onclick="agregarGrupo('${escKey(g.key)}','stock')"><i class="ti ti-shopping-cart"></i> Agregar al Carrito</button>`);
+  }
+  if(g.importCount>0){
+    if(inImport) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${escKey(g.key)}','importacion')"><i class="ti ti-shopping-cart"></i> + Importación</button>`);
+  }
+
   div.innerHTML=`
     <div class="grupo-header">
       <div class="grupo-top">
-        <div>
+        <div style="min-width:0">
           <div class="grupo-name">${g.title}</div>
-          <div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}</div>
+          <div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div>
         </div>
         <div class="grupo-precio">
           <div class="precio-usd">${fmtUSD(g.tarifa)}</div>
-          <div class="precio-cop">${fmtCOP(cop)}</div>
+          <div class="precio-cop">${fmtCOP(g.tarifa)}</div>
         </div>
       </div>
       <div class="stock-row">
-        ${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:11px"></i> En Stock: ${g.stockCount}</span>`:''}
-        ${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:11px"></i> En Importación: ${g.importCount}</span>`:''}
+        ${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}
+        ${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}
       </div>
     </div>
-    <div class="grupo-actions">
-      ${g.stockCount>0?`<button class="btn-add-tipo ${inStock?'quitar':''}" onclick="toggleGrupo('${g.key}','stock')" ${inStock?'style="border-color:#e24b4a;color:var(--red)"':''}>
-        <i class="ti ti-${inStock?'x':'plus'}"></i> ${inStock?'Quitar':'Agregar'} En Stock
-      </button>`:''}
-      ${g.importCount>0?`<button class="btn-add-tipo import ${inImport?'quitar':''}" onclick="toggleGrupo('${g.key}','importacion')" ${inImport?'style="border-color:#e24b4a;color:var(--red)"':''}>
-        <i class="ti ti-${inImport?'x':'plus'}"></i> ${inImport?'Quitar':'Agregar'} Importación
-      </button>`:''}
-    </div>
+    ${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}
   `;
   return div;
 }
 
 function buildBpCard(m){
-  const inCart=items.some(i=>i.id===m.id);
-  const cop=copUSD(m.tarifa);
+  const inCart=carrito.some(i=>i.id===m.id);
   const div=document.createElement('div');
-  div.className='bp-card'+(inCart?' selected':'');
+  div.className='bp-card'+(inCart?' en-carrito':'');
   div.innerHTML=`
     <div class="bp-top">
-      <div>
+      <div style="min-width:0">
         <div class="bp-name">${m.title}</div>
-        <div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}</div>
+        <div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}${m.tipologia?' · '+m.tipologia:''}</div>
         <span class="bp-badge">Bajo Pedido</span>
       </div>
       <div class="grupo-precio">
         <div class="precio-usd">${fmtUSD(m.tarifa)}</div>
-        <div class="precio-cop">${fmtCOP(cop)}</div>
+        <div class="precio-cop">${fmtCOP(m.tarifa)}</div>
       </div>
     </div>
-    <button class="btn-add-bp ${inCart?'quitar':''}" onclick="toggleBP('${m.id}')">
-      <i class="ti ti-${inCart?'x':'plus'}"></i> ${inCart?'Quitar de oferta':'Agregar a oferta'}
+    <button class="btn-add-bp ${inCart?'remove':''}" onclick="toggleBP('${m.id}')">
+      <i class="ti ti-${inCart?'x':'shopping-cart'}"></i> ${inCart?'Eliminar del Carrito':'Agregar al Carrito'}
     </button>
   `;
   return div;
 }
 
-function toggleGrupo(key, tipo){
-  const exists=items.findIndex(i=>i.grupoKey===key&&i.tipo===tipo);
-  if(exists>=0){ items.splice(exists,1); }
-  else {
-    const g=grupos.find(x=>x.key===key);
-    if(!g) return;
-    const cant=tipo==='stock'?g.stockCount:g.importCount;
-    items.push({
-      id:'g_'+key+'_'+tipo, grupoKey:key, tipo,
-      nombre:g.title, marca:g.marca, modelo:g.modelo,
-      tarifa:g.tarifa, descripcion:g.descripcion,
-      cantidad:cant
-    });
-  }
-  renderItems(); calcTotales(); renderCatalogo();
-}
+function escKey(k){return k.replace(/'/g,"\\'");}
 
+function agregarGrupo(key,tipo){
+  const g=grupos.find(x=>x.key===key);
+  if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo)) return;
+  const cant=tipo==='stock'?g.stockCount:g.importCount;
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,cantidad:cant});
+  renderCarrito();renderCatalogo();calcTotales();
+  showToast('Agregado al carrito: '+g.title,'success');
+}
+function quitarGrupo(key,tipo){
+  carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));
+  renderCarrito();renderCatalogo();calcTotales();
+}
 function toggleBP(id){
-  const exists=items.findIndex(i=>i.id===id);
-  if(exists>=0){ items.splice(exists,1); }
-  else {
+  const idx=carrito.findIndex(i=>i.id===id);
+  if(idx>=0){carrito.splice(idx,1);}
+  else{
     const m=bajosPedido.find(x=>x.id===id);
     if(!m) return;
-    items.push({id:m.id, grupoKey:null, tipo:'pedido', nombre:m.title, marca:m.marca, modelo:m.modelo, tarifa:m.tarifa, descripcion:m.descripcion, cantidad:1});
+    carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});
+    showToast('Agregado al carrito: '+m.title,'success');
   }
-  renderItems(); calcTotales(); renderCatalogo();
+  renderCarrito();renderCatalogo();calcTotales();
 }
 
-function renderItems(){
+function renderCarrito(){
   const empty=document.getElementById('emptyState');
   const wrap=document.getElementById('itemsWrap');
   const tbody=document.getElementById('itemsBody');
-  if(!items.length){empty.style.display='block';wrap.style.display='none';return;}
-  empty.style.display='none'; wrap.style.display='block';
+  if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
+  empty.style.display='none';wrap.style.display='block';
   tbody.innerHTML='';
-  items.forEach((item,i)=>{
-    const cop=copUSD(item.tarifa);
+  carrito.forEach((item,i)=>{
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
+    const pdfCell=item.fichaTecnica
+      ?`<a class="btn-pdf" href="${pdfUrl(item.fichaTecnica)}" target="_blank" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`
+      :'';
     const tr=document.createElement('tr');
     tr.innerHTML=`
       <td style="color:var(--text3);font-size:12px">${i+1}</td>
       <td>
         <div class="item-name">${item.nombre}</div>
         <div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
-        <span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · cant. '+item.cantidad:''}</span>
-        <input class="desc-input" value="${item.descripcion||''}" placeholder="Descripción adicional..." onchange="items[${i}].descripcion=this.value">
+        <span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
+        <input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value">
       </td>
+      <td style="text-align:center;vertical-align:middle">${pdfCell}</td>
       <td class="price-cell">
         <div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div>
-        <input type="number" value="${item.tarifa}" style="width:100px;border:1px solid var(--border);border-radius:var(--radius);padding:3px 6px;text-align:right;font-size:12px;font-family:inherit;margin-top:3px" 
-          onchange="items[${i}].tarifa=parseFloat(this.value)||0;calcTotales();renderItemPrices()">
+        <input type="number" class="price-edit" value="${item.tarifa}" step="0.01"
+          onchange="carrito[${i}].tarifa=parseFloat(this.value)||0;calcTotales();document.getElementById('pusd_${i}').textContent=fmtUSD(carrito[${i}].tarifa);document.getElementById('pcop_${i}').textContent=fmtCOP(carrito[${i}].tarifa)">
       </td>
       <td class="price-cell">
-        <div class="price-usd-item" id="pcop_${i}">${fmtCOP(cop)}</div>
+        <div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div>
       </td>
-      <td><button class="btn-remove" onclick="removeItem(${i})" title="Quitar"><i class="ti ti-x"></i></button></td>
+      <td><button class="btn-remove" onclick="removerItem(${i})" title="Eliminar del carrito"><i class="ti ti-x"></i></button></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-function renderItemPrices(){
-  items.forEach((item,i)=>{
-    const pu=document.getElementById('pusd_'+i);
-    const pc=document.getElementById('pcop_'+i);
-    if(pu) pu.textContent=fmtUSD(item.tarifa);
-    if(pc) pc.textContent=fmtCOP(copUSD(item.tarifa));
-  });
+function removerItem(i){
+  const item=carrito[i];
+  carrito.splice(i,1);
+  renderCarrito();calcTotales();renderCatalogo();
 }
-
-function removeItem(i){ items.splice(i,1); renderItems(); calcTotales(); renderCatalogo(); }
 
 function calcTotales(){
   const desc=parseFloat(document.getElementById('descInput').value)||0;
   const flete=parseFloat(document.getElementById('fleteVal').value)||0;
-  const subUSD=items.reduce((s,i)=>s+i.tarifa,0);
+  const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
   const descUSD=subUSD*desc/100;
   const totalUSD=subUSD-descUSD+flete;
   document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
-  document.getElementById('tSubCOP').textContent=fmtCOP(copUSD(subUSD));
+  document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
   document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
-  document.getElementById('tDescCOP').textContent='-'+fmtCOP(copUSD(descUSD));
+  document.getElementById('tDescCOP').textContent='-'+fmtCOP(descUSD);
   document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
-  document.getElementById('tTotalCOP').textContent=fmtCOP(copUSD(totalUSD));
+  document.getElementById('tTotalCOP').textContent=fmtCOP(totalUSD);
 }
 
 function limpiar(){
-  items=[];
+  carrito=[];
   document.getElementById('clienteInput').value='';
   document.getElementById('descInput').value='0';
   document.getElementById('fleteVal').value='0';
   document.getElementById('obsInput').value='';
-  renderItems(); calcTotales(); renderCatalogo(); generarNumOferta();
+  renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
 
 async function cargarClientes(){
   if(!siteId||!listIdClientes) return;
   try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=200`);
     const dl=document.getElementById('clientesList');
     dl.innerHTML='';
-    data.value.forEach(i=>{
+    todos.forEach(i=>{
       const nombre=i.fields.Title||i.fields.RazonSocial||'';
       if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}
     });
@@ -713,26 +705,26 @@ async function guardarCotizacion(){
   const flete=parseFloat(document.getElementById('fleteVal').value)||0;
   if(!cliente){showToast('Ingresa el cliente','error');return;}
   if(!vendedor){showToast('Selecciona el vendedor','error');return;}
-  if(!items.length){showToast('Agrega al menos una máquina','error');return;}
+  if(!carrito.length){showToast('El carrito está vacío','error');return;}
   if(!listIdCotizaciones){showToast('Lista Cotizaciones no encontrada','error');return;}
-  const subUSD=items.reduce((s,i)=>s+i.tarifa,0);
+  const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
   const descUSD=subUSD*desc/100;
   const totalUSD=subUSD-descUSD+flete;
-  const totalCOP=copUSD(totalUSD);
+  const totalCOP=Math.round(totalUSD*trm);
   const numOferta=document.getElementById('ofertaNum').textContent;
   const btn=document.getElementById('btnGuardar');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Guardando...';
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields:{
-      Title:numOferta, Cliente:cliente, Vendedor:vendedor,
-      CondicionPago:condPago, TRM:trm,
-      SubtotalUSD:subUSD, DescuentoPct:desc, FleteUSD:flete,
-      TotalUSD:totalUSD, TotalCOP:totalCOP,
+      Title:numOferta,Cliente:cliente,Vendedor:vendedor,
+      CondicionPago:condPago,TRM:trm,
+      SubtotalUSD:subUSD,DescuentoPct:desc,FleteUSD:flete,
+      TotalUSD:totalUSD,TotalCOP:totalCOP,
       Observaciones:obs,
-      Items:JSON.stringify(items.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
-      FechaCotizacion:new Date().toISOString(), Estado:'Enviada'
+      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa,fichaTecnica:i.fichaTecnica||''}))),
+      FechaCotizacion:new Date().toISOString(),Estado:'Enviada'
     }});
-    showToast('✓ Oferta '+numOferta+' guardada','success');
+    showToast('✓ Oferta '+numOferta+' guardada en SharePoint','success');
     setTimeout(()=>limpiar(),1500);
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar oferta';}
@@ -748,8 +740,7 @@ async function cargarHistorial(){
     data.value.forEach(i=>{
       const f=i.fields;
       const fecha=f.FechaCotizacion?new Date(f.FechaCotizacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
-      const div=document.createElement('div');
-      div.className='hist-card';
+      const div=document.createElement('div');div.className='hist-card';
       div.innerHTML=`
         <div class="hist-top"><span class="hist-num">${f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div>
         <div class="hist-body">
@@ -761,11 +752,10 @@ async function cargarHistorial(){
             <div class="hist-total-usd">USD ${Math.round(f.TotalUSD||0).toLocaleString('es-CO')}</div>
             <div class="hist-total-cop">COP ${Math.round(f.TotalCOP||0).toLocaleString('es-CO')}</div>
           </div>
-        </div>
-      `;
+        </div>`;
       document.getElementById('historialBody').appendChild(div);
     });
-  }catch(e){document.getElementById('historialBody').innerHTML='<div class="loading-list">Error: '+e.message+'</div>';}
+  }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
 }
 
 function switchView(v){
@@ -775,13 +765,11 @@ function switchView(v){
   document.getElementById('navHistorial').className=v==='historial'?'active':'';
   if(v==='historial') cargarHistorial();
 }
-
 function showToast(msg,type=''){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show'+(type?' '+type:'');
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
-
 initMsal();
 </script>
 </body>
