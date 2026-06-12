@@ -565,12 +565,12 @@ async function guardarCotizacion(){
   try{
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields:{
       Title:numOferta,
+      NUMERO:numOferta,
       Cliente:cliente,
-      Observaciones:`Vendedor: ${vendedor}${obs?' | '+obs:''}`,
-      TotalUSD:String(Math.round(totalUSD)),
-      TotalCOP:String(Math.round(totalCOP)),
-      TRM:String(Math.round(trm)),
-      FechaCotizacion:new Date().toISOString(),
+      GranTotal:Math.round(totalUSD*100)/100,
+      Fecha_x005f_Cotizacion:new Date().toISOString().split('T')[0],
+      Estado:'Enviada',
+      Vendedor:vendedor,
     }});
     showToast('✓ Oferta guardada en SharePoint','success');
     generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,flete,subUSD,descUSD,totalUSD,totalCOP,trm,items:[...carrito]});
@@ -743,14 +743,15 @@ async function cargarHistorial(){
   if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
   document.getElementById('historialBody').innerHTML='<div class="loading-list"><span class="spinner dark"></span> Cargando...</div>';
   try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$orderby=fields/FechaCotizacion desc&$top=50`);
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$orderby=id desc&$top=50`);
     if(!data.value.length){document.getElementById('historialBody').innerHTML='<div class="loading-list">Sin ofertas aún</div>';return;}
     document.getElementById('historialBody').innerHTML='';
     data.value.forEach(i=>{
       const f=i.fields;
-      const fecha=f.FechaCotizacion?new Date(f.FechaCotizacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      const fechaRaw=f.Fecha_x005f_Cotizacion||f.FechaCotizacion||null;
+      const fecha=fechaRaw?new Date(fechaRaw).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
       const div=document.createElement('div');div.className='hist-card';
-      div.innerHTML=`<div class="hist-top"><span class="hist-num">${f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div><div class="hist-body"><div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div><div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div><div class="hist-field"><strong>${f.CondicionPago||'—'}</strong>Pago</div><div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div><div class="hist-totales"><div class="hist-total-usd">USD ${Math.round(f.TotalUSD||0).toLocaleString('es-CO')}</div><div class="hist-total-cop">COP ${Math.round(f.TotalCOP||0).toLocaleString('es-CO')}</div></div></div>`;
+      div.innerHTML=`<div class="hist-top"><span class="hist-num">${f.NUMERO||f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div><div class="hist-body"><div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div><div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div><div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div><div class="hist-totales"><div class="hist-total-usd">USD ${Math.round(f.GranTotal||0).toLocaleString('es-CO')}</div></div></div>`;
       document.getElementById('historialBody').appendChild(div);
     });
   }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
