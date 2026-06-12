@@ -13,7 +13,7 @@
   --blue:#378ADD;--blue-light:#E6F1FB;--blue-dark:#185FA5;
   --amber:#854F0B;--amber-light:#FAEEDA;
   --red:#A32D2D;--red-light:#FCEBEB;
-  --border:#e2e2e2;--bg:#f8f8f6;--bg2:#fff;
+  --border:#e2e2e2;--bg:#f8f8f6;
   --text:#1a1a1a;--text2:#666;--text3:#999;
   --radius:8px;--radius-lg:12px;
 }
@@ -67,7 +67,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .stock-badge.stock{background:var(--green-light);color:var(--green-dark)}
 .stock-badge.importacion{background:var(--blue-light);color:var(--blue-dark)}
 .grupo-actions{padding:0 10px 10px;display:flex;gap:5px}
-.btn-cat{flex:1;padding:5px 6px;border-radius:var(--radius);font-size:11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:3px;transition:all .15s}
+.btn-cat{flex:1;padding:5px 6px;border-radius:var(--radius);font-size:11px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:3px}
 .btn-cat.add-stock{border:1px solid var(--green);color:var(--green-dark);background:none}
 .btn-cat.add-stock:hover{background:var(--green-light)}
 .btn-cat.add-import{border:1px solid var(--blue);color:var(--blue-dark);background:none}
@@ -142,6 +142,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px}
 .spinner.dark{border-color:rgba(0,0,0,0.12);border-top-color:var(--green)}
 @keyframes spin{to{transform:rotate(360deg)}}
+@media print{body{display:none}}
 </style>
 </head>
 <body>
@@ -170,7 +171,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <button class="btn-logout" onclick="logout()" title="Cerrar sesión"><i class="ti ti-logout"></i></button>
     </div>
   </div>
-
   <div class="main">
     <div class="sidebar">
       <div class="sidebar-header">
@@ -198,7 +198,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <div class="loading-list"><span class="spinner dark"></span> Cargando catálogo...</div>
       </div>
     </div>
-
     <div class="content" id="nuevaView">
       <div class="content-top">
         <div class="field-group">
@@ -215,7 +214,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <option>Arnulfo Villadiego</option>
             <option>Jorge Salamanca</option>
             <option>Jorge Pulido</option>
-            <option id="optVendedorLogin">Adolfo Aristizábal</option>
+            <option>Adolfo Aristizábal</option>
           </select>
         </div>
         <div class="field-group">
@@ -228,12 +227,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           </select>
         </div>
         <div class="field-group">
+          <label>Validez oferta</label>
+          <select id="validezSel">
+            <option>15 días</option>
+            <option>30 días</option>
+            <option>45 días</option>
+            <option>60 días</option>
+          </select>
+        </div>
+        <div class="field-group">
           <label>Observaciones</label>
-          <input type="text" id="obsInput" placeholder="Notas internas..." style="min-width:160px">
+          <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
         <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
       </div>
-
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
           <i class="ti ti-shopping-cart"></i>
@@ -256,7 +263,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           </table>
         </div>
       </div>
-
       <div class="footer">
         <div class="field-group">
           <label>Descuento (%)</label>
@@ -283,11 +289,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <span class="total-val big2" id="tTotalCOP">COP 0</span>
           </div>
           <button class="btn-sec" onclick="limpiar()"><i class="ti ti-trash"></i> Limpiar</button>
-          <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar oferta</button>
+          <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar y PDF</button>
         </div>
       </div>
     </div>
-
     <div id="historialView">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <strong style="font-size:15px">Historial de ofertas</strong>
@@ -297,47 +302,40 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     </div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-const CLIENT_ID = 'b6bd7a6e-4cb6-405f-addf-e1b0ae4ee7ce';
-const TENANT_ID = 'c03f8e40-2600-4b72-bd82-3d604e8a9aac';
-const SP_HOST   = 'ayjcsp.sharepoint.com';
-const SP_SITE   = 'comercial';
-const PDF_BASE  = 'https://ayjcsp.sharepoint.com/sites/comercial/Shared%20Documents/General/MODELO%20OFERTAS/COTIZADOR/';
+const CLIENT_ID='b6bd7a6e-4cb6-405f-addf-e1b0ae4ee7ce';
+const TENANT_ID='c03f8e40-2600-4b72-bd82-3d604e8a9aac';
+const SP_HOST='ayjcsp.sharepoint.com';
+const SP_SITE='comercial';
 
-const msalConfig = {
-  auth:{clientId:CLIENT_ID,authority:`https://login.microsoftonline.com/${TENANT_ID}`,redirectUri:window.location.origin+window.location.pathname},
-  cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
-};
-const loginRequest = {scopes:['Sites.ReadWrite.All','User.Read']};
-let msalInstance, siteId, listIdMaquinas, listIdClientes, listIdCotizaciones;
-let rawMaquinas=[], grupos=[], bajosPedido=[], carrito=[], cotNum=1, trm=4200;
-let currentUserName='', currentUserEmail='';
+const msalConfig={auth:{clientId:CLIENT_ID,authority:`https://login.microsoftonline.com/${TENANT_ID}`,redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
+const loginRequest={scopes:['Sites.ReadWrite.All','User.Read']};
+let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones;
+let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
+let currentUserName='';
 
 async function initMsal(){
-  msalInstance = new msal.PublicClientApplication(msalConfig);
+  msalInstance=new msal.PublicClientApplication(msalConfig);
   await msalInstance.initialize();
-  const resp = await msalInstance.handleRedirectPromise();
-  if(resp){ showApp(resp.account); return; }
-  const accounts = msalInstance.getAllAccounts();
-  if(accounts.length>0){
-    try{ await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); showApp(accounts[0]); }catch(e){}
-  }
+  const resp=await msalInstance.handleRedirectPromise();
+  if(resp){showApp(resp.account);return;}
+  const accounts=msalInstance.getAllAccounts();
+  if(accounts.length>0){try{await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]});showApp(accounts[0]);}catch(e){}}
 }
-async function login(){ await msalInstance.loginRedirect(loginRequest); }
-function logout(){ msalInstance.logoutRedirect(); }
+async function login(){await msalInstance.loginRedirect(loginRequest);}
+function logout(){msalInstance.logoutRedirect();}
 async function getToken(){
   const accounts=msalInstance.getAllAccounts();
-  if(!accounts.length) return null;
-  try{ const r=await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]}); return r.accessToken; }
-  catch(e){ await msalInstance.acquireTokenRedirect(loginRequest); return null; }
+  if(!accounts.length)return null;
+  try{const r=await msalInstance.acquireTokenSilent({...loginRequest,account:accounts[0]});return r.accessToken;}
+  catch(e){await msalInstance.acquireTokenRedirect(loginRequest);return null;}
 }
 async function graphGet(url){
   const token=await getToken();
   const r=await fetch('https://graph.microsoft.com/v1.0'+url,{headers:{Authorization:'Bearer '+token}});
-  if(!r.ok) throw new Error('Graph '+r.status);
+  if(!r.ok)throw new Error('Graph '+r.status);
   return r.json();
 }
 async function graphPost(url,body){
@@ -346,14 +344,12 @@ async function graphPost(url,body){
   if(!r.ok){const t=await r.text();throw new Error('POST '+r.status+': '+t);}
   return r.json();
 }
-
-// Paginación completa
 async function graphGetAll(url){
-  let results=[], nextUrl='https://graph.microsoft.com/v1.0'+url;
+  let results=[],nextUrl='https://graph.microsoft.com/v1.0'+url;
   while(nextUrl){
     const token=await getToken();
     const r=await fetch(nextUrl,{headers:{Authorization:'Bearer '+token}});
-    if(!r.ok) throw new Error('Graph '+r.status);
+    if(!r.ok)throw new Error('Graph '+r.status);
     const data=await r.json();
     results=results.concat(data.value||[]);
     nextUrl=data['@odata.nextLink']||null;
@@ -365,12 +361,9 @@ async function showApp(account){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
   currentUserName=account.name||account.username;
-  currentUserEmail=account.username||'';
   document.getElementById('userChip').textContent=currentUserName;
-  // Pre-seleccionar vendedor si es Adolfo
-  if(currentUserName.toLowerCase().includes('adolfo')||currentUserEmail.toLowerCase().includes('adolfo')){
+  if(currentUserName.toLowerCase().includes('adolfo')||(account.username||'').toLowerCase().includes('adolfo'))
     document.getElementById('vendedorSel').value='Adolfo Aristizábal';
-  }
   await resolverSite();
   await Promise.all([cargarMaquinas(),cargarClientes()]);
   generarNumOferta();
@@ -383,90 +376,54 @@ async function resolverSite(){
     const lists=await graphGet(`/sites/${siteId}/lists?$select=id,displayName`);
     lists.value.forEach(l=>{
       const n=l.displayName.toLowerCase();
-      if(n.includes('todas_2025')) listIdMaquinas=l.id;
-      else if(n.includes('cliente')) listIdClientes=l.id;
-      else if(n.includes('cotizaci')) listIdCotizaciones=l.id;
+      if(n.includes('todas_2025'))listIdMaquinas=l.id;
+      else if(n.includes('cliente'))listIdClientes=l.id;
+      else if(n.includes('cotizaci'))listIdCotizaciones=l.id;
     });
-  }catch(e){ showToast('Error conectando SharePoint: '+e.message,'error'); }
+  }catch(e){showToast('Error conectando SharePoint: '+e.message,'error');}
 }
 
 function mapItem(i){
   const f=i.fields;
-  // Parsear TARIFA: puede venir como "$1.151,00" o "1151" etc.
   let tarifa=0;
-  if(f.TARIFA){
-    const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(',','.');
-    // Si tiene puntos de miles (ej 1.151) y valor < 100000 probablemente es USD
-    tarifa=parseFloat(clean.replace(/\.(?=\d{3})/g,''))||0;
-  }
-  const estado_=(f.ESTADO_||'').trim().toUpperCase();
-  const estadoStock=(f.ESTADO||'').trim();
+  if(f.TARIFA){const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
   const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
   const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
   return{
-    id:i.id,
-    title:(f.Title||'').trim(),
-    modelo:(f.Modelo||'').trim(),
-    marca:(f.Marca||'').trim(),
-    tipologia:(f.Tipologia||'').trim(),
-    estadoDisp: estado_,        // 'DISPONIBLE' | 'BAJO PEDIDO'
-    estadoStock: estadoStock,   // 'En Stock' | 'En Importación' | 'Bajo Pedido'
-    tarifa: tarifa,
+    id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||'').trim(),
+    tipologia:(f.Tipologia||'').trim(),estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
+    estadoStock:(f.ESTADO||'').trim(),tarifa,
     ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
     descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
-    fichaTecnica: fichaTecnica,
-    observaciones:(f.Observaciones||'').trim(),
+    fichaTecnica,observaciones:(f.Observaciones||'').trim(),
   };
 }
 
 async function cargarMaquinas(){
-  if(!siteId||!listIdMaquinas){
-    document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>'; return;
-  }
+  if(!siteId||!listIdMaquinas){document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>';return;}
   try{
-    // Traer TODOS los items con paginación y filtrar en cliente
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
-    rawMaquinas=todos
-      .map(mapItem)
-      .filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
-
-    // Marcas únicas
+    rawMaquinas=todos.map(mapItem).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
     const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
     const sel=document.getElementById('filtroMarca');
     sel.innerHTML='<option value="">Todas las marcas</option>';
     marcas.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
-
     procesarCatalogo();
-    document.getElementById('catalogoCount').textContent=
-      `${grupos.length} productos · ${bajosPedido.length} bajo pedido`;
+    document.getElementById('catalogoCount').textContent=`${grupos.length} productos · ${bajosPedido.length} bajo pedido`;
     renderCatalogo();
-  }catch(e){
-    document.getElementById('maqList').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;
-  }
+  }catch(e){document.getElementById('maqList').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
 }
 
 function procesarCatalogo(){
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
   bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO');
-
-  // Agrupar disponibles por title (trim + lowercase)
   const mapa={};
   disponibles.forEach(m=>{
     const key=m.title.toLowerCase().trim();
-    if(!mapa[key]){
-      mapa[key]={
-        key,title:m.title,marca:m.marca,modelo:m.modelo,
-        tipologia:m.tipologia,tarifa:m.tarifa,
-        descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,
-        stockCount:0,importCount:0,
-        stockItems:[],importItems:[]
-      };
-    }
+    if(!mapa[key])mapa[key]={key,title:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,stockCount:0,importCount:0};
     const st=m.estadoStock.toLowerCase();
-    if(st.includes('importa')){mapa[key].importCount++;mapa[key].importItems.push(m);}
-    else{mapa[key].stockCount++;mapa[key].stockItems.push(m);}
-    // Si este item tiene ficha, usarla
-    if(m.fichaTecnica&&!mapa[key].fichaTecnica) mapa[key].fichaTecnica=m.fichaTecnica;
+    if(st.includes('importa'))mapa[key].importCount++;else mapa[key].stockCount++;
+    if(m.fichaTecnica&&!mapa[key].fichaTecnica)mapa[key].fichaTecnica=m.fichaTecnica;
   });
   grupos=Object.values(mapa).sort((a,b)=>a.title.localeCompare(b.title));
 }
@@ -474,9 +431,7 @@ function procesarCatalogo(){
 function onTrmChange(){
   trm=parseFloat(document.getElementById('trmInput').value)||1;
   document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
-  renderCatalogo();
-  calcTotales();
-  renderCarrito();
+  renderCatalogo();calcTotales();renderCarrito();
 }
 
 function renderCatalogo(){
@@ -485,179 +440,89 @@ function renderCatalogo(){
   const tipo=document.getElementById('filtroTipo').value;
   const el=document.getElementById('maqList');
   el.innerHTML='';
-
   if(tipo!=='pedido'){
-    let gFilt=grupos;
-    if(q) gFilt=gFilt.filter(g=>g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||(g.tipologia||'').toLowerCase().includes(q)||(g.modelo||'').toLowerCase().includes(q));
-    if(marca) gFilt=gFilt.filter(g=>g.marca===marca);
-    if(gFilt.length){
-      const lbl=document.createElement('div');
-      lbl.className='section-label';
-      lbl.innerHTML=`<i class="ti ti-package" style="font-size:11px"></i> Disponibles (${gFilt.length})`;
-      el.appendChild(lbl);
-      gFilt.forEach(g=>el.appendChild(buildGrupoCard(g)));
+    let gF=grupos;
+    if(q)gF=gF.filter(g=>g.title.toLowerCase().includes(q)||g.marca.toLowerCase().includes(q)||(g.tipologia||'').toLowerCase().includes(q)||(g.modelo||'').toLowerCase().includes(q));
+    if(marca)gF=gF.filter(g=>g.marca===marca);
+    if(gF.length){
+      const lbl=document.createElement('div');lbl.className='section-label';
+      lbl.innerHTML=`<i class="ti ti-package" style="font-size:11px"></i> Disponibles (${gF.length})`;
+      el.appendChild(lbl);gF.forEach(g=>el.appendChild(buildGrupoCard(g)));
     }
   }
-
   if(tipo!=='disponible'){
-    let bFilt=bajosPedido;
-    if(q) bFilt=bFilt.filter(m=>m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q)||(m.tipologia||'').toLowerCase().includes(q));
-    if(marca) bFilt=bFilt.filter(m=>m.marca===marca);
-    // Dedup bajo pedido por title
-    const seen=new Set(); bFilt=bFilt.filter(m=>{if(seen.has(m.title.toLowerCase())){return false;}seen.add(m.title.toLowerCase());return true;});
-    if(bFilt.length){
-      const lbl=document.createElement('div');
-      lbl.className='section-label';
-      lbl.style.marginTop='10px';
-      lbl.innerHTML=`<i class="ti ti-truck" style="font-size:11px"></i> Bajo Pedido (${bFilt.length})`;
-      el.appendChild(lbl);
-      bFilt.forEach(m=>el.appendChild(buildBpCard(m)));
+    let bF=bajosPedido;
+    if(q)bF=bF.filter(m=>m.title.toLowerCase().includes(q)||m.marca.toLowerCase().includes(q));
+    if(marca)bF=bF.filter(m=>m.marca===marca);
+    const seen=new Set();bF=bF.filter(m=>{if(seen.has(m.title.toLowerCase()))return false;seen.add(m.title.toLowerCase());return true;});
+    if(bF.length){
+      const lbl=document.createElement('div');lbl.className='section-label';lbl.style.marginTop='10px';
+      lbl.innerHTML=`<i class="ti ti-truck" style="font-size:11px"></i> Bajo Pedido (${bF.length})`;
+      el.appendChild(lbl);bF.forEach(m=>el.appendChild(buildBpCard(m)));
     }
   }
-  if(!el.querySelector('.grupo-card')&&!el.querySelector('.bp-card'))
-    el.innerHTML='<div class="loading-list">Sin resultados</div>';
+  if(!el.querySelector('.grupo-card')&&!el.querySelector('.bp-card'))el.innerHTML='<div class="loading-list">Sin resultados</div>';
 }
 
 function fmtUSD(n){return 'USD '+Math.round(n).toLocaleString('es-CO');}
 function fmtCOP(n){return 'COP '+Math.round(n*trm).toLocaleString('es-CO');}
-function pdfUrl(nombre){return PDF_BASE+encodeURIComponent(nombre)+'.pdf';}
 
 function buildGrupoCard(g){
   const inStock=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='stock');
   const inImport=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='importacion');
   const div=document.createElement('div');
   div.className='grupo-card'+(inStock||inImport?' en-carrito':'');
-
   const acciones=[];
-  if(g.stockCount>0){
-    if(inStock) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(`<button class="btn-cat add-stock" onclick="agregarGrupo('${escKey(g.key)}','stock')"><i class="ti ti-shopping-cart"></i> Agregar al Carrito</button>`);
-  }
-  if(g.importCount>0){
-    if(inImport) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${escKey(g.key)}','importacion')"><i class="ti ti-shopping-cart"></i> + Importación</button>`);
-  }
-
-  div.innerHTML=`
-    <div class="grupo-header">
-      <div class="grupo-top">
-        <div style="min-width:0">
-          <div class="grupo-name">${g.title}</div>
-          <div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div>
-        </div>
-        <div class="grupo-precio">
-          <div class="precio-usd">${fmtUSD(g.tarifa)}</div>
-          <div class="precio-cop">${fmtCOP(g.tarifa)}</div>
-        </div>
-      </div>
-      <div class="stock-row">
-        ${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}
-        ${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}
-      </div>
-    </div>
-    ${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}
-  `;
+  if(g.stockCount>0){if(inStock)acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(`<button class="btn-cat add-stock" onclick="agregarGrupo('${g.key.replace(/'/g,"\\'")}','stock')"><i class="ti ti-shopping-cart"></i> Agregar al Carrito</button>`);}
+  if(g.importCount>0){if(inImport)acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${g.key.replace(/'/g,"\\'")}','importacion')"><i class="ti ti-shopping-cart"></i> + Importación</button>`);}
+  div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
   return div;
 }
 
 function buildBpCard(m){
   const inCart=carrito.some(i=>i.id===m.id);
-  const div=document.createElement('div');
-  div.className='bp-card'+(inCart?' en-carrito':'');
-  div.innerHTML=`
-    <div class="bp-top">
-      <div style="min-width:0">
-        <div class="bp-name">${m.title}</div>
-        <div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}${m.tipologia?' · '+m.tipologia:''}</div>
-        <span class="bp-badge">Bajo Pedido</span>
-      </div>
-      <div class="grupo-precio">
-        <div class="precio-usd">${fmtUSD(m.tarifa)}</div>
-        <div class="precio-cop">${fmtCOP(m.tarifa)}</div>
-      </div>
-    </div>
-    <button class="btn-add-bp ${inCart?'remove':''}" onclick="toggleBP('${m.id}')">
-      <i class="ti ti-${inCart?'x':'shopping-cart'}"></i> ${inCart?'Eliminar del Carrito':'Agregar al Carrito'}
-    </button>
-  `;
+  const div=document.createElement('div');div.className='bp-card'+(inCart?' en-carrito':'');
+  div.innerHTML=`<div class="bp-top"><div style="min-width:0"><div class="bp-name">${m.title}</div><div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}${m.tipologia?' · '+m.tipologia:''}</div><span class="bp-badge">Bajo Pedido</span></div><div class="grupo-precio"><div class="precio-usd">${fmtUSD(m.tarifa)}</div><div class="precio-cop">${fmtCOP(m.tarifa)}</div></div></div><button class="btn-add-bp ${inCart?'remove':''}" onclick="toggleBP('${m.id}')"><i class="ti ti-${inCart?'x':'shopping-cart'}"></i> ${inCart?'Eliminar del Carrito':'Agregar al Carrito'}</button>`;
   return div;
 }
 
-function escKey(k){return k.replace(/'/g,"\\'");}
-
 function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
-  if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo)) return;
+  if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
   const cant=tipo==='stock'?g.stockCount:g.importCount;
   carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,cantidad:cant});
-  renderCarrito();renderCatalogo();calcTotales();
-  showToast('Agregado al carrito: '+g.title,'success');
+  renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
 }
-function quitarGrupo(key,tipo){
-  carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));
-  renderCarrito();renderCatalogo();calcTotales();
-}
+function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
   const idx=carrito.findIndex(i=>i.id===id);
-  if(idx>=0){carrito.splice(idx,1);}
-  else{
-    const m=bajosPedido.find(x=>x.id===id);
-    if(!m) return;
-    carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});
-    showToast('Agregado al carrito: '+m.title,'success');
-  }
+  if(idx>=0)carrito.splice(idx,1);
+  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});showToast('Agregado: '+m.title,'success');}
   renderCarrito();renderCatalogo();calcTotales();
 }
 
 function renderCarrito(){
-  const empty=document.getElementById('emptyState');
-  const wrap=document.getElementById('itemsWrap');
-  const tbody=document.getElementById('itemsBody');
+  const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
-  empty.style.display='none';wrap.style.display='block';
-  tbody.innerHTML='';
+  empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
   carrito.forEach((item,i)=>{
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
-    const pdfCell=item.fichaTecnica
-      ?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`
-      :'';
+    const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td style="color:var(--text3);font-size:12px">${i+1}</td>
-      <td>
-        <div class="item-name">${item.nombre}</div>
-        <div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
-        <span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
-        <input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value">
-      </td>
-      <td style="text-align:center;vertical-align:middle">${pdfCell}</td>
-      <td class="price-cell">
-        <div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div>
-        <input type="number" class="price-edit" value="${item.tarifa}" step="0.01"
-          onchange="carrito[${i}].tarifa=parseFloat(this.value)||0;calcTotales();document.getElementById('pusd_${i}').textContent=fmtUSD(carrito[${i}].tarifa);document.getElementById('pcop_${i}').textContent=fmtCOP(carrito[${i}].tarifa)">
-      </td>
-      <td class="price-cell">
-        <div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div>
-      </td>
-      <td><button class="btn-remove" onclick="removerItem(${i})" title="Eliminar del carrito"><i class="ti ti-x"></i></button></td>
-    `;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span><input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value"></td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><input type="number" class="price-edit" value="${item.tarifa}" step="0.01" onchange="carrito[${i}].tarifa=parseFloat(this.value)||0;calcTotales();document.getElementById('pusd_${i}').textContent=fmtUSD(carrito[${i}].tarifa);document.getElementById('pcop_${i}').textContent=fmtCOP(carrito[${i}].tarifa)"></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
-
-function removerItem(i){
-  const item=carrito[i];
-  carrito.splice(i,1);
-  renderCarrito();calcTotales();renderCatalogo();
-}
+function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();renderCatalogo();}
 
 function calcTotales(){
   const desc=parseFloat(document.getElementById('descInput').value)||0;
   const flete=parseFloat(document.getElementById('fleteVal').value)||0;
   const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
-  const descUSD=subUSD*desc/100;
-  const totalUSD=subUSD-descUSD+flete;
+  const descUSD=subUSD*desc/100,totalUSD=subUSD-descUSD+flete;
   document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
   document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
   document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
@@ -668,32 +533,25 @@ function calcTotales(){
 
 function limpiar(){
   carrito=[];
-  document.getElementById('clienteInput').value='';
+  ['clienteInput','obsInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('descInput').value='0';
   document.getElementById('fleteVal').value='0';
-  document.getElementById('obsInput').value='';
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
 
 async function cargarClientes(){
-  if(!siteId||!listIdClientes) return;
+  if(!siteId||!listIdClientes)return;
   try{
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=200`);
-    const dl=document.getElementById('clientesList');
-    dl.innerHTML='';
-    todos.forEach(i=>{
-      const nombre=i.fields.Title||i.fields.RazonSocial||'';
-      if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}
-    });
+    const dl=document.getElementById('clientesList');dl.innerHTML='';
+    todos.forEach(i=>{const nombre=i.fields.Title||'';if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}});
   }catch(e){}
 }
 
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
-  try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=1&$orderby=id desc`);
-    cotNum=(data.value.length>0?parseInt(data.value[0].id):0)+1;
-  }catch(e){cotNum=1;}
+  try{const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=1&$orderby=id desc`);cotNum=(data.value.length>0?parseInt(data.value[0].id):0)+1;}
+  catch(e){cotNum=1;}
   document.getElementById('ofertaNum').textContent='COT-2026-'+String(cotNum).padStart(3,'0');
 }
 
@@ -701,6 +559,7 @@ async function guardarCotizacion(){
   const cliente=document.getElementById('clienteInput').value.trim();
   const vendedor=document.getElementById('vendedorSel').value;
   const condPago=document.getElementById('condPagoSel').value;
+  const validez=document.getElementById('validezSel').value;
   const obs=document.getElementById('obsInput').value.trim();
   const desc=parseFloat(document.getElementById('descInput').value)||0;
   const flete=parseFloat(document.getElementById('fleteVal').value)||0;
@@ -709,26 +568,183 @@ async function guardarCotizacion(){
   if(!carrito.length){showToast('El carrito está vacío','error');return;}
   if(!listIdCotizaciones){showToast('Lista Cotizaciones no encontrada','error');return;}
   const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
-  const descUSD=subUSD*desc/100;
-  const totalUSD=subUSD-descUSD+flete;
-  const totalCOP=Math.round(totalUSD*trm);
+  const descUSD=subUSD*desc/100,totalUSD=subUSD-descUSD+flete,totalCOP=Math.round(totalUSD*trm);
   const numOferta=document.getElementById('ofertaNum').textContent;
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields:{
-      Title:numOferta,Cliente:cliente,Vendedor:vendedor,
-      CondicionPago:condPago,TRM:trm,
-      SubtotalUSD:subUSD,DescuentoPct:desc,FleteUSD:flete,
-      TotalUSD:totalUSD,TotalCOP:totalCOP,
-      Observaciones:obs,
+      Title:numOferta,Cliente:cliente,Vendedor:vendedor,CondicionPago:condPago,
+      Validez:validez,TRM:trm,SubtotalUSD:subUSD,DescuentoPct:desc,FleteUSD:flete,
+      TotalUSD:totalUSD,TotalCOP:totalCOP,Observaciones:obs,
       Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa,fichaTecnica:i.fichaTecnica||''}))),
       FechaCotizacion:new Date().toISOString(),Estado:'Enviada'
     }});
-    showToast('✓ Oferta '+numOferta+' guardada en SharePoint','success');
-    setTimeout(()=>limpiar(),1500);
+    showToast('✓ Oferta guardada en SharePoint','success');
+    generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,flete,subUSD,descUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    setTimeout(()=>limpiar(),1800);
   }catch(e){showToast('Error: '+e.message,'error');}
-  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar oferta';}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
+}
+
+function generarPDF(d){
+  const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
+  const fUSD=n=>'USD '+Math.round(n).toLocaleString('es-CO');
+  const fCOP=n=>'COP '+Math.round(n).toLocaleString('es-CO');
+  const fTRM=n=>'$ '+Math.round(n).toLocaleString('es-CO');
+  const unaMoneda=d.items.every(i=>i.tipo==='pedido')||d.desc===0;
+
+  const filas=d.items.map((item,i)=>{
+    const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
+    return `<tr>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:12px;color:#666;">${i+1}</td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;">
+        <div style="font-weight:600;font-size:13px;">${item.nombre}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
+        ${item.descripcion?`<div style="font-size:11px;color:#888;margin-top:3px;">${item.descripcion}</div>`:''}
+        <span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${item.tipo==='stock'?'#E1F5EE':item.tipo==='importacion'?'#E6F1FB':'#FAEEDA'};color:${item.tipo==='stock'?'#0F6E56':item.tipo==='importacion'?'#185FA5':'#854F0B'};display:inline-block;margin-top:4px;">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
+      </td>
+      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;text-align:right;">
+        <div style="font-weight:600;">${fUSD(item.tarifaUSD)}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">${fCOP(item.tarifaUSD)}</div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const condicionesHTML=`
+    <div style="margin-top:28px;padding:16px 20px;background:#f8f8f6;border-radius:8px;border:1px solid #e2e2e2;">
+      <h3 style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Condiciones Comerciales</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <tr><td style="padding:5px 0;color:#666;width:140px;vertical-align:top;font-weight:600;">Fecha de entrega</td><td style="padding:5px 0;color:#333;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Entrega</td><td style="padding:5px 0;color:#333;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Moneda / TRM</td><td style="padding:5px 0;color:#333;">Ofertas expresadas en USD se liquidarán a la TRM negociada con la mesa de dinero de la entidad financiera del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia esta oferta: ${fTRM(d.trm)} COP/USD.</strong></td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Condición de pago</td><td style="padding:5px 0;color:#333;"><strong>${d.condPago}.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Garantía</td><td style="padding:5px 0;color:#333;">1 turno de 8 horas. Cubre defectos de fabricación, excluye desgaste normal, mantenimiento deficiente o negligencia. AYJ transmite todas las condiciones del fabricante.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Instalación</td><td style="padding:5px 0;color:#333;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Validez oferta</td><td style="padding:5px 0;color:#333;"><strong>${d.validez}</strong> a partir de la fecha de emisión.</td></tr>
+      </table>
+    </div>
+    <div style="margin-top:16px;padding:14px 20px;background:#fff;border-radius:8px;border:1px solid #e2e2e2;">
+      <h3 style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Exclusiones</h3>
+      <div style="font-size:11px;color:#555;line-height:1.7;">Equipo especializado para descargue (montacargas, grúas) · Adecuaciones locativas · Conexiones eléctricas, de agua y neumáticas · Obras civiles · Sistema de aire comprimido · Herramientas de mantenimiento no especificadas · Sistemas de extracción no especificados · Licencias de software y redes de datos · Todo lo que no figure expresamente en esta oferta.</div>
+    </div>`;
+
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>${d.numOferta} - ${d.cliente}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:32px 40px;max-width:900px;margin:0 auto}
+    @media print{
+      body{padding:16px 20px}
+      .no-print{display:none!important}
+      @page{margin:15mm 12mm;size:A4}
+    }
+  </style>
+  </head><body>
+  <div class="no-print" style="background:#1D9E75;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;justify-content:between;gap:12px;">
+    <span style="flex:1;font-weight:600;">Oferta ${d.numOferta} — Lista para imprimir o guardar como PDF</span>
+    <button onclick="window.print()" style="background:#fff;color:#0F6E56;border:none;padding:8px 20px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Descargar PDF</button>
+    <button onclick="window.close()" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
+  </div>
+
+  <!-- ENCABEZADO -->
+  <table style="width:100%;margin-bottom:24px;">
+    <tr>
+      <td style="vertical-align:top;">
+        <div style="font-size:22px;font-weight:800;color:#1D9E75;letter-spacing:-0.5px;">AYJ</div>
+        <div style="font-size:13px;font-weight:600;color:#333;margin-top:2px;">MAQUINARIA</div>
+        <div style="font-size:11px;color:#666;margin-top:6px;line-height:1.7;">
+          Aristizábal y Jinete S.A.S.<br>
+          NIT: 860.079.605-6<br>
+          BOG: Carrera 40 No. 17A - 44<br>
+          MED: Calle 29C No. 54A – 18<br>
+          Tel: 313.391.67.95 · info@ayj.com.co<br>
+          www.ayj.com.co
+        </div>
+      </td>
+      <td style="text-align:right;vertical-align:top;">
+        <div style="display:inline-block;background:#f0f9f5;border:1px solid #9FE1CB;border-radius:10px;padding:16px 24px;text-align:right;">
+          <div style="font-size:11px;color:#0F6E56;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Oferta Comercial</div>
+          <div style="font-size:22px;font-weight:800;color:#1D9E75;margin:4px 0;">${d.numOferta}</div>
+          <div style="font-size:11px;color:#666;">Fecha: ${fecha}</div>
+          <div style="font-size:11px;color:#666;margin-top:2px;">Válida por: <strong>${d.validez}</strong></div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- CLIENTE Y VENDEDOR -->
+  <table style="width:100%;margin-bottom:20px;border-collapse:collapse;">
+    <tr>
+      <td style="width:50%;padding:14px 16px;background:#f8f8f6;border-radius:8px 0 0 8px;border:1px solid #e2e2e2;border-right:none;vertical-align:top;">
+        <div style="font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Cliente</div>
+        <div style="font-size:15px;font-weight:700;">${d.cliente}</div>
+      </td>
+      <td style="width:50%;padding:14px 16px;background:#f8f8f6;border-radius:0 8px 8px 0;border:1px solid #e2e2e2;vertical-align:top;">
+        <div style="font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Asesor Comercial</div>
+        <div style="font-size:15px;font-weight:700;">${d.vendedor}</div>
+        <div style="font-size:11px;color:#666;margin-top:2px;">AYJ Maquinaria S.A.S.</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- TABLA DE ITEMS -->
+  <table style="width:100%;border-collapse:collapse;border:1px solid #e2e2e2;border-radius:8px;overflow:hidden;">
+    <thead>
+      <tr style="background:#1D9E75;color:#fff;">
+        <th style="padding:10px 10px;text-align:left;font-size:11px;font-weight:600;width:28px;">#</th>
+        <th style="padding:10px 10px;text-align:left;font-size:11px;font-weight:600;">Descripción</th>
+        <th style="padding:10px 10px;text-align:right;font-size:11px;font-weight:600;width:160px;">Precio</th>
+      </tr>
+    </thead>
+    <tbody>${filas}</tbody>
+  </table>
+
+  <!-- TOTALES -->
+  <table style="width:100%;margin-top:12px;">
+    <tr>
+      <td style="width:60%"></td>
+      <td style="width:40%;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          ${d.desc>0?`<tr><td style="padding:5px 10px;color:#666;">Subtotal</td><td style="padding:5px 10px;text-align:right;">${fUSD(d.subUSD)}</td></tr><tr><td style="padding:5px 10px;color:#e24b4a;">Descuento (${d.desc}%)</td><td style="padding:5px 10px;text-align:right;color:#e24b4a;">-${fUSD(d.descUSD)}</td></tr>`:''}
+          ${d.flete>0?`<tr><td style="padding:5px 10px;color:#666;">Flete</td><td style="padding:5px 10px;text-align:right;">${fUSD(d.flete)}</td></tr>`:''}
+          <tr style="background:#f0f9f5;border-radius:6px;">
+            <td style="padding:10px 10px;font-weight:700;font-size:14px;color:#0F6E56;">TOTAL</td>
+            <td style="padding:10px 10px;text-align:right;">
+              <div style="font-weight:700;font-size:15px;color:#0F6E56;">${fUSD(d.totalUSD)}</div>
+              <div style="font-size:11px;color:#666;margin-top:2px;">${fCOP(d.totalUSD)}</div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  ${d.obs?`<div style="margin-top:16px;padding:12px 16px;background:#fff8e1;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:12px;color:#555;"><strong>Observaciones:</strong> ${d.obs}</div>`:''}
+
+  ${condicionesHTML}
+
+  <!-- FIRMA -->
+  <div style="margin-top:32px;display:flex;gap:40px;">
+    <div style="flex:1;border-top:1px solid #ccc;padding-top:10px;">
+      <div style="font-size:12px;font-weight:600;">${d.vendedor}</div>
+      <div style="font-size:11px;color:#666;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>
+    </div>
+    <div style="flex:1;border-top:1px solid #ccc;padding-top:10px;">
+      <div style="font-size:12px;font-weight:600;">${d.cliente}</div>
+      <div style="font-size:11px;color:#666;">Firma de aceptación · Fecha: _______________</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e2e2;font-size:10px;color:#999;text-align:center;">
+    AYJ Maquinaria S.A.S. · NIT 860.079.605-6 · info@ayj.com.co · www.ayj.com.co · Lunes a viernes 7:30–12:30 / 13:30–17:00
+  </div>
+  </body></html>`;
+
+  const win=window.open('','_blank','width=960,height=800');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>win.print(),600);
 }
 
 async function cargarHistorial(){
@@ -742,18 +758,7 @@ async function cargarHistorial(){
       const f=i.fields;
       const fecha=f.FechaCotizacion?new Date(f.FechaCotizacion).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
       const div=document.createElement('div');div.className='hist-card';
-      div.innerHTML=`
-        <div class="hist-top"><span class="hist-num">${f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div>
-        <div class="hist-body">
-          <div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div>
-          <div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div>
-          <div class="hist-field"><strong>${f.CondicionPago||'—'}</strong>Pago</div>
-          <div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div>
-          <div class="hist-totales">
-            <div class="hist-total-usd">USD ${Math.round(f.TotalUSD||0).toLocaleString('es-CO')}</div>
-            <div class="hist-total-cop">COP ${Math.round(f.TotalCOP||0).toLocaleString('es-CO')}</div>
-          </div>
-        </div>`;
+      div.innerHTML=`<div class="hist-top"><span class="hist-num">${f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div><div class="hist-body"><div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div><div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div><div class="hist-field"><strong>${f.CondicionPago||'—'}</strong>Pago</div><div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div><div class="hist-totales"><div class="hist-total-usd">USD ${Math.round(f.TotalUSD||0).toLocaleString('es-CO')}</div><div class="hist-total-cop">COP ${Math.round(f.TotalCOP||0).toLocaleString('es-CO')}</div></div></div>`;
       document.getElementById('historialBody').appendChild(div);
     });
   }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
@@ -764,14 +769,12 @@ function switchView(v){
   document.getElementById('historialView').style.display=v==='historial'?'flex':'none';
   document.getElementById('navNueva').className=v==='nueva'?'active':'';
   document.getElementById('navHistorial').className=v==='historial'?'active':'';
-  if(v==='historial') cargarHistorial();
+  if(v==='historial')cargarHistorial();
 }
 function showToast(msg,type=''){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show'+(type?' '+type:'');
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
 initMsal();
 </script>
-</body>
-</html>
+</body></html>
