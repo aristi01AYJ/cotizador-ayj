@@ -1011,6 +1011,15 @@ async function guardarCliente(){
   const titulo=document.getElementById('mc_titulo').value.trim();
   if(!titulo){showToast('La razón social es obligatoria','error');return;}
   if(!listIdClientes){showToast('Lista Clientes no encontrada','error');return;}
+
+  // Verificar duplicado antes de guardar
+  const existe=clientesData.find(c=>c.titulo.toLowerCase()===titulo.toLowerCase());
+  if(existe){
+    const usar=confirm(`Ya existe un cliente con ese nombre:\n"${existe.titulo}"\n\n¿Deseas usarlo en la oferta actual en lugar de crear uno nuevo?`);
+    if(usar){ cerrarModalCliente(); usarCliente(existe.titulo,existe.nombre,existe.ciudad,existe.telefono); }
+    return;
+  }
+
   const btn=document.getElementById('btnGuardarCliente');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
