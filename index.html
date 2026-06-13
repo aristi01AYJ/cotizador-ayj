@@ -168,7 +168,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 
 <div id="appScreen">
   <div class="topbar">
-    <div class="topbar-logo">AYJ <span>Cotizador</span></div>
+    <div class="topbar-logo"><img src="logo.png" alt="AYJ Maquinaria" style="height:28px;width:auto;vertical-align:middle;margin-right:6px;"><span style="font-size:13px;color:var(--text2);font-weight:400;">Cotizador</span></div>
     <div class="nav">
       <button class="active" id="navNueva" onclick="switchView('nueva')">Nueva oferta</button>
       <button id="navClientes" onclick="switchView('clientes')">Clientes</button>
@@ -851,13 +851,10 @@ function generarPDF(d){
       <td style="vertical-align:middle;width:55%">
         <!-- LOGO PLACEHOLDER — reemplazar src cuando tengas URL del logo -->
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:52px;height:52px;background:#575756;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <span style="color:#80A61B;font-size:16px;font-weight:900;letter-spacing:-1px;">AYJ</span>
-          </div>
+          <img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:48px;width:auto;">
           <div>
-            <div style="font-size:16px;font-weight:800;color:#575756;letter-spacing:0.5px;">MAQUINARIA</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;">Aristizábal y Jinete S.A.S. · NIT 860.079.605-6</div>
-            <div style="font-size:10px;color:#aaa;margin-top:1px;">BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A-18 · info@ayj.com.co · www.ayj.com.co</div>
+            <div style="font-size:10px;color:#aaa;margin-top:3px;">BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A-18 · info@ayj.com.co · www.ayj.com.co</div>
+            <div style="font-size:10px;color:#aaa;margin-top:1px;">NIT: 860.079.605-6</div>
           </div>
         </div>
       </td>
