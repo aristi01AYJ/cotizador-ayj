@@ -481,7 +481,9 @@ async function graphGetAll(url){
 async function showApp(account){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').style.display='flex';
-  currentUserName=account.name||account.username;
+  currentUserName=account.name||account.username||'';
+  // Nombre limpio para mostrar
+  const displayName=currentUserName.split('@')[0].replace(/\./g,' ');
   document.getElementById('userChip').textContent=currentUserName;
   document.getElementById('vendedorChip').textContent=currentUserName;
   await resolverSite();
@@ -771,13 +773,20 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
+    // Verificar tipos de columnas para debug
+    try{
+      const colsDebug=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName,typeAsString`);
+      const relevantes=colsDebug.value.filter(c=>['Cliente','Vendedor','NUMERO','Items','GranTotal'].includes(c.displayName));
+      console.log('Tipos columnas:', relevantes.map(c=>c.displayName+'('+c.typeAsString+')='+c.name).join(', '));
+    }catch(e){}
+    console.log('Guardando — Cliente:', cliente, '| Vendedor:', vendedor, '| currentUserName:', currentUserName);
     const fields={
       Title:numOferta,
       ID_SYNERGY:numOferta,
-      Cliente:cliente,
+      Cliente:cliente||'Sin cliente',
       GranTotal:Math.round(totalUSD*100)/100,
       Estado:'Enviada',
-      Vendedor:vendedor,
+      Vendedor:vendedor||currentUserName||'Sin vendedor',
       TRM:trm,
       Descuento:desc,
       Flete:fleteCOP,
@@ -825,10 +834,14 @@ function generarPDF(d){
   }).join('');
 
   const condiciones=''
-    +'<div style="page-break-before:always;padding-top:24px;">'
-    +'<div style="border-bottom:2px solid #80A61B;padding-bottom:8px;margin-bottom:20px;">'
-    +'<span style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;">Condiciones Comerciales — Oferta '+d.numOferta+'</span>'
-    +'</div>'
+    +'<div style="page-break-before:always;padding-top:20px;">'
+    +'<table style="width:100%;margin-bottom:16px;border-bottom:3px solid #80A61B;padding-bottom:12px;">'
+    +'<tr>'
+    +'<td style="vertical-align:middle;width:50%"><img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ" style="height:36px;width:auto;"></td>'
+    +'<td style="text-align:right;vertical-align:middle;font-size:10px;color:#999;">'
+    +'<strong style="color:#575756;font-size:11px;">'+d.numOferta+'</strong> · '+d.cliente+'<br>'
+    +'Condiciones Comerciales'
+    +'</td></tr></table>'
     +'<div style="background:#f9f9f7;border-radius:8px;border:1px solid #e0e0dc;padding:16px 20px;margin-bottom:14px;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:11px;">'
     +'<tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Fecha de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>'
