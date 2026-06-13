@@ -292,7 +292,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             <span class="total-val big" id="tTotalUSD">USD 0</span>
             <span class="total-val big2" id="tTotalCOP">COP 0</span>
           </div>
-          <button class="btn-sec" onclick="limpiar()"><i class="ti ti-trash"></i> Limpiar</button>
+          <button class="btn-sec" onclick="nuevaCotizacion()"><i class="ti ti-plus"></i> Nueva Cotización</button>
           <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar y PDF</button>
         </div>
       </div>
@@ -405,8 +405,39 @@ function mapItem(i){
 async function cargarMaquinas(){
   if(!siteId||!listIdMaquinas){document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>';return;}
   try{
+    // Primero detectar nombres internos de columnas clave
+    let marcaField='Marca', tipologiaField='Tipologia';
+    try{
+      const cols=await graphGet(`/sites/${siteId}/lists/${listIdMaquinas}/columns?$select=name,displayName`);
+      cols.value.forEach(c=>{
+        const dn=c.displayName.toLowerCase();
+        if(dn==='marca') marcaField=c.name;
+        if(dn==='tipologia'||dn==='tipología') tipologiaField=c.name;
+      });
+    }catch(e){}
+
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
-    rawMaquinas=todos.map(mapItem).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
+    rawMaquinas=todos.map(i=>{
+      const f=i.fields;
+      let tarifa=0;
+      if(f.TARIFA){const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
+      const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
+      const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
+      return{
+        id:i.id,
+        title:(f.Title||'').trim(),
+        modelo:(f.Modelo||'').trim(),
+        marca:(f[marcaField]||f.Marca||'').trim(),
+        tipologia:(f[tipologiaField]||f.Tipologia||'').trim(),
+        estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
+        estadoStock:(f.ESTADO||'').trim(),
+        tarifa,
+        ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
+        descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
+        fichaTecnica,
+        observaciones:(f.Observaciones||'').trim(),
+      };
+    }).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
     const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
     const sel=document.getElementById('filtroMarca');
     sel.innerHTML='<option value="">Todas las marcas</option>';
@@ -549,7 +580,8 @@ function calcTotales(){
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
 
-function limpiar(){
+function nuevaCotizacion(){
+  if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
   ['clienteInput','obsInput'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('descInput').value='0';
@@ -560,16 +592,24 @@ function limpiar(){
 async function cargarClientes(){
   if(!siteId||!listIdClientes)return;
   try{
-    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=200`);
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
     const dl=document.getElementById('clientesList');dl.innerHTML='';
-    todos.forEach(i=>{const nombre=i.fields.Title||'';if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);}});
-  }catch(e){}
+    let count=0;
+    todos.forEach(i=>{
+      // Intentar varios campos posibles
+      const nombre=(i.fields.Title||i.fields.RazonSocial||i.fields.Razon_x0020_Social||i.fields.NombreCliente||'').trim();
+      if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);count++;}
+    });
+    if(count===0) showToast('Lista Clientes vacía o sin campo Title','error');
+  }catch(e){showToast('Error clientes: '+e.message,'error');}
 }
 
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
-  try{const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=1&$orderby=id desc`);cotNum=(data.value.length>0?parseInt(data.value[0].id):0)+1;}
-  catch(e){cotNum=1;}
+  try{
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=500`);
+    cotNum=(data.value.length||0)+1;
+  }catch(e){cotNum=1;}
   document.getElementById('ofertaNum').textContent='COT-2026-'+String(cotNum).padStart(3,'0');
 }
 
@@ -617,9 +657,10 @@ async function guardarCotizacion(){
     tryField('Vendedor',vendedor);
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
-    showToast('✓ Oferta guardada en SharePoint','success');
+    showToast('✓ Oferta '+numOferta+' guardada','success');
     generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
-    setTimeout(()=>limpiar(),1800);
+    // NO limpiar — dejar carrito y datos intactos
+    await generarNumOferta(); // avanzar consecutivo para próxima oferta
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
 }
