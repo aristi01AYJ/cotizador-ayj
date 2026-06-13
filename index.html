@@ -752,7 +752,8 @@ async function guardarCotizacion(){
     };
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
-    const htmlOferta=generarPDF({numOferta,cliente,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
+    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
     // Guardar HTML en SharePoint
     await guardarHTMLEnSharePoint(numOferta, htmlOferta);
     await generarNumOferta();
@@ -972,7 +973,8 @@ function generarPDF(d){
   }).join('');
 
   const condicionesHTML=`
-    <div style="margin-top:28px;padding:16px 20px;background:#f8f8f6;border-radius:8px;border:1px solid #e2e2e2;">
+    <div style="page-break-before:always;padding-top:8px;"></div>
+    <div style="margin-top:8px;padding:16px 20px;background:#f8f8f6;border-radius:8px;border:1px solid #e2e2e2;">
       <h3 style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Condiciones Comerciales</h3>
       <table style="width:100%;border-collapse:collapse;font-size:11px;">
         <tr><td style="padding:5px 0;color:#666;width:140px;vertical-align:top;font-weight:600;">Fecha de entrega</td><td style="padding:5px 0;color:#333;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>
@@ -1001,31 +1003,27 @@ function generarPDF(d){
     }
   </style>
   </head><body>
-  <div class="no-print" style="background:#1D9E75;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;justify-content:between;gap:12px;">
-    <span style="flex:1;font-weight:600;">Oferta ${d.numOferta} — Lista para imprimir o guardar como PDF</span>
-    <button onclick="window.print()" style="background:#fff;color:#0F6E56;border:none;padding:8px 20px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Descargar PDF</button>
-    <button onclick="window.close()" style="background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
+  <div class="no-print" style="background:#575756;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;gap:12px;">
+    <span style="flex:1;font-size:13px;font-weight:500;">📄 Oferta ${d.numOferta} · ${d.cliente}</span>
+    <button onclick="window.print()" style="background:#80A61B;color:#fff;border:none;padding:8px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Guardar como PDF</button>
+    <button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
   </div>
 
   <!-- ENCABEZADO -->
   <table style="width:100%;margin-bottom:24px;">
     <tr>
       <td style="vertical-align:top;">
-        <div style="font-size:22px;font-weight:800;color:#1D9E75;letter-spacing:-0.5px;">AYJ</div>
-        <div style="font-size:13px;font-weight:600;color:#333;margin-top:2px;">MAQUINARIA</div>
-        <div style="font-size:11px;color:#666;margin-top:6px;line-height:1.7;">
-          Aristizábal y Jinete S.A.S.<br>
-          NIT: 860.079.605-6<br>
-          BOG: Carrera 40 No. 17A - 44<br>
-          MED: Calle 29C No. 54A – 18<br>
-          Tel: 313.391.67.95 · info@ayj.com.co<br>
-          www.ayj.com.co
+        <img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:52px;width:auto;display:block;margin-bottom:8px;">
+        <div style="font-size:10px;color:#aaa;line-height:1.6;">
+          Aristizábal y Jinete S.A.S. · NIT: 860.079.605-6<br>
+          BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A–18<br>
+          Tel: 313.391.67.95 · info@ayj.com.co · www.ayj.com.co
         </div>
       </td>
       <td style="text-align:right;vertical-align:top;">
         <div style="display:inline-block;background:#f0f9f5;border:1px solid #9FE1CB;border-radius:10px;padding:16px 24px;text-align:right;">
-          <div style="font-size:11px;color:#0F6E56;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Oferta Comercial</div>
-          <div style="font-size:22px;font-weight:800;color:#1D9E75;margin:4px 0;">${d.numOferta}</div>
+          <div style="font-size:11px;color:#80A61B;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Oferta Comercial</div>
+          <div style="font-size:22px;font-weight:800;color:#575756;margin:4px 0;">${d.numOferta}</div>
           <div style="font-size:11px;color:#666;">Fecha: ${fecha}</div>
           <div style="font-size:11px;color:#666;margin-top:2px;">Válida por: <strong>${d.validez}</strong></div>
         </div>
@@ -1036,12 +1034,15 @@ function generarPDF(d){
   <!-- CLIENTE Y VENDEDOR -->
   <table style="width:100%;margin-bottom:20px;border-collapse:collapse;">
     <tr>
-      <td style="width:50%;padding:14px 16px;background:#f8f8f6;border-radius:8px 0 0 8px;border:1px solid #e2e2e2;border-right:none;vertical-align:top;">
-        <div style="font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Cliente</div>
-        <div style="font-size:15px;font-weight:700;">${d.cliente}</div>
+      <td style="width:50%;padding:14px 16px;background:#f5f7f0;border-radius:8px 0 0 8px;border:1px solid #d8e0c0;border-right:none;vertical-align:top;">
+        <div style="font-size:9px;font-weight:700;color:#80A61B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>
+        <div style="font-size:15px;font-weight:800;color:#575756;">${d.cliente}</div>
+        ${d.clienteInfo.nombre?`<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> ${d.clienteInfo.nombre}</div>`:''}
+        ${d.clienteInfo.ciudad||d.clienteInfo.pais?`<div style="font-size:11px;color:#777;margin-top:2px;">${[d.clienteInfo.ciudad,d.clienteInfo.pais].filter(Boolean).join(', ')}</div>`:''}
+        ${d.clienteInfo.email?`<div style="font-size:11px;color:#777;margin-top:1px;">${d.clienteInfo.email}</div>`:''}
       </td>
       <td style="width:50%;padding:14px 16px;background:#f8f8f6;border-radius:0 8px 8px 0;border:1px solid #e2e2e2;vertical-align:top;">
-        <div style="font-size:10px;font-weight:700;color:#1D9E75;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Asesor Comercial</div>
+        <div style="font-size:9px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Asesor Comercial</div>
         <div style="font-size:15px;font-weight:700;">${d.vendedor}</div>
         <div style="font-size:11px;color:#666;margin-top:2px;">AYJ Maquinaria S.A.S.</div>
       </td>
@@ -1107,7 +1108,6 @@ function generarPDF(d){
   const win=window.open('','_blank','width=960,height=800');
   win.document.write(html);
   win.document.close();
-  setTimeout(()=>win.print(),600);
   return html;
 }
 
