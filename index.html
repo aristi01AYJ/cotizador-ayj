@@ -735,20 +735,28 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
+    // Detectar nombres internos reales de cada columna
+    let col={};
+    try{
+      const cols=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
+      cols.value.forEach(c=>col[c.displayName]=c.name);
+    }catch(e){}
+    const f=(display,fallback)=>col[display]||fallback||display;
+
     const fields={
       Title:numOferta,
-      NUMERO:numOferta,
-      Cliente:cliente,
-      GranTotal:Math.round(totalUSD*100)/100,
-      Estado:'Enviada',
-      Vendedor:vendedor,
-      TRM:trm,
-      Descuento:desc,
-      Filete:fleteCOP,
-      Garantia:garantia,
-      CondicionPago:condPago,
-      Validez:validez,
-      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
+      [f('NUMERO')]:numOferta,
+      [f('Cliente')]:cliente,
+      [f('GranTotal')]:Math.round(totalUSD*100)/100,
+      [f('Estado')]:  'Enviada',
+      [f('Vendedor')]:vendedor,
+      [f('TRM')]:trm,
+      [f('Descuento')]:desc,
+      [f('Filete')]:fleteCOP,
+      [f('Garantia')]:garantia,
+      [f('CondicionPago')]:condPago,
+      [f('Validez')]:validez,
+      [f('Items')]:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
     };
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
