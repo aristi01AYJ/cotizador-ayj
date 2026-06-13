@@ -740,24 +740,28 @@ async function guardarCotizacion(){
     try{
       const cols=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
       cols.value.forEach(c=>col[c.displayName]=c.name);
+      console.log('COLUMNAS COTIZACIONES:', JSON.stringify(col));
     }catch(e){}
-    const f=(display,fallback)=>col[display]||fallback||display;
+    const f=(display)=>col[display]||display;
 
-    const fields={
-      Title:numOferta,
-      [f('NUMERO')]:numOferta,
-      [f('Cliente')]:cliente,
-      [f('GranTotal')]:Math.round(totalUSD*100)/100,
-      [f('Estado')]:  'Enviada',
-      [f('Vendedor')]:vendedor,
-      [f('TRM')]:trm,
-      [f('Descuento')]:desc,
-      [f('Filete')]:fleteCOP,
-      [f('Garantia')]:garantia,
-      [f('CondicionPago')]:condPago,
-      [f('Validez')]:validez,
-      [f('Items')]:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
-    };
+    // Solo campos que sabemos que existen — sin Filete por ahora
+    const fields={Title:numOferta};
+    const safe=(display,val)=>{if(col[display])fields[col[display]]=val;};
+    safe('NUMERO',numOferta);
+    safe('Cliente',cliente);
+    safe('GranTotal',Math.round(totalUSD*100)/100);
+    safe('Estado','Enviada');
+    safe('Vendedor',vendedor);
+    safe('TRM',trm);
+    safe('Descuento',desc);
+    safe('Filete',fleteCOP);
+    safe('Flete',fleteCOP);
+    safe('FleteCOP',fleteCOP);
+    safe('Garantia',garantia);
+    safe('Garantía',garantia);
+    safe('CondicionPago',condPago);
+    safe('Validez',validez);
+    safe('Items',JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))));
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
