@@ -972,16 +972,28 @@ function generarPDF(d){
 async function guardarHTMLEnSharePoint(numOferta, htmlContent){
   try{
     const anio=new Date().getFullYear();
-    const ruta=`/sites/${siteId}/drive/root:/General/MODELO OFERTAS/COTIZADOR/${anio}/${numOferta}.html:/content`;
+    const ruta=`/sites/${siteId}/drive/root:/General/MODELO%20OFERTAS/COTIZADOR/${anio}/${numOferta}.html:/content`;
     const token=await getToken();
-    await fetch(`https://graph.microsoft.com/v1.0${ruta}`,{
+    const r=await fetch(`https://graph.microsoft.com/v1.0${ruta}`,{
       method:'PUT',
-      headers:{Authorization:'Bearer '+token,'Content-Type':'text/html'},
+      headers:{Authorization:'Bearer '+token,'Content-Type':'text/html;charset=utf-8'},
       body:htmlContent
     });
-    showToast('✓ Oferta guardada en SharePoint','success');
+    if(r.ok){
+      const data=await r.json();
+      const linkPDF=data.webUrl||'';
+      // Actualizar LinkPDF en la cotización recién creada si tenemos el ID
+      showToast('✓ HTML guardado en SharePoint','success');
+      return linkPDF;
+    } else {
+      const err=await r.text();
+      console.warn('Error guardando HTML:', r.status, err);
+      showToast('⚠ Oferta guardada en lista pero HTML falló ('+r.status+')','error');
+      return '';
+    }
   }catch(e){
-    console.warn('No se pudo guardar HTML en SharePoint:',e.message);
+    console.warn('No se pudo guardar HTML:', e.message);
+    return '';
   }
 }
 
