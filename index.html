@@ -353,10 +353,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         <input type="text" id="mc_nombre" placeholder="Nombre del contacto...">
       </div>
       <div class="field-group">
-        <label>Empresa</label>
-        <input type="text" id="mc_empresa" placeholder="Empresa...">
-      </div>
-      <div class="field-group">
         <label>Email</label>
         <input type="email" id="mc_email" placeholder="correo@empresa.com">
       </div>
@@ -980,7 +976,7 @@ function renderTablaClientes(){
   wrap.innerHTML=`<table class="cli-table">
     <thead><tr><th>Razón Social</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th>NIT/RUT</th><th></th></tr></thead>
     <tbody>${lista.map(c=>`<tr>
-      <td><strong>${c.titulo}</strong>${c.empresa&&c.empresa!==c.titulo?`<div style="font-size:11px;color:var(--text2)">${c.empresa}</div>`:''}</td>
+      <td><strong>${c.titulo}</strong></td>
       <td>${c.nombre||'—'}</td>
       <td style="font-size:12px">${c.email||'—'}</td>
       <td style="font-size:12px">${c.telefono||'—'}</td>
@@ -1021,7 +1017,6 @@ async function guardarCliente(){
     await graphPost(`/sites/${siteId}/lists/${listIdClientes}/items`,{fields:{
       Title:titulo,
       Nombre:document.getElementById('mc_nombre').value.trim(),
-      Empresa:document.getElementById('mc_empresa').value.trim()||titulo,
       Email:document.getElementById('mc_email').value.trim(),
       Telefono:document.getElementById('mc_telefono').value.trim(),
       Ciudad:document.getElementById('mc_ciudad').value.trim(),
