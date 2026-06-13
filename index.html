@@ -723,7 +723,6 @@ async function guardarCotizacion(){
     tryField('GranTotal',Math.round(totalUSD*100)/100);
     tryField('Estado','Enviada');
     tryField('Vendedor',vendedor);
-    tryField('Items',JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))));
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
