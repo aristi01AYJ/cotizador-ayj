@@ -700,11 +700,11 @@ function nuevaCotizacion(){
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
   try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$select=fields/NUMERO&$top=500`);
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$select=fields/ID_SYNERGY&$top=500`);
     let maxNum=0;
     data.value.forEach(i=>{
-      const n=i.fields?.NUMERO||'';
-      const match=n.match(/(\d+)$/);
+      const n=i.fields?.ID_SYNERGY||'';
+      const match=String(n).match(/(\d+)$/);
       if(match) maxNum=Math.max(maxNum,parseInt(match[1]));
     });
     cotNum=maxNum+1;
@@ -735,34 +735,21 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    // Detectar nombres internos reales de cada columna
-    let col={};
-    try{
-      const cols=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
-      cols.value.forEach(c=>col[c.displayName]=c.name);
-      console.log('COLUMNAS COTIZACIONES:', JSON.stringify(col));
-    }catch(e){}
-    const f=(display)=>col[display]||display;
-
-    // Solo campos que sabemos que existen — sin Filete por ahora
-    const fields={Title:numOferta};
-    const safe=(display,val)=>{if(col[display])fields[col[display]]=val;};
-    safe('NUMERO',numOferta);
-    safe('Cliente',cliente);
-    safe('GranTotal',Math.round(totalUSD*100)/100);
-    safe('Estado','Enviada');
-    safe('Vendedor',vendedor);
-    safe('TRM',trm);
-    safe('Descuento',desc);
-    safe('Filete',fleteCOP);
-    safe('Flete',fleteCOP);
-    safe('FleteCOP',fleteCOP);
-    safe('Garantia',garantia);
-    safe('Garantía',garantia);
-    safe('CondicionPago',condPago);
-    safe('Validez',validez);
-    safe('Items',JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))));
-
+    const fields={
+      Title:numOferta,
+      ID_SYNERGY:numOferta,
+      Cliente:cliente,
+      GranTotal:Math.round(totalUSD*100)/100,
+      Estado:'Enviada',
+      Vendedor:vendedor,
+      TRM:trm,
+      Descuento:desc,
+      Flete:fleteCOP,
+      Garantia:garantia,
+      CondicionPago:condPago,
+      Validez:validez,
+      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
+    };
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const htmlOferta=generarPDF({numOferta,cliente,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
@@ -968,7 +955,7 @@ async function cargarHistorial(){
       const div=document.createElement('div');div.className='hist-card';
       div.innerHTML=`
         <div class="hist-top">
-          <span class="hist-num">${f.NUMERO||f.Title||'—'}</span>
+          <span class="hist-num">${f.ID_SYNERGY||f.Title||'—'}</span>
           <span class="hist-fecha">${fecha}</span>
         </div>
         <div class="hist-body">
