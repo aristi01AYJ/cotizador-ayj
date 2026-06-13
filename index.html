@@ -626,9 +626,9 @@ async function guardarCotizacion(){
 
 function generarPDF(d){
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
-  const fUSD=n=>'USD '+Math.round(n).toLocaleString('es-CO');
-  const fCOP=n=>'COP '+Math.round(n).toLocaleString('es-CO');
-  const fTRM=n=>'$ '+Math.round(n).toLocaleString('es-CO');
+  const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
+  const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
+  const fTRM=n=>'$ '+Math.round(n||0).toLocaleString('es-CO');
   const unaMoneda=d.items.every(i=>i.tipo==='pedido')||d.desc===0;
 
   const filas=d.items.map((item,i)=>{
