@@ -767,347 +767,157 @@ function generarPDF(d){
   const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
   const fTRM=n=>'$ '+Math.round(n||0).toLocaleString('es-CO');
   const garantiaTexto=d.garantia||'12 meses o 2.000 horas';
+  const cli=d.clienteInfo||{};
 
-  // Buscar datos del cliente en clientesData
-  const cli=clientesData.find(c=>c.titulo.toLowerCase()===d.cliente.toLowerCase())||{};
-
-  const filas=d.items.map((item,i)=>{
+  const filas=d.items.map((item,idx)=>{
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoBg=item.tipo==='stock'?'#eaf2d7':item.tipo==='importacion'?'#e8eef7':'#faeeda';
     const tipoColor=item.tipo==='stock'?'#4a6a0a':item.tipo==='importacion'?'#2a4a7a':'#854F0B';
-    return `<tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #ececec;font-size:11px;color:#999;text-align:center;">${i+1}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #ececec;">
-        <div style="font-weight:700;font-size:13px;color:#2a2a2a;">${item.nombre}</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
-        ${item.descripcion?`<div style="font-size:11px;color:#999;margin-top:3px;">${item.descripcion}</div>`:''}
-        <span style="font-size:10px;padding:1px 8px;border-radius:20px;background:${tipoBg};color:${tipoColor};display:inline-block;margin-top:4px;font-weight:500;">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
-      </td>
-      <td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">
-        <div style="font-weight:700;font-size:13px;color:#575756;">${fUSD(item.tarifa||0)}</div>
-        <div style="font-size:11px;color:#999;margin-top:3px;">${fCOP(item.tarifa||0)}</div>
-      </td>
-    </tr>`;
+    return '<tr>'
+      +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;font-size:11px;color:#999;text-align:center;">'+(idx+1)+'</td>'
+      +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;">'
+      +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
+      +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
+      +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
+      +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';display:inline-block;margin-top:4px;font-weight:500;">'+tipoLabel+(item.cantidad>1?' · '+item.cantidad+' uds':'')+'</span>'
+      +'</td>'
+      +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">'
+      +'<div style="font-weight:700;font-size:13px;color:#575756;">'+fUSD(item.tarifa||0)+'</div>'
+      +'<div style="font-size:11px;color:#999;margin-top:3px;">'+fCOP(item.tarifa||0)+'</div>'
+      +'</td>'
+      +'</tr>';
   }).join('');
 
-  const condicionesHTML=`
-  <div style="page-break-before:always;padding-top:24px;">
-    <div style="border-bottom:2px solid #80A61B;padding-bottom:8px;margin-bottom:20px;">
-      <span style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;">Condiciones Comerciales — Oferta ${d.numOferta}</span>
-    </div>
-    <div style="background:#f9f9f7;border-radius:8px;border:1px solid #e0e0dc;padding:16px 20px;margin-bottom:14px;">
-      <table style="width:100%;border-collapse:collapse;font-size:11px;">
-        <tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Fecha de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda / TRM</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Ofertas en USD se liquidarán a la TRM negociada con la mesa de dinero del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia: ${fTRM(d.trm)} COP/USD.</strong></td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Condición de pago</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>${d.condPago}.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Garantía</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>${garantiaTexto}</strong>, considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación; excluye desgaste normal, mantenimiento deficiente o negligencia. AYJ transmite las condiciones del fabricante.</td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Instalación</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>
-        <tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;">Validez oferta</td><td style="padding:6px 0;color:#444;padding-left:12px;"><strong>${d.validez}</strong> a partir de la fecha de emisión.</td></tr>
-      </table>
-    </div>
-    <div style="background:#fff;border-radius:8px;border:1px solid #e0e0dc;padding:14px 20px;margin-bottom:14px;">
-      <div style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Exclusiones de la oferta</div>
-      <div style="font-size:11px;color:#555;line-height:1.8;">
-        · Equipo especializado para descargue (montacargas, grúas, andamios)<br>
-        · Adecuaciones locativas para ingreso de maquinaria<br>
-        · Conexiones eléctricas, de agua, extracción y neumáticas<br>
-        · Obras civiles y de albañilería<br>
-        · Sistema de aire comprimido no especificado en esta oferta<br>
-        · Herramientas, elementos de mantenimiento o afilado no especificados<br>
-        · Sistemas de extracción, tubo flexible o ductos no especificados<br>
-        · Licencias de software, redes de datos y llaves de usuarios adicionales<br>
-        · Todo lo demás que no figure expresamente en esta oferta
-      </div>
-    </div>
-    <div style="background:#fff;border-radius:8px;border:1px solid #e0e0dc;padding:14px 20px;font-size:10px;color:#777;line-height:1.7;">
-      <strong style="color:#575756;">Aspectos Legales:</strong> Autorizamos a Aristizábal y Jinete S.A.S. para que los datos suministrados sean ingresados y mantenidos en su base de datos para uso comercial. Datos personales tratados bajo Ley 1581 de 2012 · info@ayj.com.co · 601-2688600.<br>
-      El COMPRADOR garantiza bajo juramento que los recursos con que se cancela provienen de actividades lícitas. Cualquier discrepancia se dirimirá en Bogotá D.C., Colombia.
-    </div>
-  </div>`;
+  const condiciones=''
+    +'<div style="page-break-before:always;padding-top:24px;">'
+    +'<div style="border-bottom:2px solid #80A61B;padding-bottom:8px;margin-bottom:20px;">'
+    +'<span style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;">Condiciones Comerciales — Oferta '+d.numOferta+'</span>'
+    +'</div>'
+    +'<div style="background:#f9f9f7;border-radius:8px;border:1px solid #e0e0dc;padding:16px 20px;margin-bottom:14px;">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:11px;">'
+    +'<tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Fecha de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda / TRM</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Ofertas en USD se liquidarán a la TRM negociada con la mesa de dinero del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia: '+fTRM(d.trm)+' COP/USD.</strong></td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Condición de pago</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+d.condPago+'.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Garantía</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+garantiaTexto+'</strong>, considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación; excluye desgaste normal, mantenimiento deficiente o negligencia.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Instalación</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;">Validez oferta</td><td style="padding:6px 0;color:#444;padding-left:12px;"><strong>'+d.validez+'</strong> a partir de la fecha de emisión.</td></tr>'
+    +'</table></div>'
+    +'<div style="background:#fff;border-radius:8px;border:1px solid #e0e0dc;padding:14px 20px;margin-bottom:14px;">'
+    +'<div style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Exclusiones</div>'
+    +'<div style="font-size:11px;color:#555;line-height:1.8;">'
+    +'· Equipo para descargue (montacargas, grúas, andamios)<br>'
+    +'· Adecuaciones locativas · Conexiones eléctricas, de agua y neumáticas<br>'
+    +'· Obras civiles · Sistema de aire comprimido no especificado<br>'
+    +'· Herramientas de mantenimiento no especificadas<br>'
+    +'· Licencias de software y redes de datos<br>'
+    +'· Todo lo que no figure expresamente en esta oferta'
+    +'</div></div>'
+    +'<div style="background:#fff;border-radius:8px;border:1px solid #e0e0dc;padding:14px 20px;font-size:10px;color:#777;line-height:1.7;">'
+    +'<strong style="color:#575756;">Aspectos Legales:</strong> Autorizamos a Aristizábal y Jinete S.A.S. para uso comercial de los datos suministrados, bajo Ley 1581 de 2012. '
+    +'Consultas: info@ayj.com.co · 601-2688600. El COMPRADOR garantiza que los recursos provienen de actividades lícitas. '
+    +'Discrepancias se dirimen en Bogotá D.C., Colombia.'
+    +'</div></div>';
 
-  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>${d.numOferta} - ${d.cliente}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#2a2a2a;background:#fff;padding:36px 44px;max-width:880px;margin:0 auto}
-    @media print{
-      body{padding:0}
-      .no-print{display:none!important}
-      @page{margin:12mm 14mm;size:A4}
-    }
-  </style>
-  </head><body>
+  const descRow=(d.desc||0)>0
+    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+d.desc+'%)</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
+    :'';
+  const fleteRow=(d.fleteCOP||0)>0
+    ?'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">COP '+Math.round(d.fleteCOP||0).toLocaleString('es-CO')+'</td></tr>'
+    :'';
 
-  <!-- BARRA SUPERIOR NO-PRINT -->
-  <div class="no-print" style="background:#575756;color:#fff;padding:10px 20px;margin:-36px -44px 28px;display:flex;align-items:center;gap:12px;">
-    <span style="flex:1;font-size:13px;font-weight:500;">📄 Oferta ${d.numOferta} · ${d.cliente}</span>
-    <button onclick="window.print()" style="background:#80A61B;color:#fff;border:none;padding:8px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Guardar como PDF</button>
-    <button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
-  </div>
+  const html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
+    +'<title>'+d.numOferta+' - '+d.cliente+'</title>'
+    +'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Segoe UI",Arial,sans-serif;font-size:13px;color:#2a2a2a;background:#fff;padding:32px 40px;max-width:880px;margin:0 auto}'
+    +'@media print{body{padding:0}.no-print{display:none!important}@page{margin:12mm 14mm;size:A4}}'
+    +'</style></head><body>'
 
-  <!-- ENCABEZADO -->
-  <table style="width:100%;margin-bottom:24px;border-bottom:3px solid #80A61B;padding-bottom:20px;">
-    <tr>
-      <td style="vertical-align:middle;width:55%">
-        <!-- LOGO PLACEHOLDER — reemplazar src cuando tengas URL del logo -->
-        <div style="display:flex;align-items:center;gap:14px;">
-          <img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:48px;width:auto;">
-          <div>
-            <div style="font-size:10px;color:#aaa;margin-top:3px;">BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A-18 · info@ayj.com.co · www.ayj.com.co</div>
-            <div style="font-size:10px;color:#aaa;margin-top:1px;">NIT: 860.079.605-6</div>
-          </div>
-        </div>
-      </td>
-      <td style="text-align:right;vertical-align:middle;">
-        <div style="display:inline-block;border:2px solid #80A61B;border-radius:10px;padding:14px 22px;text-align:right;">
-          <div style="font-size:10px;color:#80A61B;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Oferta Comercial</div>
-          <div style="font-size:24px;font-weight:900;color:#575756;margin:4px 0;letter-spacing:-0.5px;">${d.numOferta}</div>
-          <div style="font-size:11px;color:#777;">Fecha: <strong>${fecha}</strong></div>
-          <div style="font-size:11px;color:#777;margin-top:2px;">Válida por: <strong>${d.validez}</strong></div>
-        </div>
-      </td>
-    </tr>
-  </table>
+    +'<div class="no-print" style="background:#575756;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;gap:12px;">'
+    +'<span style="flex:1;font-size:13px;font-weight:500;">📄 Oferta '+d.numOferta+' · '+d.cliente+'</span>'
+    +'<button onclick="window.print()" style="background:#80A61B;color:#fff;border:none;padding:8px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Guardar como PDF</button>'
+    +'<button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>'
+    +'</div>'
 
-  <!-- CLIENTE Y VENDEDOR -->
-  <table style="width:100%;margin-bottom:20px;border-collapse:collapse;">
-    <tr>
-      <td style="width:55%;padding:14px 18px;background:#f5f7f0;border-radius:8px 0 0 8px;border:1px solid #d8e0c0;border-right:none;vertical-align:top;">
-        <div style="font-size:9px;font-weight:700;color:#80A61B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>
-        <div style="font-size:16px;font-weight:800;color:#575756;">${d.cliente}</div>
-        ${cli.nombre?`<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> ${cli.nombre}</div>`:''}
-        ${cli.ciudad||cli.pais?`<div style="font-size:11px;color:#777;margin-top:2px;">${[cli.ciudad,cli.pais].filter(Boolean).join(', ')}</div>`:''}
-        ${cli.email?`<div style="font-size:11px;color:#777;margin-top:1px;">${cli.email}</div>`:''}
-      </td>
-      <td style="width:45%;padding:14px 18px;background:#f2f2f0;border-radius:0 8px 8px 0;border:1px solid #ddd;vertical-align:top;">
-        <div style="font-size:9px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Asesor Comercial</div>
-        <div style="font-size:15px;font-weight:700;color:#575756;">${d.vendedor}</div>
-        <div style="font-size:11px;color:#777;margin-top:3px;">AYJ Maquinaria S.A.S.</div>
-        <div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95 · info@ayj.com.co</div>
-      </td>
-    </tr>
-  </table>
+    +'<table style="width:100%;margin-bottom:20px;border-bottom:3px solid #80A61B;padding-bottom:18px;">'
+    +'<tr>'
+    +'<td style="vertical-align:middle;width:55%">'
+    +'<img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:50px;width:auto;display:block;margin-bottom:6px;">'
+    +'<div style="font-size:10px;color:#aaa;line-height:1.6;">Aristizábal y Jinete S.A.S. · NIT: 860.079.605-6<br>'
+    +'BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A-18<br>'
+    +'Tel: 313.391.67.95 · info@ayj.com.co · www.ayj.com.co</div>'
+    +'</td>'
+    +'<td style="text-align:right;vertical-align:middle;">'
+    +'<div style="display:inline-block;border:2px solid #80A61B;border-radius:10px;padding:14px 22px;text-align:right;">'
+    +'<div style="font-size:10px;color:#80A61B;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Oferta Comercial</div>'
+    +'<div style="font-size:24px;font-weight:900;color:#575756;margin:4px 0;">'+d.numOferta+'</div>'
+    +'<div style="font-size:11px;color:#777;">Fecha: <strong>'+fecha+'</strong></div>'
+    +'<div style="font-size:11px;color:#777;margin-top:2px;">Válida por: <strong>'+d.validez+'</strong></div>'
+    +'</div></td></tr></table>'
 
-  <!-- TABLA DE ITEMS -->
-  <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #ddd;">
-    <thead>
-      <tr style="background:#575756;color:#fff;">
-        <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:600;width:28px;">#</th>
-        <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Descripción del Equipo</th>
-        <th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:150px;text-transform:uppercase;letter-spacing:0.5px;">Precio</th>
-      </tr>
-    </thead>
-    <tbody>${filas}</tbody>
-  </table>
+    +'<table style="width:100%;margin-bottom:20px;border-collapse:collapse;">'
+    +'<tr>'
+    +'<td style="width:55%;padding:14px 18px;background:#f5f7f0;border-radius:8px 0 0 8px;border:1px solid #d8e0c0;border-right:none;vertical-align:top;">'
+    +'<div style="font-size:9px;font-weight:700;color:#80A61B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>'
+    +'<div style="font-size:16px;font-weight:800;color:#575756;">'+d.cliente+'</div>'
+    +(cli.nombre?'<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> '+cli.nombre+'</div>':'')
+    +((cli.ciudad||cli.pais)?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(cli.ciudad||'')+(cli.ciudad&&cli.pais?', ':'')+( cli.pais||'')+'</div>':'')
+    +(cli.email?'<div style="font-size:11px;color:#777;margin-top:1px;">'+cli.email+'</div>':'')
+    +'</td>'
+    +'<td style="width:45%;padding:14px 18px;background:#f2f2f0;border-radius:0 8px 8px 0;border:1px solid #ddd;vertical-align:top;">'
+    +'<div style="font-size:9px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Asesor Comercial</div>'
+    +'<div style="font-size:15px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
+    +'<div style="font-size:11px;color:#777;margin-top:3px;">AYJ Maquinaria S.A.S.</div>'
+    +'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95 · info@ayj.com.co</div>'
+    +'</td></tr></table>'
 
-  <!-- TOTALES -->
-  <table style="width:100%;margin-top:14px;">
-    <tr>
-      <td style="width:52%">
-        ${d.obs?`<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> ${d.obs}</div>`:''}
-      </td>
-      <td style="width:48%;padding-left:16px;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">${fUSD(d.subUSD)}<br><span style="font-size:10px;color:#aaa;">${fCOP(d.subUSD)}</span></td></tr>
-          ${(d.desc||0)>0?`<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento (${d.desc}%)</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-${fUSD(d.descUSD||0)}<br><span style="font-size:10px;">-${fCOP(d.descUSD||0)}</span></td></tr>`:''}
-          <tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">${fUSD(d.ivaUSD||0)}<br><span style="font-size:10px;color:#aaa;">${fCOP(d.ivaUSD||0)}</span></td></tr>
-          ${(d.fleteCOP||0)>0?`<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">COP ${Math.round(d.fleteCOP||0).toLocaleString('es-CO')}</td></tr>`:''}
-          <tr style="background:#80A61B;">
-            <td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;">TOTAL OFERTA</td>
-            <td style="padding:12px 10px;text-align:right;">
-              <div style="font-weight:800;font-size:16px;color:#fff;">${fUSD(d.totalUSD||0)}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP ${Math.round(d.totalCOP||0).toLocaleString('es-CO')}</div>
-              <div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: ${fTRM(d.trm||0)} COP/USD</div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
+    +'<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #ddd;">'
+    +'<thead><tr style="background:#575756;color:#fff;">'
+    +'<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:600;width:28px;">#</th>'
+    +'<th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Descripción del Equipo</th>'
+    +'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:150px;text-transform:uppercase;letter-spacing:0.5px;">Precio</th>'
+    +'</tr></thead>'
+    +'<tbody>'+filas+'</tbody></table>'
 
-  <!-- FIRMA -->
-  <div style="margin-top:36px;display:flex;gap:40px;padding-top:20px;border-top:1px solid #e0e0dc;">
-    <div style="flex:1;">
-      <div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">
-        <div style="font-size:12px;font-weight:700;color:#575756;">${d.vendedor}</div>
-        <div style="font-size:10px;color:#888;margin-top:2px;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>
-      </div>
-    </div>
-    <div style="flex:1;">
-      <div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">
-        <div style="font-size:12px;font-weight:700;color:#575756;">${d.cliente}</div>
-        <div style="font-size:10px;color:#888;margin-top:2px;">Firma de aceptación · Fecha: _______________</div>
-      </div>
-    </div>
-  </div>
+    +'<table style="width:100%;margin-top:14px;">'
+    +'<tr>'
+    +'<td style="width:52%;vertical-align:top;">'
+    +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
+    +'</td>'
+    +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+fUSD(d.subUSD)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.subUSD)+'</span></td></tr>'
+    +descRow
+    +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+fUSD(d.ivaUSD||0)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.ivaUSD||0)+'</span></td></tr>'
+    +fleteRow
+    +'<tr style="background:#80A61B;">'
+    +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;">TOTAL OFERTA</td>'
+    +'<td style="padding:12px 10px;text-align:right;">'
+    +'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div>'
+    +'<div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div>'
+    +'<div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>'
+    +'</td></tr></table></td></tr></table>'
 
-  <div style="margin-top:20px;padding-top:10px;border-top:1px solid #eee;font-size:9px;color:#bbb;text-align:center;">
-    AYJ Maquinaria S.A.S. · NIT 860.079.605-6 · info@ayj.com.co · cat@ayj.com.co · www.ayj.com.co · Lunes a viernes 7:30–12:30 / 13:30–17:00
-  </div>
+    +'<div style="margin-top:32px;display:flex;gap:40px;padding-top:16px;border-top:1px solid #e0e0dc;">'
+    +'<div style="flex:1;">'
+    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
+    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
+    +'<div style="font-size:10px;color:#888;margin-top:2px;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>'
+    +'</div></div>'
+    +'<div style="flex:1;">'
+    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
+    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.cliente+'</div>'
+    +'<div style="font-size:10px;color:#888;margin-top:2px;">Firma de aceptación · Fecha: _______________</div>'
+    +'</div></div></div>'
 
-  ${condicionesHTML}
+    +'<div style="margin-top:16px;padding-top:10px;border-top:1px solid #eee;font-size:9px;color:#bbb;text-align:center;">'
+    +'AYJ Maquinaria S.A.S. · NIT 860.079.605-6 · info@ayj.com.co · cat@ayj.com.co · www.ayj.com.co · Lunes a viernes 7:30–12:30 / 13:30–17:00'
+    +'</div>'
 
-  </body></html>`;
+    +condiciones
+    +'</body></html>';
 
   const win=window.open('','_blank','width=960,height=860');
-  if(win){ win.document.write(html); win.document.close(); }
-  return html;
-}
-
-  const filas=d.items.map((item,i)=>{
-    const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
-    return `<tr>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;font-size:12px;color:#666;">${i+1}</td>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;">
-        <div style="font-weight:600;font-size:13px;">${item.nombre}</div>
-        <div style="font-size:11px;color:#666;margin-top:2px;">${item.marca}${item.modelo?' · '+item.modelo:''}</div>
-        ${item.descripcion?`<div style="font-size:11px;color:#888;margin-top:3px;">${item.descripcion}</div>`:''}
-        <span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${item.tipo==='stock'?'#E1F5EE':item.tipo==='importacion'?'#E6F1FB':'#FAEEDA'};color:${item.tipo==='stock'?'#0F6E56':item.tipo==='importacion'?'#185FA5':'#854F0B'};display:inline-block;margin-top:4px;">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>
-      </td>
-      <td style="padding:8px 10px;border-bottom:1px solid #e8e8e8;text-align:right;white-space:nowrap;">
-        <div style="font-weight:600;font-size:13px;">${fUSD(item.tarifa||0)}</div>
-        <div style="font-size:11px;color:#666;margin-top:3px;">${fCOP(item.tarifa||0)}</div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  const condicionesHTML=`
-    <div style="page-break-before:always;padding-top:8px;"></div>
-    <div style="margin-top:8px;padding:16px 20px;background:#f8f8f6;border-radius:8px;border:1px solid #e2e2e2;">
-      <h3 style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">Condiciones Comerciales</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:11px;">
-        <tr><td style="padding:5px 0;color:#666;width:140px;vertical-align:top;font-weight:600;">Fecha de entrega</td><td style="padding:5px 0;color:#333;">Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Entrega</td><td style="padding:5px 0;color:#333;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Moneda / TRM</td><td style="padding:5px 0;color:#333;">Ofertas expresadas en USD se liquidarán a la TRM negociada con la mesa de dinero de la entidad financiera del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia esta oferta: ${fTRM(d.trm)} COP/USD.</strong></td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Condición de pago</td><td style="padding:5px 0;color:#333;"><strong>${d.condPago}.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Garantía</td><td style="padding:5px 0;color:#333;"><strong>${garantiaTexto}</strong> considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación, excluye desgaste normal, mantenimiento deficiente o negligencia. AYJ transmite todas las condiciones del fabricante.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Instalación</td><td style="padding:5px 0;color:#333;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Validez oferta</td><td style="padding:5px 0;color:#333;"><strong>${d.validez}</strong> a partir de la fecha de emisión.</td></tr>
-      </table>
-    </div>
-    <div style="margin-top:16px;padding:14px 20px;background:#fff;border-radius:8px;border:1px solid #e2e2e2;">
-      <h3 style="font-size:12px;font-weight:700;color:#1D9E75;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Exclusiones</h3>
-      <div style="font-size:11px;color:#555;line-height:1.7;">Equipo especializado para descargue (montacargas, grúas) · Adecuaciones locativas · Conexiones eléctricas, de agua y neumáticas · Obras civiles · Sistema de aire comprimido · Herramientas de mantenimiento no especificadas · Sistemas de extracción no especificados · Licencias de software y redes de datos · Todo lo que no figure expresamente en esta oferta.</div>
-    </div>`;
-
-  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
-  <title>${d.numOferta} - ${d.cliente}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',Arial,sans-serif;font-size:13px;color:#1a1a1a;background:#fff;padding:32px 40px;max-width:900px;margin:0 auto}
-    @media print{
-      body{padding:16px 20px}
-      .no-print{display:none!important}
-      @page{margin:15mm 12mm;size:A4}
-    }
-  </style>
-  </head><body>
-  <div class="no-print" style="background:#575756;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;gap:12px;">
-    <span style="flex:1;font-size:13px;font-weight:500;">📄 Oferta ${d.numOferta} · ${d.cliente}</span>
-    <button onclick="window.print()" style="background:#80A61B;color:#fff;border:none;padding:8px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Guardar como PDF</button>
-    <button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
-  </div>
-
-  <!-- ENCABEZADO -->
-  <table style="width:100%;margin-bottom:24px;">
-    <tr>
-      <td style="vertical-align:top;">
-        <img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:52px;width:auto;display:block;margin-bottom:8px;">
-        <div style="font-size:10px;color:#aaa;line-height:1.6;">
-          Aristizábal y Jinete S.A.S. · NIT: 860.079.605-6<br>
-          BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A–18<br>
-          Tel: 313.391.67.95 · info@ayj.com.co · www.ayj.com.co
-        </div>
-      </td>
-      <td style="text-align:right;vertical-align:top;">
-        <div style="display:inline-block;background:#f0f9f5;border:1px solid #9FE1CB;border-radius:10px;padding:16px 24px;text-align:right;">
-          <div style="font-size:11px;color:#80A61B;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Oferta Comercial</div>
-          <div style="font-size:22px;font-weight:800;color:#575756;margin:4px 0;">${d.numOferta}</div>
-          <div style="font-size:11px;color:#666;">Fecha: ${fecha}</div>
-          <div style="font-size:11px;color:#666;margin-top:2px;">Válida por: <strong>${d.validez}</strong></div>
-        </div>
-      </td>
-    </tr>
-  </table>
-
-  <!-- CLIENTE Y VENDEDOR -->
-  <table style="width:100%;margin-bottom:20px;border-collapse:collapse;">
-    <tr>
-      <td style="width:50%;padding:14px 16px;background:#f5f7f0;border-radius:8px 0 0 8px;border:1px solid #d8e0c0;border-right:none;vertical-align:top;">
-        <div style="font-size:9px;font-weight:700;color:#80A61B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>
-        <div style="font-size:15px;font-weight:800;color:#575756;">${d.cliente}</div>
-        ${d.clienteInfo.nombre?`<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> ${d.clienteInfo.nombre}</div>`:''}
-        ${d.clienteInfo.ciudad||d.clienteInfo.pais?`<div style="font-size:11px;color:#777;margin-top:2px;">${[d.clienteInfo.ciudad,d.clienteInfo.pais].filter(Boolean).join(', ')}</div>`:''}
-        ${d.clienteInfo.email?`<div style="font-size:11px;color:#777;margin-top:1px;">${d.clienteInfo.email}</div>`:''}
-      </td>
-      <td style="width:50%;padding:14px 16px;background:#f8f8f6;border-radius:0 8px 8px 0;border:1px solid #e2e2e2;vertical-align:top;">
-        <div style="font-size:9px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Asesor Comercial</div>
-        <div style="font-size:15px;font-weight:700;">${d.vendedor}</div>
-        <div style="font-size:11px;color:#666;margin-top:2px;">AYJ Maquinaria S.A.S.</div>
-      </td>
-    </tr>
-  </table>
-
-  <!-- TABLA DE ITEMS -->
-  <table style="width:100%;border-collapse:collapse;border:1px solid #e2e2e2;border-radius:8px;overflow:hidden;">
-    <thead>
-      <tr style="background:#1D9E75;color:#fff;">
-        <th style="padding:10px 10px;text-align:left;font-size:11px;font-weight:600;width:28px;">#</th>
-        <th style="padding:10px 10px;text-align:left;font-size:11px;font-weight:600;">Descripción</th>
-        <th style="padding:10px 10px;text-align:right;font-size:11px;font-weight:600;width:160px;">Precio</th>
-      </tr>
-    </thead>
-    <tbody>${filas}</tbody>
-  </table>
-
-  <!-- TOTALES -->
-  <table style="width:100%;margin-top:12px;">
-    <tr>
-      <td style="width:55%"></td>
-      <td style="width:45%;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;">${fUSD(d.subUSD)}<br><span style="font-size:10px;color:#999;">${fCOP(d.subUSD)}</span></td></tr>
-          ${(d.desc||0)>0?`<tr><td style="padding:5px 10px;color:#e24b4a;border-bottom:1px solid #f0f0f0;">Descuento (${d.desc}%)</td><td style="padding:5px 10px;text-align:right;color:#e24b4a;border-bottom:1px solid #f0f0f0;">-${fUSD(d.descUSD||0)}<br><span style="font-size:10px;">-${fCOP(d.descUSD||0)}</span></td></tr>`:''}
-          <tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;">${fUSD(d.ivaUSD||0)}<br><span style="font-size:10px;color:#999;">${fCOP(d.ivaUSD||0)}</span></td></tr>
-          ${(d.fleteCOP||0)>0?`<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #f0f0f0;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #f0f0f0;"><span style="font-size:11px;">COP ${Math.round(d.fleteCOP||0).toLocaleString('es-CO')}</span></td></tr>`:''}
-          <tr style="background:#f0f9f5;">
-            <td style="padding:12px 10px;font-weight:700;font-size:14px;color:#0F6E56;">TOTAL OFERTA</td>
-            <td style="padding:12px 10px;text-align:right;">
-              <div style="font-weight:700;font-size:16px;color:#0F6E56;">${fUSD(d.totalUSD||0)}</div>
-              <div style="font-size:12px;color:#555;margin-top:3px;font-weight:600;">COP ${Math.round(d.totalCOP||0).toLocaleString('es-CO')}</div>
-              <div style="font-size:10px;color:#999;margin-top:2px;">TRM ref: $ ${Math.round(d.trm||0).toLocaleString('es-CO')}</div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-
-  ${d.obs?`<div style="margin-top:16px;padding:12px 16px;background:#fff8e1;border-left:3px solid #F59E0B;border-radius:0 6px 6px 0;font-size:12px;color:#555;"><strong>Observaciones:</strong> ${d.obs}</div>`:''}
-
-  ${condicionesHTML}
-
-  <!-- FIRMA -->
-  <div style="margin-top:32px;display:flex;gap:40px;">
-    <div style="flex:1;border-top:1px solid #ccc;padding-top:10px;">
-      <div style="font-size:12px;font-weight:600;">${d.vendedor}</div>
-      <div style="font-size:11px;color:#666;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>
-    </div>
-    <div style="flex:1;border-top:1px solid #ccc;padding-top:10px;">
-      <div style="font-size:12px;font-weight:600;">${d.cliente}</div>
-      <div style="font-size:11px;color:#666;">Firma de aceptación · Fecha: _______________</div>
-    </div>
-  </div>
-
-  <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e2e2;font-size:10px;color:#999;text-align:center;">
-    AYJ Maquinaria S.A.S. · NIT 860.079.605-6 · info@ayj.com.co · www.ayj.com.co · Lunes a viernes 7:30–12:30 / 13:30–17:00
-  </div>
-  </body></html>`;
-
-  const win=window.open('','_blank','width=960,height=800');
-  win.document.write(html);
-  win.document.close();
+  if(win){win.document.write(html);win.document.close();}
   return html;
 }
 
