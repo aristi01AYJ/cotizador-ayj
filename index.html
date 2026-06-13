@@ -674,8 +674,14 @@ function nuevaCotizacion(){
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
   try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?$select=id&$top=500`);
-    cotNum=(data.value.length||0)+1;
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$select=fields/NUMERO&$top=500`);
+    let maxNum=0;
+    data.value.forEach(i=>{
+      const n=i.fields?.NUMERO||'';
+      const match=n.match(/(\d+)$/);
+      if(match) maxNum=Math.max(maxNum,parseInt(match[1]));
+    });
+    cotNum=maxNum+1;
   }catch(e){cotNum=1;}
   document.getElementById('ofertaNum').textContent='COT-2026-'+String(cotNum).padStart(3,'0');
 }
@@ -703,26 +709,21 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    // Detectar columnas reales de la lista Cotizaciones
-    let colMap={};
-    if(listIdCotizaciones){
-      try{
-        const cols=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
-        cols.value.forEach(c=>colMap[c.displayName.toLowerCase().replace(/\s/g,'')]=c.name);
-      }catch(e){}
-    }
-
-    // Construir fields solo con columnas que existen
-    const fields={Title:numOferta};
-    const tryField=(display,val)=>{
-      const key=display.toLowerCase().replace(/\s/g,'');
-      const internalName=colMap[key]||display;
-      fields[internalName]=val;
+    const fields={
+      Title:numOferta,
+      NUMERO:numOferta,
+      Cliente:cliente,
+      GranTotal:Math.round(totalUSD*100)/100,
+      Estado:'Enviada',
+      Vendedor:vendedor,
+      TRM:trm,
+      Descuento:desc,
+      Filete:fleteCOP,
+      Garantia:garantia,
+      CondicionPago:condPago,
+      Validez:validez,
+      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
     };
-    tryField('Cliente',cliente);
-    tryField('GranTotal',Math.round(totalUSD*100)/100);
-    tryField('Estado','Enviada');
-    tryField('Vendedor',vendedor);
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
