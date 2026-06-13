@@ -127,6 +127,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 .btn-sec{padding:8px 14px;background:none;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
 .btn-sec:hover{background:var(--bg)}
 #historialView{display:none;flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+.cli-table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--border)}
+.cli-table th{font-size:11px;color:var(--text2);font-weight:600;text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg);text-transform:uppercase;letter-spacing:0.4px}
+.cli-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.cli-table tr:last-child td{border-bottom:none}
+.cli-table tr:hover td{background:#fafffe}
+.btn-cli-usar{padding:4px 12px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-cli-usar:hover{background:var(--green-light)}
 .hist-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:10px}
 .hist-top{display:flex;justify-content:space-between;align-items:center}
 .hist-num{font-weight:600;color:var(--green-dark);font-size:14px}
@@ -164,6 +171,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
     <div class="topbar-logo">AYJ <span>Cotizador</span></div>
     <div class="nav">
       <button class="active" id="navNueva" onclick="switchView('nueva')">Nueva oferta</button>
+      <button id="navClientes" onclick="switchView('clientes')">Clientes</button>
       <button id="navHistorial" onclick="switchView('historial')">Historial</button>
     </div>
     <div class="topbar-right">
@@ -205,8 +213,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="content-top">
         <div class="field-group">
           <label>Cliente</label>
-          <input type="text" id="clienteInput" placeholder="Razón social..." list="clientesList">
-          <datalist id="clientesList"></datalist>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="text" id="clienteInput" placeholder="Buscar cliente..." list="clientesList" style="min-width:160px" oninput="filtrarClienteInput(this.value)">
+            <datalist id="clientesList"></datalist>
+            <button onclick="abrirModalCliente()" title="Nuevo cliente" style="padding:6px 10px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);cursor:pointer;font-size:13px;white-space:nowrap"><i class="ti ti-user-plus"></i></button>
+          </div>
+          <div id="clienteInfo" style="font-size:11px;color:var(--text2);margin-top:3px;display:none"></div>
         </div>
         <div class="field-group">
           <label>Vendedor</label>
@@ -304,8 +316,74 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       </div>
       <div id="historialBody"></div>
     </div>
+
+    <div id="clientesView" style="display:none;flex:1;overflow-y:auto;padding:20px;background:var(--bg)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <strong style="font-size:15px">Clientes</strong>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="position:relative">
+            <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px"></i>
+            <input type="text" id="clientesBuscador" placeholder="Buscar cliente..." oninput="renderTablaClientes()" style="padding:7px 10px 7px 30px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;width:220px;font-family:inherit">
+          </div>
+          <button class="btn-primary" onclick="abrirModalCliente()"><i class="ti ti-user-plus"></i> Nuevo Cliente</button>
+          <button class="btn-sec" onclick="cargarClientes(true)"><i class="ti ti-refresh"></i></button>
+        </div>
+      </div>
+      <div id="clientesTablaWrap">
+        <div class="loading-list"><span class="spinner dark"></span> Cargando...</div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- MODAL NUEVO CLIENTE -->
+<div id="modalCliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <strong style="font-size:15px" id="modalClienteTitulo">Nuevo Cliente</strong>
+      <button onclick="cerrarModalCliente()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field-group" style="grid-column:1/-1">
+        <label>Razón Social *</label>
+        <input type="text" id="mc_titulo" placeholder="Nombre de la empresa..." style="width:100%">
+      </div>
+      <div class="field-group">
+        <label>Contacto (Nombre)</label>
+        <input type="text" id="mc_nombre" placeholder="Nombre del contacto...">
+      </div>
+      <div class="field-group">
+        <label>Empresa</label>
+        <input type="text" id="mc_empresa" placeholder="Empresa...">
+      </div>
+      <div class="field-group">
+        <label>Email</label>
+        <input type="email" id="mc_email" placeholder="correo@empresa.com">
+      </div>
+      <div class="field-group">
+        <label>Teléfono</label>
+        <input type="text" id="mc_telefono" placeholder="3001234567">
+      </div>
+      <div class="field-group">
+        <label>Ciudad</label>
+        <input type="text" id="mc_ciudad" placeholder="Bogotá">
+      </div>
+      <div class="field-group">
+        <label>País</label>
+        <input type="text" id="mc_pais" value="Colombia">
+      </div>
+      <div class="field-group" style="grid-column:1/-1">
+        <label>NIT / RUT</label>
+        <input type="text" id="mc_nit" placeholder="860.079.605-6">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn-sec" onclick="cerrarModalCliente()">Cancelar</button>
+      <button class="btn-primary" id="btnGuardarCliente" onclick="guardarCliente()"><i class="ti ti-check"></i> Guardar Cliente</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -368,7 +446,7 @@ async function showApp(account){
   document.getElementById('userChip').textContent=currentUserName;
   document.getElementById('vendedorChip').textContent=currentUserName;
   await resolverSite();
-  await Promise.all([cargarMaquinas(),cargarClientes()]);
+  await Promise.all([cargarMaquinas(),cargarClientes(true)]);
   generarNumOferta();
 }
 
@@ -589,20 +667,6 @@ function nuevaCotizacion(){
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
 
-async function cargarClientes(){
-  if(!siteId||!listIdClientes)return;
-  try{
-    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
-    const dl=document.getElementById('clientesList');dl.innerHTML='';
-    let count=0;
-    todos.forEach(i=>{
-      // Intentar varios campos posibles
-      const nombre=(i.fields.Title||i.fields.RazonSocial||i.fields.Razon_x0020_Social||i.fields.NombreCliente||'').trim();
-      if(nombre){const o=document.createElement('option');o.value=nombre;dl.appendChild(o);count++;}
-    });
-    if(count===0) showToast('Lista Clientes vacía o sin campo Title','error');
-  }catch(e){showToast('Error clientes: '+e.message,'error');}
-}
 
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
@@ -849,10 +913,129 @@ async function cargarHistorial(){
 function switchView(v){
   document.getElementById('nuevaView').style.display=v==='nueva'?'flex':'none';
   document.getElementById('historialView').style.display=v==='historial'?'flex':'none';
-  document.getElementById('navNueva').className=v==='nueva'?'active':'';
-  document.getElementById('navHistorial').className=v==='historial'?'active':'';
+  document.getElementById('clientesView').style.display=v==='clientes'?'flex':'none';
+  ['navNueva','navHistorial','navClientes'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='';});
+  const navMap={nueva:'navNueva',historial:'navHistorial',clientes:'navClientes'};
+  if(navMap[v])document.getElementById(navMap[v]).className='active';
   if(v==='historial')cargarHistorial();
+  if(v==='clientes')renderTablaClientes();
 }
+
+// ── MÓDULO CLIENTES ──────────────────────────────────
+let clientesData=[];
+
+async function cargarClientes(forzar=false){
+  if(!siteId||!listIdClientes)return;
+  if(clientesData.length>0&&!forzar){poblarDatalist();renderTablaClientes();return;}
+  try{
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
+    clientesData=todos.map(i=>{
+      const f=i.fields;
+      return{
+        id:i.id,
+        titulo:(f.Title||'').trim(),
+        nombre:(f.Nombre||'').trim(),
+        empresa:(f.Empresa||'').trim(),
+        email:(f.Email||'').trim(),
+        telefono:(f.Telefono||f.Tel_x00e9_fono||'').trim(),
+        ciudad:(f.Ciudad||'').trim(),
+        pais:(f.Pais||f.Pa_x00ed_s||'Colombia').trim(),
+        nit:(f['NIT/RUT']||f.NIT_x002f_RUT||f.NIT||'').trim(),
+        asesor:(f.Asesor||'').trim(),
+      };
+    }).filter(c=>c.titulo);
+    poblarDatalist();
+    renderTablaClientes();
+  }catch(e){
+    showToast('Error clientes: '+e.message,'error');
+    const w=document.getElementById('clientesTablaWrap');
+    if(w)w.innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;
+  }
+}
+
+function poblarDatalist(){
+  const dl=document.getElementById('clientesList');
+  dl.innerHTML='';
+  clientesData.forEach(c=>{const o=document.createElement('option');o.value=c.titulo;dl.appendChild(o);});
+}
+
+function filtrarClienteInput(val){
+  const match=clientesData.find(c=>c.titulo.toLowerCase()===val.toLowerCase());
+  const info=document.getElementById('clienteInfo');
+  if(match&&val){
+    info.style.display='block';
+    info.textContent=[match.nombre,match.ciudad,match.telefono].filter(Boolean).join(' · ');
+  } else { info.style.display='none'; }
+}
+
+function renderTablaClientes(){
+  const q=(document.getElementById('clientesBuscador')?.value||'').toLowerCase();
+  const lista=q?clientesData.filter(c=>
+    c.titulo.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q)||
+    c.ciudad.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)
+  ):clientesData;
+  const wrap=document.getElementById('clientesTablaWrap');
+  if(!wrap)return;
+  if(!lista.length){wrap.innerHTML='<div class="loading-list">Sin clientes que coincidan</div>';return;}
+  wrap.innerHTML=`<table class="cli-table">
+    <thead><tr><th>Razón Social</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th>NIT/RUT</th><th></th></tr></thead>
+    <tbody>${lista.map(c=>`<tr>
+      <td><strong>${c.titulo}</strong>${c.empresa&&c.empresa!==c.titulo?`<div style="font-size:11px;color:var(--text2)">${c.empresa}</div>`:''}</td>
+      <td>${c.nombre||'—'}</td>
+      <td style="font-size:12px">${c.email||'—'}</td>
+      <td style="font-size:12px">${c.telefono||'—'}</td>
+      <td>${c.ciudad||'—'}</td>
+      <td style="font-size:12px">${c.nit||'—'}</td>
+      <td><button class="btn-cli-usar" onclick="usarCliente(${JSON.stringify(c.titulo)},${JSON.stringify(c.nombre)},${JSON.stringify(c.ciudad)},${JSON.stringify(c.telefono)})">
+        <i class="ti ti-arrow-right"></i> Usar en oferta
+      </button></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function usarCliente(titulo,nombre,ciudad,telefono){
+  document.getElementById('clienteInput').value=titulo;
+  const info=document.getElementById('clienteInfo');
+  info.style.display='block';
+  info.textContent=[nombre,ciudad,telefono].filter(Boolean).join(' · ');
+  switchView('nueva');
+  showToast('Cliente cargado: '+titulo,'success');
+}
+
+function abrirModalCliente(){
+  ['mc_titulo','mc_nombre','mc_empresa','mc_email','mc_telefono','mc_ciudad','mc_nit'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('mc_pais').value='Colombia';
+  document.getElementById('modalCliente').style.display='flex';
+}
+function cerrarModalCliente(){document.getElementById('modalCliente').style.display='none';}
+
+async function guardarCliente(){
+  const titulo=document.getElementById('mc_titulo').value.trim();
+  if(!titulo){showToast('La razón social es obligatoria','error');return;}
+  if(!listIdClientes){showToast('Lista Clientes no encontrada','error');return;}
+  const btn=document.getElementById('btnGuardarCliente');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
+  try{
+    await graphPost(`/sites/${siteId}/lists/${listIdClientes}/items`,{fields:{
+      Title:titulo,
+      Nombre:document.getElementById('mc_nombre').value.trim(),
+      Empresa:document.getElementById('mc_empresa').value.trim()||titulo,
+      Email:document.getElementById('mc_email').value.trim(),
+      Telefono:document.getElementById('mc_telefono').value.trim(),
+      Ciudad:document.getElementById('mc_ciudad').value.trim(),
+      Pais:document.getElementById('mc_pais').value.trim(),
+      Asesor:currentUserName,
+    }});
+    showToast('✓ Cliente guardado: '+titulo,'success');
+    cerrarModalCliente();
+    await cargarClientes(true);
+    usarCliente(titulo,document.getElementById('mc_nombre').value.trim(),document.getElementById('mc_ciudad').value.trim(),document.getElementById('mc_telefono').value.trim());
+  }catch(e){showToast('Error: '+e.message,'error');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Guardar Cliente';}
+}
+
 function showToast(msg,type=''){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
