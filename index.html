@@ -700,7 +700,7 @@ function nuevaCotizacion(){
 async function generarNumOferta(){
   if(!siteId||!listIdCotizaciones){document.getElementById('ofertaNum').textContent='COT-2026-001';return;}
   try{
-    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$select=fields/ID_SYNERGY&$top=500`);
+    const data=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$top=500`);
     let maxNum=0;
     data.value.forEach(i=>{
       const n=i.fields?.ID_SYNERGY||'';
@@ -840,13 +840,13 @@ function generarPDF(d){
 
     +'<table style="width:100%;margin-bottom:20px;border-bottom:3px solid #80A61B;padding-bottom:18px;">'
     +'<tr>'
-    +'<td style="vertical-align:middle;width:55%">'
-    +'<img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="height:50px;width:auto;display:block;margin-bottom:6px;">'
-    +'<div style="font-size:10px;color:#aaa;line-height:1.6;">Aristizábal y Jinete S.A.S. · NIT: 860.079.605-6<br>'
+    +'<td style="vertical-align:middle;width:50%">'
+    +'<img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ Maquinaria" style="width:100%;max-width:280px;height:auto;display:block;margin-bottom:8px;">'
+    +'<div style="font-size:10px;color:#aaa;line-height:1.7;">Aristizábal y Jinete S.A.S. · NIT: 860.079.605-6<br>'
     +'BOG: Cra 40 No. 17A-44 · MED: Cl 29C No. 54A-18<br>'
     +'Tel: 313.391.67.95 · info@ayj.com.co · www.ayj.com.co</div>'
     +'</td>'
-    +'<td style="text-align:right;vertical-align:middle;">'
+    +'<td style="text-align:right;vertical-align:middle;width:50%">'
     +'<div style="display:inline-block;border:2px solid #80A61B;border-radius:10px;padding:14px 22px;text-align:right;">'
     +'<div style="font-size:10px;color:#80A61B;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Oferta Comercial</div>'
     +'<div style="font-size:24px;font-weight:900;color:#575756;margin:4px 0;">'+d.numOferta+'</div>'
