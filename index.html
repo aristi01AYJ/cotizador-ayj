@@ -234,6 +234,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           </select>
         </div>
         <div class="field-group">
+          <label>Garantía</label>
+          <select id="garantiaSel">
+            <option value="12m">12 meses o 2.000 horas</option>
+            <option value="24m">24 meses o 4.000 horas</option>
+          </select>
+        </div>
+        <div class="field-group">
           <label>Validez oferta</label>
           <select id="validezSel">
             <option>15 días</option>
@@ -678,6 +685,7 @@ async function guardarCotizacion(){
   const vendedor=currentUserName;
   const condPago=document.getElementById('condPagoSel').value;
   const validez=document.getElementById('validezSel').value;
+  const garantia=document.getElementById('garantiaSel').value==='24m'?'24 meses o 4.000 horas':'12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
   const desc=parseFloat(document.getElementById('descInput').value)||0;
   const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
@@ -715,12 +723,14 @@ async function guardarCotizacion(){
     tryField('GranTotal',Math.round(totalUSD*100)/100);
     tryField('Estado','Enviada');
     tryField('Vendedor',vendedor);
+    tryField('Items',JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))));
 
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
     showToast('✓ Oferta '+numOferta+' guardada','success');
-    generarPDF({numOferta,cliente,vendedor,condPago,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
-    // NO limpiar — dejar carrito y datos intactos
-    await generarNumOferta(); // avanzar consecutivo para próxima oferta
+    const htmlOferta=generarPDF({numOferta,cliente,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    // Guardar HTML en SharePoint
+    await guardarHTMLEnSharePoint(numOferta, htmlOferta);
+    await generarNumOferta();
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
 }
@@ -729,8 +739,7 @@ function generarPDF(d){
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
   const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
-  const fTRM=n=>'$ '+Math.round(n||0).toLocaleString('es-CO');
-  const unaMoneda=d.items.every(i=>i.tipo==='pedido')||d.desc===0;
+  const garantiaTexto=d.garantia||'12 meses o 2.000 horas';
 
   const filas=d.items.map((item,i)=>{
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
@@ -757,7 +766,7 @@ function generarPDF(d){
         <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Entrega</td><td style="padding:5px 0;color:#333;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>
         <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Moneda / TRM</td><td style="padding:5px 0;color:#333;">Ofertas expresadas en USD se liquidarán a la TRM negociada con la mesa de dinero de la entidad financiera del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia esta oferta: ${fTRM(d.trm)} COP/USD.</strong></td></tr>
         <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Condición de pago</td><td style="padding:5px 0;color:#333;"><strong>${d.condPago}.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>
-        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Garantía</td><td style="padding:5px 0;color:#333;">1 turno de 8 horas. Cubre defectos de fabricación, excluye desgaste normal, mantenimiento deficiente o negligencia. AYJ transmite todas las condiciones del fabricante.</td></tr>
+        <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Garantía</td><td style="padding:5px 0;color:#333;"><strong>${garantiaTexto}</strong> considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación, excluye desgaste normal, mantenimiento deficiente o negligencia. AYJ transmite todas las condiciones del fabricante.</td></tr>
         <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Instalación</td><td style="padding:5px 0;color:#333;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>
         <tr><td style="padding:5px 0;color:#666;vertical-align:top;font-weight:600;">Validez oferta</td><td style="padding:5px 0;color:#333;"><strong>${d.validez}</strong> a partir de la fecha de emisión.</td></tr>
       </table>
@@ -886,6 +895,23 @@ function generarPDF(d){
   win.document.write(html);
   win.document.close();
   setTimeout(()=>win.print(),600);
+  return html;
+}
+
+async function guardarHTMLEnSharePoint(numOferta, htmlContent){
+  try{
+    const anio=new Date().getFullYear();
+    const ruta=`/sites/${siteId}/drive/root:/General/MODELO OFERTAS/COTIZADOR/${anio}/${numOferta}.html:/content`;
+    const token=await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0${ruta}`,{
+      method:'PUT',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'text/html'},
+      body:htmlContent
+    });
+    showToast('✓ Oferta guardada en SharePoint','success');
+  }catch(e){
+    console.warn('No se pudo guardar HTML en SharePoint:',e.message);
+  }
 }
 
 async function cargarHistorial(){
@@ -897,13 +923,54 @@ async function cargarHistorial(){
     document.getElementById('historialBody').innerHTML='';
     data.value.forEach(i=>{
       const f=i.fields;
-      const fechaRaw=f.Fecha_x005f_Cotizacion||f.FechaCotizacion||null;
+      const fechaRaw=f.Fecha_x005f_Cotizacion||f.FechaCotizacion||i.createdDateTime||null;
       const fecha=fechaRaw?new Date(fechaRaw).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—';
+      const itemsData=f.Items?JSON.parse(f.Items||'[]'):[];
       const div=document.createElement('div');div.className='hist-card';
-      div.innerHTML=`<div class="hist-top"><span class="hist-num">${f.NUMERO||f.Title||'—'}</span><span class="hist-fecha">${fecha}</span></div><div class="hist-body"><div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div><div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div><div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div><div class="hist-totales"><div class="hist-total-usd">USD ${Math.round(f.GranTotal||0).toLocaleString('es-CO')}</div></div></div>`;
+      div.innerHTML=`
+        <div class="hist-top">
+          <span class="hist-num">${f.NUMERO||f.Title||'—'}</span>
+          <span class="hist-fecha">${fecha}</span>
+        </div>
+        <div class="hist-body">
+          <div class="hist-field"><strong>${f.Cliente||'—'}</strong>Cliente</div>
+          <div class="hist-field"><strong>${f.Vendedor||'—'}</strong>Vendedor</div>
+          <div class="hist-field"><strong>${f.Estado||'—'}</strong>Estado</div>
+          <div class="hist-totales">
+            <div class="hist-total-usd">USD ${Math.round(f.GranTotal||0).toLocaleString('es-CO')}</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+          ${itemsData.length?`<button class="btn-sec" style="font-size:12px;padding:5px 12px" onclick='duplicarOferta(${JSON.stringify(f.Cliente||'')},${JSON.stringify(itemsData)})'><i class="ti ti-copy"></i> Duplicar en carrito</button>`:''}
+        </div>`;
       document.getElementById('historialBody').appendChild(div);
     });
   }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
+}
+
+function duplicarOferta(cliente, itemsData){
+  if(carrito.length>0 && !confirm('¿Cargar esta oferta? Se reemplazará el carrito actual.')) return;
+  // Cargar cliente
+  document.getElementById('clienteInput').value=cliente;
+  filtrarClienteInput(cliente);
+  // Reconstruir carrito desde los items guardados
+  carrito=[];
+  itemsData.forEach(item=>{
+    // Buscar en catálogo para obtener datos completos
+    const enCat=rawMaquinas.find(m=>m.title===item.nombre);
+    carrito.push({
+      id:'dup_'+Math.random().toString(36).substr(2,6),
+      grupoKey:null, tipo:item.tipo||'stock',
+      nombre:item.nombre, marca:enCat?.marca||'', modelo:enCat?.modelo||'',
+      tarifa:item.tarifaUSD||item.tarifa||0,
+      descripcion:enCat?.descripcion||'',
+      fichaTecnica:enCat?.fichaTecnica||'',
+      cantidad:item.cantidad||1
+    });
+  });
+  renderCarrito(); calcTotales(); renderCatalogo();
+  switchView('nueva');
+  showToast('Oferta cargada en carrito — '+cliente,'success');
 }
 
 function switchView(v){
@@ -982,9 +1049,16 @@ function renderTablaClientes(){
       <td style="font-size:12px">${c.telefono||'—'}</td>
       <td>${c.ciudad||'—'}</td>
       <td style="font-size:12px">${c.nit||'—'}</td>
-      <td><button class="btn-cli-usar" onclick="usarCliente(${JSON.stringify(c.titulo)},${JSON.stringify(c.nombre)},${JSON.stringify(c.ciudad)},${JSON.stringify(c.telefono)})">
-        <i class="ti ti-arrow-right"></i> Usar en oferta
-      </button></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn-cli-usar" onclick="usarCliente(${JSON.stringify(c.titulo)},${JSON.stringify(c.nombre)},${JSON.stringify(c.ciudad)},${JSON.stringify(c.telefono)})">
+            <i class="ti ti-arrow-right"></i> Usar
+          </button>
+          <button class="btn-cli-usar" style="border-color:var(--blue);color:var(--blue-dark)" onclick="editarCliente(${JSON.stringify(c)})">
+            <i class="ti ti-pencil"></i>
+          </button>
+        </div>
+      </td>
     </tr>`).join('')}</tbody>
   </table>`;
 }
@@ -998,11 +1072,26 @@ function usarCliente(titulo,nombre,ciudad,telefono){
   showToast('Cliente cargado: '+titulo,'success');
 }
 
+let clienteEditandoId=null;
 function abrirModalCliente(){
-  ['mc_titulo','mc_nombre','mc_empresa','mc_email','mc_telefono','mc_ciudad','mc_nit'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
+  clienteEditandoId=null;
+  ['mc_titulo','mc_nombre','mc_email','mc_telefono','mc_ciudad','mc_nit'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('mc_pais').value='Colombia';
+  document.getElementById('modalClienteTitulo').textContent='Nuevo Cliente';
+  document.getElementById('btnGuardarCliente').innerHTML='<i class="ti ti-check"></i> Guardar Cliente';
+  document.getElementById('modalCliente').style.display='flex';
+}
+function editarCliente(c){
+  clienteEditandoId=c.id;
+  document.getElementById('mc_titulo').value=c.titulo||'';
+  document.getElementById('mc_nombre').value=c.nombre||'';
+  document.getElementById('mc_email').value=c.email||'';
+  document.getElementById('mc_telefono').value=c.telefono||'';
+  document.getElementById('mc_ciudad').value=c.ciudad||'';
+  document.getElementById('mc_pais').value=c.pais||'Colombia';
+  document.getElementById('mc_nit').value=c.nit||'';
+  document.getElementById('modalClienteTitulo').textContent='Editar Cliente';
+  document.getElementById('btnGuardarCliente').innerHTML='<i class="ti ti-check"></i> Actualizar Cliente';
   document.getElementById('modalCliente').style.display='flex';
 }
 function cerrarModalCliente(){document.getElementById('modalCliente').style.display='none';}
@@ -1012,30 +1101,42 @@ async function guardarCliente(){
   if(!titulo){showToast('La razón social es obligatoria','error');return;}
   if(!listIdClientes){showToast('Lista Clientes no encontrada','error');return;}
 
-  // Verificar duplicado antes de guardar
-  const existe=clientesData.find(c=>c.titulo.toLowerCase()===titulo.toLowerCase());
-  if(existe){
-    const usar=confirm(`Ya existe un cliente con ese nombre:\n"${existe.titulo}"\n\n¿Deseas usarlo en la oferta actual en lugar de crear uno nuevo?`);
-    if(usar){ cerrarModalCliente(); usarCliente(existe.titulo,existe.nombre,existe.ciudad,existe.telefono); }
-    return;
+  // Verificar duplicado solo en modo nuevo
+  if(!clienteEditandoId){
+    const existe=clientesData.find(c=>c.titulo.toLowerCase()===titulo.toLowerCase());
+    if(existe){
+      const usar=confirm(`Ya existe un cliente con ese nombre:\n"${existe.titulo}"\n\n¿Deseas usarlo en la oferta actual en lugar de crear uno nuevo?`);
+      if(usar){cerrarModalCliente();usarCliente(existe.titulo,existe.nombre,existe.ciudad,existe.telefono);}
+      return;
+    }
   }
 
   const btn=document.getElementById('btnGuardarCliente');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
+  const fields={
+    Title:titulo,
+    Nombre:document.getElementById('mc_nombre').value.trim(),
+    Email:document.getElementById('mc_email').value.trim(),
+    Telefono:document.getElementById('mc_telefono').value.trim(),
+    Ciudad:document.getElementById('mc_ciudad').value.trim(),
+    Pais:document.getElementById('mc_pais').value.trim(),
+    Asesor:currentUserName,
+  };
   try{
-    await graphPost(`/sites/${siteId}/lists/${listIdClientes}/items`,{fields:{
-      Title:titulo,
-      Nombre:document.getElementById('mc_nombre').value.trim(),
-      Email:document.getElementById('mc_email').value.trim(),
-      Telefono:document.getElementById('mc_telefono').value.trim(),
-      Ciudad:document.getElementById('mc_ciudad').value.trim(),
-      Pais:document.getElementById('mc_pais').value.trim(),
-      Asesor:currentUserName,
-    }});
-    showToast('✓ Cliente guardado: '+titulo,'success');
+    if(clienteEditandoId){
+      // PATCH — actualizar existente
+      const token=await getToken();
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdClientes}/items/${clienteEditandoId}/fields`,{
+        method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(fields)
+      });
+      showToast('✓ Cliente actualizado','success');
+    } else {
+      await graphPost(`/sites/${siteId}/lists/${listIdClientes}/items`,{fields});
+      showToast('✓ Cliente guardado: '+titulo,'success');
+    }
     cerrarModalCliente();
     await cargarClientes(true);
-    usarCliente(titulo,document.getElementById('mc_nombre').value.trim(),document.getElementById('mc_ciudad').value.trim(),document.getElementById('mc_telefono').value.trim());
+    if(!clienteEditandoId) usarCliente(titulo,fields.Nombre,fields.Ciudad,fields.Telefono);
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Guardar Cliente';}
 }
