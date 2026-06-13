@@ -773,13 +773,7 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    // Verificar tipos de columnas para debug
-    try{
-      const colsDebug=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName,typeAsString`);
-      const relevantes=colsDebug.value.filter(c=>['Cliente','Vendedor','NUMERO','Items','GranTotal'].includes(c.displayName));
-      console.log('Tipos columnas:', relevantes.map(c=>c.displayName+'('+c.typeAsString+')='+c.name).join(', '));
-    }catch(e){}
-    console.log('Guardando — Cliente:', cliente, '| Vendedor:', vendedor, '| currentUserName:', currentUserName);
+    console.log('Guardando:', cliente, vendedor);
     const fields={
       Title:numOferta,
       ID_SYNERGY:numOferta,
