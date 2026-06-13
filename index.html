@@ -773,13 +773,7 @@ async function guardarCotizacion(){
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
-    console.log('Guardando:', cliente, vendedor);
-    // Leer nombres internos reales de columnas
-    try{
-      const colsInfo=await graphGet(`/sites/${siteId}/lists/${listIdCotizaciones}/columns?$select=name,displayName`);
-      const mapa={}; colsInfo.value.forEach(c=>mapa[c.displayName]=c.name);
-      console.log('Nombres internos:', JSON.stringify(mapa));
-    }catch(e){console.log('Error leyendo cols:',e.message);}
+
     const fields={
       Title:numOferta,
       ID_SYNERGY:numOferta,
@@ -796,8 +790,6 @@ async function guardarCotizacion(){
       Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
     };
     await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
-    console.log('POST exitoso — fields enviados:', JSON.stringify(fields));
-    console.log('Keys del POST:', Object.keys(fields).join(', '));
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
