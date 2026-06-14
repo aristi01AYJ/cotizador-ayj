@@ -263,6 +263,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           </select>
         </div>
         <div class="field-group">
+          <label>Tiempo de entrega</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="entregaSel" onchange="onEntregaChange(this.value)" style="min-width:180px">
+              <option value="Inmediato Salvo venta">Inmediato Salvo venta</option>
+              <option value="30 días">30 días</option>
+              <option value="60 días">60 días</option>
+              <option value="90 días">90 días</option>
+              <option value="120 días">120 días</option>
+              <option value="__custom_entrega__">✏️ Personalizar...</option>
+            </select>
+          </div>
+          <div id="entregaLabel" style="font-size:11px;color:var(--text2);margin-top:3px;display:none"></div>
+        </div>
+        <div class="field-group">
           <label>Observaciones</label>
           <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
@@ -384,6 +398,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 </div>
 
+<!-- MODAL TIEMPO DE ENTREGA PERSONALIZADO -->
+<div id="modalEntrega" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:420px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <strong style="font-size:15px">Tiempo de Entrega Personalizado</strong>
+      <button onclick="cerrarModalEntrega()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">×</button>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Describe el tiempo de entrega para esta oferta.</p>
+    <div class="field-group" style="margin-bottom:16px">
+      <label>Tiempo de entrega</label>
+      <input type="text" id="entregaCustomInput" placeholder="Ej: 45 días hábiles desde anticipo..." 
+        style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn-sec" onclick="cerrarModalEntrega()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarEntregaPersonalizada()"><i class="ti ti-check"></i> Aplicar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL CONDICIÓN PERSONALIZADA -->
 <div id="modalCondPago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
@@ -461,6 +495,38 @@ const loginRequest={scopes:['Sites.ReadWrite.All','User.Read']};
 let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones;
 let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
 let currentUserName='';
+
+// ── TIEMPO DE ENTREGA PERSONALIZADO ──────────────────
+let entregaPersonalizada='';
+
+function onEntregaChange(val){
+  if(val==='__custom_entrega__'){
+    document.getElementById('entregaCustomInput').value='';
+    document.getElementById('modalEntrega').style.display='flex';
+    setTimeout(()=>document.getElementById('entregaCustomInput').focus(),100);
+  } else {
+    entregaPersonalizada='';
+    document.getElementById('entregaLabel').style.display='none';
+  }
+}
+function cerrarModalEntrega(){
+  document.getElementById('modalEntrega').style.display='none';
+  if(!entregaPersonalizada) document.getElementById('entregaSel').value='Inmediato Salvo venta';
+}
+function guardarEntregaPersonalizada(){
+  const val=document.getElementById('entregaCustomInput').value.trim();
+  if(!val){showToast('Ingresa el tiempo de entrega','error');return;}
+  entregaPersonalizada=val;
+  document.getElementById('entregaLabel').style.display='block';
+  document.getElementById('entregaLabel').textContent=val;
+  document.getElementById('modalEntrega').style.display='none';
+  showToast('✓ Tiempo de entrega aplicado','success');
+}
+function getEntrega(){
+  const sel=document.getElementById('entregaSel').value;
+  if(sel==='__custom_entrega__') return entregaPersonalizada||'A convenir';
+  return sel;
+}
 
 // ── CONDICIÓN DE PAGO PERSONALIZADA ──────────────────
 let condCuotas=[]; // [{concepto, pct}]
@@ -989,6 +1055,7 @@ async function guardarCotizacion(){
   const condPago=getCondPago();
   const cuotasPago=document.getElementById('condPagoSel').value==='__custom__'?[...condCuotas]:null;
   const validez=document.getElementById('validezSel').value;
+  const entrega=getEntrega();
   const garantia=document.getElementById('garantiaSel').value==='24m'?'24 meses o 4.000 horas':'12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
   const desc=parseFloat(document.getElementById('descInput').value)||0;
@@ -1027,7 +1094,7 @@ async function guardarCotizacion(){
     const itemId=itemCreado?.id||null;
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
-    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlOferta);
     // Actualizar LinkPDF en la lista
     if(itemId&&linkPDF){
@@ -1090,6 +1157,7 @@ function generarPDF(d){
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Condición de pago</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+d.condPago+'.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Garantía</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+garantiaTexto+'</strong>, considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación; excluye desgaste normal, mantenimiento deficiente o negligencia.</td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Instalación</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>'
+    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Tiempo de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+(d.entrega||'Inmediato Salvo venta')+'</strong></td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;">Validez oferta</td><td style="padding:6px 0;color:#444;padding-left:12px;"><strong>'+d.validez+'</strong> a partir de la fecha de emisión.</td></tr>'
     +'</table></div>'
     +'<div style="background:#fff;border-radius:8px;border:1px solid #e0e0dc;padding:14px 20px;margin-bottom:14px;">'
