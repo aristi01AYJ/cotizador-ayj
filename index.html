@@ -597,6 +597,11 @@ async function cargarMaquinas(){
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
+      // Debug: mostrar campos del primer item que tenga M45 en el título
+      if(f.Title&&f.Title.toString().trim().toUpperCase()==='M45'){
+        console.log('M45 fields:', JSON.stringify(Object.keys(f)));
+        console.log('M45 YT fields:', JSON.stringify(Object.entries(f).filter(([k])=>k.toLowerCase().includes('yt')||k.toLowerCase().includes('video'))));
+      }
       let tarifa=0;
       if(f.TARIFA){const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
       const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
