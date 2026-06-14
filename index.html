@@ -574,7 +574,9 @@ function mapItem(i){
     estadoStock:(f.ESTADO||'').trim(),tarifa,
     ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
     descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
-    fichaTecnica,observaciones:(f.Observaciones||'').trim(),
+    fichaTecnica,
+    ytVideo:(()=>{const v=f.YTvideo||f.YTVideo||f.Ytvideo||null;return v?(typeof v==='object'?(v.Url||''):String(v).trim()):'';})(),
+    observaciones:(f.Observaciones||'').trim(),
   };
 }
 
@@ -634,7 +636,8 @@ function procesarCatalogo(){
   const mapa={};
   disponibles.forEach(m=>{
     const key=m.title.toLowerCase().trim();
-    if(!mapa[key])mapa[key]={key,title:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,stockCount:0,importCount:0};
+    if(!mapa[key])mapa[key]={key,title:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',stockCount:0,importCount:0};
+    if(m.ytVideo&&!mapa[key].ytVideo)mapa[key].ytVideo=m.ytVideo;
     const st=m.estadoStock.toLowerCase();
     if(st.includes('importa'))mapa[key].importCount++;else mapa[key].stockCount++;
     if(m.fichaTecnica&&!mapa[key].fichaTecnica)mapa[key].fichaTecnica=m.fichaTecnica;
@@ -735,14 +738,14 @@ function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
   if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
   const cant=tipo==='stock'?g.stockCount:g.importCount;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,cantidad:cant});
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant});
   renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
   const idx=carrito.findIndex(i=>i.id===id);
   if(idx>=0)carrito.splice(idx,1);
-  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia||'',tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});showToast('Agregado: '+m.title,'success');}
+  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia||'',tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',cantidad:1});showToast('Agregado: '+m.title,'success');}
   renderCarrito();renderCatalogo();calcTotales();
 }
 
@@ -754,8 +757,9 @@ function renderCarrito(){
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
+    const ytCell=item.ytVideo?`<a class="btn-pdf" href="${item.ytVideo}" target="_blank" title="Ver video en YouTube" style="color:#FF0000"><i class="ti ti-brand-youtube"></i></a>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>${item.tipologia?`<span class="item-tipo-badge" style="background:var(--bg);color:var(--text2);margin-left:4px;">${item.tipologia}</span>`:''}</td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>${item.tipologia?`<span class="item-tipo-badge" style="background:var(--bg);color:var(--text2);margin-left:4px;">${item.tipologia}</span>`:''}</td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -886,6 +890,7 @@ function generarPDF(d){
       +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
       +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
       +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
+    +(item.ytVideo?'<div style="margin-top:5px;"><a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">▶ Ver video del equipo en YouTube</a></div>':'')
       +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';display:inline-block;margin-top:4px;font-weight:500;">'+tipoLabel+(item.cantidad>1?' · '+item.cantidad+' uds':'')+'</span>'
       +'</td>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">'
