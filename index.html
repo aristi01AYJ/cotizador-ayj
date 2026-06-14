@@ -994,7 +994,7 @@ function renderCarrito(){
   carrito.forEach((item,i)=>{
     const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
-    const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
+    const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--red);white-space:nowrap;"><i class="ti ti-file-type-pdf" style="font-size:14px"></i> Ver Ficha Técnica</a>`:'';
     const ytCell=item.ytVideo?`<a class="btn-pdf" href="${item.ytVideo}" target="_blank" title="Ver video en YouTube" style="color:#FF0000"><i class="ti ti-brand-youtube"></i></a>`:'';
     const tr=document.createElement('tr');
     tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span></td><td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
@@ -1094,15 +1094,12 @@ async function guardarCotizacion(){
     const itemId=itemCreado?.id||null;
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
-    // Abrir ventana ANTES del async para evitar bloqueo del navegador
-    const pdfWin=window.open('','_blank','width=960,height=860');
-    if(pdfWin) pdfWin.document.write('<html><body style="font-family:sans-serif;padding:40px;color:#666">⏳ Generando oferta y guardando en SharePoint...</body></html>');
-    // Generar HTML y subir a SharePoint
+    // Generar HTML, subir a SharePoint, luego abrir con link
     const htmlSinLink=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink);
-    // Escribir el HTML final con link en la ventana ya abierta
     const htmlFinal=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
-    if(pdfWin){pdfWin.document.open();pdfWin.document.write(htmlFinal);pdfWin.document.close();}
+    const pdfWin=window.open('','_blank','width=960,height=860');
+    if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
     if(itemId&&linkPDF){
       try{
@@ -1137,7 +1134,8 @@ function generarPDF(d, soloRetornar=false){
       +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
       +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
       +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
-    +(item.ytVideo?'<div style="margin-top:5px;"><a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">▶ Ver video del equipo en YouTube</a></div>':'')
+    +(item.fichaTecnica?'<a href="'+item.fichaTecnica+'" target="_blank" style="font-size:10px;color:#c0392b;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-top:4px;">📄 Ver Ficha Técnica</a>':'')
+    +(item.ytVideo?'<div style="margin-top:3px;"><a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">▶ Ver video del equipo en YouTube</a></div>':'')
       +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';display:inline-block;margin-top:4px;font-weight:500;">'+tipoLabel+(item.cantidad>1?' · '+item.cantidad+' uds':'')+'</span>'
       +'</td>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">'
