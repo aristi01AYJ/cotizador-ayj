@@ -1094,8 +1094,11 @@ async function guardarCotizacion(){
     const itemId=itemCreado?.id||null;
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
-    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
-    const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlOferta);
+    // Primero generar HTML sin link, subir a SharePoint, luego reabrir con link
+    const htmlSinLink=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
+    const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink);
+    // Ahora abrir el PDF con el link de SharePoint incluido
+    generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF});
     // Actualizar LinkPDF en la lista
     if(itemId&&linkPDF){
       try{
@@ -1112,7 +1115,7 @@ async function guardarCotizacion(){
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
 }
 
-function generarPDF(d){
+function generarPDF(d, soloRetornar=false){
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
   const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
@@ -1191,6 +1194,7 @@ function generarPDF(d){
 
     +'<div class="no-print" style="background:#575756;color:#fff;padding:10px 20px;margin:-32px -40px 24px;display:flex;align-items:center;gap:12px;">'
     +'<span style="flex:1;font-size:13px;font-weight:500;">📄 Oferta '+d.numOferta+' · '+d.cliente+'</span>'
+    +(d.linkSharePoint?'<a href="'+d.linkSharePoint+'" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:13px;text-decoration:none;">🔗 Ver en SharePoint</a>':'')
     +'<button onclick="window.print()" style="background:#80A61B;color:#fff;border:none;padding:8px 22px;border-radius:6px;font-weight:600;cursor:pointer;font-size:13px;">⬇ Guardar como PDF</button>'
     +'<button onclick="window.close()" style="background:rgba(255,255,255,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;">✕ Cerrar</button>'
     +'</div>'
@@ -1280,6 +1284,7 @@ function generarPDF(d){
     +condiciones
     +'</body></html>';
 
+  if(soloRetornar) return html;
   const win=window.open('','_blank','width=960,height=860');
   if(win){win.document.write(html);win.document.close();}
   return html;
@@ -1297,9 +1302,10 @@ async function guardarHTMLEnSharePoint(numOferta, htmlContent){
     });
     if(r.ok){
       const data=await r.json();
+      // Construir URL directa para abrir el HTML en SharePoint
       const linkPDF=data.webUrl||'';
-      // Actualizar LinkPDF en la cotización recién creada si tenemos el ID
       showToast('✓ HTML guardado en SharePoint','success');
+      console.log('LinkPDF guardado:', linkPDF);
       return linkPDF;
     } else {
       const err=await r.text();
