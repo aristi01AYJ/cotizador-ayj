@@ -616,6 +616,7 @@ async function cargarMaquinas(){
         ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
         descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
         fichaTecnica,
+        ytVideo:(()=>{const v=f.YTvideo||null;return v?(typeof v==='object'?(v.Url||''):String(v).trim()):'';})(),
         observaciones:(f.Observaciones||'').trim(),
       };
     }).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
