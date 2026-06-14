@@ -1305,7 +1305,8 @@ function generarPDF(d, soloRetornar=false){
 async function guardarHTMLEnSharePoint(numOferta, htmlContent){
   try{
     const anio=new Date().getFullYear();
-    const ruta=`/sites/${siteId}/drive/root:/General/MODELO%20OFERTAS/COTIZADOR/${anio}/${numOferta}.html:/content`;
+    const nombreArchivo=numOferta.replace(/[^a-zA-Z0-9\-_]/g,'-');
+    const ruta=`/sites/${siteId}/drive/root:/General/MODELO%20OFERTAS/COTIZADOR/${anio}/${nombreArchivo}.html:/content`;
     const token=await getToken();
     const r=await fetch(`https://graph.microsoft.com/v1.0${ruta}`,{
       method:'PUT',
