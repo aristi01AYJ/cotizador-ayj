@@ -280,7 +280,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           <label>Observaciones</label>
           <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
-        <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
+        <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <label style="font-size:10px;color:var(--text2);white-space:nowrap">ID Synergy</label>
+            <input type="text" id="idSynergyInput" placeholder="Opcional..." maxlength="20"
+              style="width:100px;padding:3px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;text-align:center"
+              oninput="actualizarNumOferta()">
+          </div>
+        </div>
       </div>
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
@@ -1027,7 +1035,7 @@ function calcTotales(){
 function nuevaCotizacion(){
   if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
-  ['clienteInput','obsInput'].forEach(id=>document.getElementById(id).value='');
+  ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('descInput').value='0';
   document.getElementById('fleteVal').value='0';
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
@@ -1071,6 +1079,7 @@ async function guardarCotizacion(){
   const totalUSD=baseUSD+ivaUSD;
   const totalCOP=Math.round(totalUSD*trm)+fleteCOP;
   const numOferta=document.getElementById('ofertaNum').textContent;
+  const idSynergy=(document.getElementById('idSynergyInput')?.value||'').trim();
   const btn=document.getElementById('btnGuardar');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
   try{
@@ -1078,6 +1087,7 @@ async function guardarCotizacion(){
     const fields={
       Title:numOferta,
       ID_SYNERGY:numOferta,
+      NUMERO:idSynergy||numOferta,
       Cliente:cliente||'Sin cliente',
       GranTotal:Math.round(totalUSD*100)/100,
       Estado:'Enviada',
