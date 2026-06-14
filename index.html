@@ -437,6 +437,63 @@ let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones;
 let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
 let currentUserName='';
 
+function tablaPagos(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
+  // Parsear porcentajes de la condición
+  const partes=[];
+  const match30_70=condPago.match(/30.*70/i);
+  const match50_50=condPago.match(/50.*50/i);
+  const match100=condPago.match(/100%/i);
+  const match60=condPago.match(/cr.dito.*60|60.*d.as/i);
+
+  let cuotas=[];
+  if(match50_50){
+    cuotas=[{label:'Anticipo (50%)',pct:0.5},{label:'Contra entrega (50%)',pct:0.5}];
+  } else if(match30_70){
+    cuotas=[{label:'Anticipo (30%)',pct:0.3},{label:'Contra entrega (70%)',pct:0.7}];
+  } else if(match100){
+    cuotas=[{label:'Pago total (100%)',pct:1.0}];
+  } else if(match60){
+    cuotas=[{label:'Crédito a 60 días (100%)',pct:1.0}];
+  } else {
+    return '';
+  }
+
+  const rows=cuotas.map(c=>'<tr>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;">'+c.label+'</td>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;color:#666;">'+fmtCOP(totalUSD*c.pct)+'</td>'
+    +'</tr>'
+  ).join('');
+
+  return '<div style="margin-top:16px;border-radius:8px;overflow:hidden;border:1px solid #d8e0c0;">'
+    +'<div style="background:#575756;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Resumen de Pagos — '+condPago+'</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<thead><tr style="background:#f5f7f0;">'
+    +'<th style="padding:6px 12px;text-align:left;font-size:10px;color:#575756;font-weight:600;">Concepto</th>'
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>'
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">COP (ref.)</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#f5f7f0;">'
+    +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>'
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
+    +'</tr></tfoot>'
+    +'</table></div>';
+}
+function emailVendedor(nombre){
+  const mapa={
+    'Elkin Vera':'evera@ayj.com.co',
+    'Wilson Valencia':'w.valencia@ayj.com.co',
+    'Arnulfo Villadiego':'a.villadiego@ayj.com.co',
+    'Jorge Salamanca':'j.salamanca@ayj.com.co',
+    'Jorge Pulido':'j.pulido@ayj.com.co',
+    'Adolfo Aristizábal':'adolfojose@ayj.com.co',
+  };
+  // Buscar por nombre parcial
+  const key=Object.keys(mapa).find(k=>nombre&&nombre.toLowerCase().includes(k.split(' ')[0].toLowerCase()));
+  return key?mapa[key]:'';
+}
 async function initMsal(){
   msalInstance=new msal.PublicClientApplication(msalConfig);
   await msalInstance.initialize();
@@ -678,14 +735,14 @@ function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
   if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
   const cant=tipo==='stock'?g.stockCount:g.importCount;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,cantidad:cant});
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,cantidad:cant});
   renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
   const idx=carrito.findIndex(i=>i.id===id);
   if(idx>=0)carrito.splice(idx,1);
-  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});showToast('Agregado: '+m.title,'success');}
+  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia||'',tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,cantidad:1});showToast('Agregado: '+m.title,'success');}
   renderCarrito();renderCatalogo();calcTotales();
 }
 
@@ -698,7 +755,7 @@ function renderCarrito(){
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" title="Ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span><input class="desc-input" value="${(item.descripcion||'').replace(/"/g,'&quot;')}" placeholder="Descripción adicional..." onchange="carrito[${i}].descripcion=this.value"></td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span>${item.tipologia?`<span class="item-tipo-badge" style="background:var(--bg);color:var(--text2);margin-left:4px;">${item.tipologia}</span>`:''}</td><td style="text-align:center;vertical-align:middle">${pdfCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -920,8 +977,9 @@ function generarPDF(d){
     +'<td style="width:45%;padding:14px 18px;background:#f2f2f0;border-radius:0 8px 8px 0;border:1px solid #ddd;vertical-align:top;">'
     +'<div style="font-size:9px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Asesor Comercial</div>'
     +'<div style="font-size:15px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
-    +'<div style="font-size:11px;color:#777;margin-top:3px;">AYJ Maquinaria S.A.S.</div>'
-    +'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95 · info@ayj.com.co</div>'
+    +'<div style="font-size:11px;color:#575756;margin-top:3px;font-weight:600;">AYJ Maquinaria · Aristizábal y Jinete S.A.S.</div>'
+    +(emailVendedor(d.vendedor)?'<div style="font-size:11px;color:#777;margin-top:2px;"><a href="mailto:'+emailVendedor(d.vendedor)+'" style="color:#80A61B;text-decoration:none;">'+emailVendedor(d.vendedor)+'</a></div>':'')
+    +'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95</div>'
     +'</td></tr></table>'
 
     +'<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #ddd;">'
@@ -936,6 +994,7 @@ function generarPDF(d){
     +'<tr>'
     +'<td style="width:52%;vertical-align:top;">'
     +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
+    +tablaPagos(d.condPago,d.totalUSD,d.totalCOP,fUSD,fCOP)
     +'</td>'
     +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
