@@ -1087,6 +1087,7 @@ async function guardarCotizacion(){
     const fields={
       Title:numOferta,
       ID_SYNERGY:numOferta,
+      IDSynergy:idSynergy||'',
       Cliente:cliente||'Sin cliente',
       GranTotal:Math.round(totalUSD*100)/100,
       Estado:'Enviada',
