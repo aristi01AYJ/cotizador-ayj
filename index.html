@@ -235,12 +235,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         </div>
         <div class="field-group">
           <label>Condición de pago</label>
-          <select id="condPagoSel">
-            <option>30% anticipo, 70% entrega</option>
-            <option>50% anticipo, 50% entrega</option>
-            <option>100% anticipo</option>
-            <option>Crédito 60 días</option>
-          </select>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="condPagoSel" onchange="onCondPagoChange(this.value)" style="min-width:200px">
+              <option value="100% Anticipado">100% Anticipado</option>
+              <option value="50% Anticipo / 50% Antes de entrega">50% Anticipo / 50% Antes de entrega</option>
+              <option value="30% Anticipo / 70% Antes de entrega" selected>30% Anticipo / 70% Antes de entrega</option>
+              <option value="30% Anticipo / 40% Máquina lista / 30% Puerto">30% / 40% Máquina lista / 30% Puerto</option>
+              <option value="__custom__">✏️ Personalizar...</option>
+            </select>
+            <div id="condPagoLabel" style="font-size:11px;color:var(--text2);display:none"></div>
+          </div>
         </div>
         <div class="field-group">
           <label>Garantía</label>
@@ -380,6 +384,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
 </div>
 
+<!-- MODAL CONDICIÓN PERSONALIZADA -->
+<div id="modalCondPago" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:520px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <strong style="font-size:15px">Condición de Pago Personalizada</strong>
+      <button onclick="cerrarModalCondPago()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">×</button>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px">Define hasta 4 cuotas. Los porcentajes deben sumar 100%.</p>
+    <div id="condCuotasWrap"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+      <button onclick="agregarCuotaPersonalizada()" id="btnAgregarCuota" class="btn-sec" style="font-size:12px;padding:5px 12px"><i class="ti ti-plus"></i> Agregar cuota</button>
+      <span id="condPctTotal" style="font-size:13px;font-weight:600;color:var(--text2)">Total: 0%</span>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn-sec" onclick="cerrarModalCondPago()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarCondPersonalizada()"><i class="ti ti-check"></i> Aplicar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL NUEVO CLIENTE -->
 <div id="modalCliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
@@ -438,7 +462,150 @@ let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones;
 let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
 let currentUserName='';
 
-function tablaPagos(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
+// ── CONDICIÓN DE PAGO PERSONALIZADA ──────────────────
+let condCuotas=[]; // [{concepto, pct}]
+let condPersonalizada=''; // texto final
+
+function onCondPagoChange(val){
+  if(val==='__custom__'){
+    // Abrir modal con cuotas iniciales
+    condCuotas=[
+      {concepto:'Anticipo',pct:30},
+      {concepto:'Antes de entrega',pct:70}
+    ];
+    abrirModalCondPago();
+  } else {
+    condPersonalizada='';
+    document.getElementById('condPagoLabel').style.display='none';
+  }
+}
+
+function abrirModalCondPago(){
+  document.getElementById('modalCondPago').style.display='flex';
+  renderCuotas();
+}
+function cerrarModalCondPago(){
+  document.getElementById('modalCondPago').style.display='none';
+  // Si no guardó, volver a la opción anterior
+  if(!condPersonalizada){
+    document.getElementById('condPagoSel').value='30% Anticipo / 70% Antes de entrega';
+  }
+}
+
+function renderCuotas(){
+  const wrap=document.getElementById('condCuotasWrap');
+  wrap.innerHTML='';
+  condCuotas.forEach((c,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:8px;';
+    row.innerHTML=`
+      <span style="font-size:12px;color:var(--text2);width:16px;text-align:right">${i+1}.</span>
+      <input type="text" value="${c.concepto}" placeholder="Concepto (ej. Anticipo)" 
+        style="flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit"
+        onchange="condCuotas[${i}].concepto=this.value">
+      <div style="display:flex;align-items:center;gap:4px">
+        <input type="number" value="${c.pct}" min="1" max="100" 
+          style="width:60px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit;text-align:right"
+          oninput="condCuotas[${i}].pct=parseFloat(this.value)||0;actualizarTotalPct()">
+        <span style="font-size:13px;color:var(--text2)">%</span>
+      </div>
+      ${condCuotas.length>1?`<button onclick="eliminarCuota(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:2px 4px;border-radius:4px" title="Eliminar"><i class="ti ti-x"></i></button>`:'<div style="width:26px"></div>'}
+    `;
+    wrap.appendChild(row);
+  });
+  actualizarTotalPct();
+  document.getElementById('btnAgregarCuota').style.display=condCuotas.length>=4?'none':'flex';
+}
+
+function agregarCuotaPersonalizada(){
+  if(condCuotas.length>=4) return;
+  condCuotas.push({concepto:'',pct:0});
+  renderCuotas();
+}
+
+function eliminarCuota(i){
+  condCuotas.splice(i,1);
+  renderCuotas();
+}
+
+function actualizarTotalPct(){
+  const total=condCuotas.reduce((s,c)=>s+(parseFloat(c.pct)||0),0);
+  const el=document.getElementById('condPctTotal');
+  el.textContent='Total: '+Math.round(total*10)/10+'%';
+  el.style.color=Math.abs(total-100)<0.1?'var(--green-dark)':'var(--red)';
+}
+
+function guardarCondPersonalizada(){
+  const total=condCuotas.reduce((s,c)=>s+(parseFloat(c.pct)||0),0);
+  if(Math.abs(total-100)>0.5){
+    showToast('Los porcentajes deben sumar 100% (actual: '+Math.round(total)+'%)','error');
+    return;
+  }
+  if(condCuotas.some(c=>!c.concepto.trim())){
+    showToast('Todos los conceptos deben tener nombre','error');
+    return;
+  }
+  // Generar texto de la condición
+  condPersonalizada=condCuotas.map(c=>c.pct+'% '+c.concepto).join(' / ');
+  document.getElementById('condPagoLabel').style.display='block';
+  document.getElementById('condPagoLabel').textContent=condPersonalizada;
+  document.getElementById('modalCondPago').style.display='none';
+  showToast('✓ Condición personalizada aplicada','success');
+}
+
+function getCondPago(){
+  const sel=document.getElementById('condPagoSel').value;
+  if(sel==='__custom__') return condPersonalizada||'Personalizada';
+  return sel;
+}
+
+function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP){
+  // cuotas: array [{concepto, pct}] si es personalizada, sino null
+  let items=[];
+  if(cuotas&&cuotas.length){
+    items=cuotas.map(c=>({label:c.concepto+' ('+c.pct+'%)',pct:c.pct/100}));
+  } else {
+    const match50=condPago.match(/50.*50/i);
+    const match30_70=condPago.match(/30.*70/i);
+    const match100=condPago.match(/100/i);
+    const match304030=condPago.match(/30.*40.*30/i);
+    if(match304030) items=[
+      {label:'Anticipo (30%)',pct:0.3},
+      {label:'Máquina lista (40%)',pct:0.4},
+      {label:'Llegada a puerto (30%)',pct:0.3}
+    ];
+    else if(match50) items=[{label:'Anticipo (50%)',pct:0.5},{label:'Antes de entrega (50%)',pct:0.5}];
+    else if(match30_70) items=[{label:'Anticipo (30%)',pct:0.3},{label:'Antes de entrega (70%)',pct:0.7}];
+    else if(match100) items=[{label:'Pago total (100%)',pct:1.0}];
+    else return '';
+  }
+
+  const rows=items.map(c=>'<tr>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;">'+c.label+'</td>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>'
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;color:#666;">'+fmtCOP(totalUSD*c.pct)+'</td>'
+    +'</tr>'
+  ).join('');
+
+  return '<div style="margin-top:16px;border-radius:8px;overflow:hidden;border:1px solid #d8e0c0;">'
+    +'<div style="background:#575756;color:#fff;padding:8px 12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Resumen de Pagos — '+condPago+'</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
+    +'<thead><tr style="background:#f5f7f0;">'
+    +'<th style="padding:6px 12px;text-align:left;font-size:10px;color:#575756;font-weight:600;">Concepto</th>'
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>'
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">COP (ref.)</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr style="background:#f5f7f0;">'
+    +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>'
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
+    +'</tr></tfoot>'
+    +'</table></div>';
+}
+
+// OLD tablaPagos removed
+function _oldTablaPagos_REMOVED(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
   // Parsear porcentajes de la condición
   const partes=[];
   const match30_70=condPago.match(/30.*70/i);
@@ -819,7 +986,8 @@ async function generarNumOferta(){
 async function guardarCotizacion(){
   const cliente=document.getElementById('clienteInput').value.trim();
   const vendedor=currentUserName;
-  const condPago=document.getElementById('condPagoSel').value;
+  const condPago=getCondPago();
+  const cuotasPago=document.getElementById('condPagoSel').value==='__custom__'?[...condCuotas]:null;
   const validez=document.getElementById('validezSel').value;
   const garantia=document.getElementById('garantiaSel').value==='24m'?'24 meses o 4.000 horas':'12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
@@ -859,7 +1027,7 @@ async function guardarCotizacion(){
     const itemId=itemCreado?.id||null;
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
-    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
+    const htmlOferta=generarPDF({numOferta,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]});
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlOferta);
     // Actualizar LinkPDF en la lista
     if(itemId&&linkPDF){
@@ -1004,7 +1172,7 @@ function generarPDF(d){
     +'<tr>'
     +'<td style="width:52%;vertical-align:top;">'
     +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
-    +tablaPagos(d.condPago,d.totalUSD,d.totalCOP,fUSD,fCOP)
+    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD,fUSD,fCOP)
     +'</td>'
     +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
