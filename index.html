@@ -565,11 +565,12 @@ async function resolverSite(){
 function mapItem(i){
   const f=i.fields;
   let tarifa=0;
-  if(f.TARIFA){const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
+  const tarifaRaw=f.TARIFA||f.TARIFA_SUGERIDO||0;
+      if(tarifaRaw){const clean=String(tarifaRaw).replace(/[^0-9.,]/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
   const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
   const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
   return{
-    id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||'').trim(),
+    id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||f.Marca0||f.MO||'').trim(),
     tipologia:(f.Tipologia||'').trim(),estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
     estadoStock:(f.ESTADO||'').trim(),tarifa,
     ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
@@ -597,20 +598,17 @@ async function cargarMaquinas(){
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
-      // Debug: mostrar campos del primer item que tenga M45 en el título
-      if(f.Title&&f.Title.toString().trim().toUpperCase()==='M45'){
-        console.log('M45 fields:', JSON.stringify(Object.keys(f)));
-        console.log('M45 YT fields:', JSON.stringify(Object.entries(f).filter(([k])=>k.toLowerCase().includes('yt')||k.toLowerCase().includes('video'))));
-      }
+
       let tarifa=0;
-      if(f.TARIFA){const clean=String(f.TARIFA).replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
+      const tarifaRaw=f.TARIFA||f.TARIFA_SUGERIDO||0;
+      if(tarifaRaw){const clean=String(tarifaRaw).replace(/[^0-9.,]/g,'').replace(/\.(?=\d{3})/g,'').replace(',','.');tarifa=parseFloat(clean)||0;}
       const _ft=f.Ficha_x0020_Tecnica||f.FichaTecnica||f.Ficha_Tecnica||null;
       const fichaTecnica=_ft?(typeof _ft==='object'?(_ft.Url||''):String(_ft).trim()):'';
       return{
         id:i.id,
         title:(f.Title||'').trim(),
         modelo:(f.Modelo||'').trim(),
-        marca:(f[marcaField]||f.Marca||'').trim(),
+        marca:(f[marcaField]||f.Marca||f.Marca0||f.MO||'').trim(),
         tipologia:(f[tipologiaField]||f.Tipologia||'').trim(),
         estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
         estadoStock:(f.ESTADO||'').trim(),
