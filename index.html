@@ -394,6 +394,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
             </label>
             <span id="descTotalBadge" style="display:none;font-size:10px;padding:2px 7px;border-radius:20px;background:var(--amber-light);color:var(--amber);font-weight:600"></span>
           </div>
+          <div id="descCausalWrap" style="display:none;margin-top:6px">
+            <select id="descEspecialCausal" onchange="actualizarDescBadge()" style="width:100%;font-size:12px;padding:5px 8px;border:1px solid #F59E0B;border-radius:var(--radius);background:#fffbf0;color:#854F0B;font-family:inherit">
+              <option value="">— Causal del descuento especial —</option>
+              <option>Compra de Combo</option>
+              <option>Pago 100% anticipado</option>
+              <option>Promo evento</option>
+              <option>Aprobado Gerencia General</option>
+              <option value="__custom__">✏️ Personalizado...</option>
+            </select>
+            <input type="text" id="descEspecialCausalCustom" placeholder="Describe la causal..." style="display:none;margin-top:4px;width:100%;font-size:12px;padding:5px 8px;border:1px solid #F59E0B;border-radius:var(--radius);font-family:inherit">
+          </div>
         </div>
         <div class="field-group">
           <label>Flete nacional (COP)</label>
@@ -1131,18 +1142,19 @@ function validarDescuento(input){
 
 function toggleDescEspecial(checked){
   const label=document.getElementById('descEspecialLabel');
+  const wrap=document.getElementById('descCausalWrap');
   const causal=document.getElementById('descEspecialCausal');
   const custom=document.getElementById('descEspecialCausalCustom');
   if(checked){
     label.style.color='var(--amber)';
     label.style.fontWeight='600';
-    causal.style.display='inline-block';
+    wrap.style.display='block';
     causal.value='';
     custom.style.display='none';
   } else {
     label.style.color='var(--text2)';
     label.style.fontWeight='400';
-    causal.style.display='none';
+    wrap.style.display='none';
     causal.value='';
     custom.style.display='none';
     custom.value='';
@@ -1195,6 +1207,7 @@ function nuevaCotizacion(){
   toggleDescEspecial(false);
   if(document.getElementById('descEspecialCausal'))document.getElementById('descEspecialCausal').value='';
   if(document.getElementById('descEspecialCausalCustom'))document.getElementById('descEspecialCausalCustom').value='';
+  if(document.getElementById('descCausalWrap'))document.getElementById('descCausalWrap').style.display='none';
   document.getElementById('fleteVal').value='0';
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
