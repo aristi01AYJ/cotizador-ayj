@@ -1577,6 +1577,13 @@ function switchView(v){
   if(navMap[v])document.getElementById(navMap[v]).className='active';
   if(v==='historial')cargarHistorial();
   if(v==='clientes')renderTablaClientes();
+  // Sincronizar tabs móvil
+  if(esMobil()){
+    const tabMap={nueva:'carrito',historial:'historial',clientes:'clientes'};
+    const tabTarget=tabMap[v]||'carrito';
+    const btn=document.querySelector(`.mobile-tab[onclick*="${tabTarget}"]`);
+    mobileTab(tabTarget, btn);
+  }
 }
 
 // ── MÓDULO CLIENTES ──────────────────────────────────
@@ -1632,12 +1639,13 @@ function renderTablaClientes(){
     c.titulo.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q)||
     c.ciudad.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)
   ):clientesData;
+  _listaFiltradaClientes=lista;
   const wrap=document.getElementById('clientesTablaWrap');
   if(!wrap)return;
   if(!lista.length){wrap.innerHTML='<div class="loading-list">Sin clientes que coincidan</div>';return;}
   wrap.innerHTML=`<table class="cli-table">
     <thead><tr><th>Razón Social</th><th>Contacto</th><th>Email</th><th>Teléfono</th><th>Ciudad</th><th>NIT/RUT</th><th></th></tr></thead>
-    <tbody>${lista.map(c=>`<tr>
+    <tbody>${lista.map((c,idx)=>`<tr>
       <td><strong>${c.titulo}</strong></td>
       <td>${c.nombre||'—'}</td>
       <td style="font-size:12px">${c.email||'—'}</td>
@@ -1646,16 +1654,26 @@ function renderTablaClientes(){
       <td style="font-size:12px">${c.nit||'—'}</td>
       <td>
         <div style="display:flex;gap:6px">
-          <button class="btn-cli-usar" onclick="usarCliente(${JSON.stringify(c.titulo)},${JSON.stringify(c.nombre)},${JSON.stringify(c.ciudad)},${JSON.stringify(c.telefono)})">
+          <button class="btn-cli-usar" onclick="usarClienteIdx(${idx})">
             <i class="ti ti-arrow-right"></i> Usar
           </button>
-          <button class="btn-cli-usar" style="border-color:var(--blue);color:var(--blue-dark)" onclick="editarCliente(${JSON.stringify(c)})">
+          <button class="btn-cli-usar" style="border-color:var(--blue);color:var(--blue-dark)" onclick="editarClienteIdx(${idx})">
             <i class="ti ti-pencil"></i>
           </button>
         </div>
       </td>
     </tr>`).join('')}</tbody>
   </table>`;
+}
+
+let _listaFiltradaClientes=[];
+function usarClienteIdx(idx){
+  const c=_listaFiltradaClientes[idx];
+  if(c) usarCliente(c.titulo,c.nombre,c.ciudad,c.telefono);
+}
+function editarClienteIdx(idx){
+  const c=_listaFiltradaClientes[idx];
+  if(c) editarCliente(c);
 }
 
 function usarCliente(titulo,nombre,ciudad,telefono){
