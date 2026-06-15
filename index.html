@@ -160,6 +160,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 @keyframes spin{to{transform:rotate(360deg)}}
 @media print{body{display:none}}
 
+/* ── RESPONSIVE ── */
 .filtros-panel{display:block} /* visible en PC */
 
 /* ── RESPONSIVE MÓVIL ───────────────────────────── */
@@ -556,7 +557,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           </div>
         </div>
       </div>
-      </div><!-- close contentTopPanel -->
+      </div>
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
           <i class="ti ti-shopping-cart"></i>
@@ -1276,8 +1277,6 @@ function toggleBP(id){
 }
 
 function renderCarrito(){
-  actualizarBadgeCarrito();
-  actualizarCarritoTopBar();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
