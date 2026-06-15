@@ -316,7 +316,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       <div class="footer">
         <div class="field-group">
           <label>Descuento (%)</label>
-          <input type="number" id="descInput" value="0" min="0" max="100" style="width:65px" oninput="calcTotales()">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <input type="number" id="descInput" value="0" min="0" max="20" style="width:60px"
+              oninput="validarDescuento(this)">
+            <span style="font-size:11px;color:var(--text2)">máx 20%</span>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;margin-left:4px;">
+              <input type="checkbox" id="descEspecialChk" onchange="toggleDescEspecial(this.checked)" style="cursor:pointer">
+              <span id="descEspecialLabel" style="color:var(--text2)">+3% especial</span>
+            </label>
+            <span id="descTotalBadge" style="display:none;font-size:10px;padding:2px 7px;border-radius:20px;background:var(--amber-light);color:var(--amber);font-weight:600"></span>
+          </div>
         </div>
         <div class="field-group">
           <label>Flete nacional (COP)</label>
@@ -1012,7 +1021,8 @@ function renderCarrito(){
 function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();renderCatalogo();}
 
 function calcTotales(){
-  const desc=parseFloat(document.getElementById('descInput').value)||0;
+  const desc=getDescuento();
+  const descEspecial=document.getElementById('descEspecialChk').checked;
   const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
   const ivaPct=19;
   const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
@@ -1032,11 +1042,55 @@ function calcTotales(){
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
 
+// ── DESCUENTO ──────────────────────────────────────────
+function validarDescuento(input){
+  let val=parseFloat(input.value)||0;
+  if(val>20){val=20;input.value=20;}
+  if(val<0){val=0;input.value=0;}
+  actualizarDescBadge();
+  calcTotales();
+}
+
+function toggleDescEspecial(checked){
+  const label=document.getElementById('descEspecialLabel');
+  if(checked){
+    label.style.color='var(--amber)';
+    label.style.fontWeight='600';
+    showToast('✓ Descuento especial +3% habilitado','success');
+  } else {
+    label.style.color='var(--text2)';
+    label.style.fontWeight='400';
+  }
+  actualizarDescBadge();
+  calcTotales();
+}
+
+function actualizarDescBadge(){
+  const base=parseFloat(document.getElementById('descInput').value)||0;
+  const especial=document.getElementById('descEspecialChk').checked?3:0;
+  const total=base+especial;
+  const badge=document.getElementById('descTotalBadge');
+  if(especial>0){
+    badge.style.display='inline-block';
+    badge.textContent='Total: '+total+'%';
+  } else {
+    badge.style.display='none';
+  }
+}
+
+function getDescuento(){
+  const base=parseFloat(document.getElementById('descInput').value)||0;
+  const especial=document.getElementById('descEspecialChk').checked?3:0;
+  return base+especial;
+}
+
 function nuevaCotizacion(){
   if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
   ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('descInput').value='0';
+  document.getElementById('descEspecialChk').checked=false;
+  toggleDescEspecial(false);
   document.getElementById('fleteVal').value='0';
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
@@ -1066,7 +1120,8 @@ async function guardarCotizacion(){
   const entrega=getEntrega();
   const garantia=document.getElementById('garantiaSel').value==='24m'?'24 meses o 4.000 horas':'12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
-  const desc=parseFloat(document.getElementById('descInput').value)||0;
+  const desc=getDescuento();
+  const descEspecial=document.getElementById('descEspecialChk').checked;
   const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
   const ivaPct=19;
   if(!cliente){showToast('Ingresa el cliente','error');return;}
@@ -1105,9 +1160,9 @@ async function guardarCotizacion(){
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Generar HTML, subir a SharePoint, luego abrir con link
-    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
+    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink);
-    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
+    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
     const pdfWin=window.open('','_blank','width=960,height=860');
     if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
@@ -1191,8 +1246,10 @@ function generarPDF(d, soloRetornar=false){
     +'Discrepancias se dirimen en Bogotá D.C., Colombia.'
     +'</div></div>';
 
+  const descBase=d.descBase||d.desc||0;
+  const tieneEspecial=d.descEspecial||false;
   const descRow=(d.desc||0)>0
-    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+d.desc+'%)</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
+    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">incl. 3% especial</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
     :'';
   const fleteRow=(d.fleteCOP||0)>0
     ?'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">COP '+Math.round(d.fleteCOP||0).toLocaleString('es-CO')+'</td></tr>'
