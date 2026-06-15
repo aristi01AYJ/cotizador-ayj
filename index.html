@@ -160,178 +160,65 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 @keyframes spin{to{transform:rotate(360deg)}}
 @media print{body{display:none}}
 
-/* ── RESPONSIVE ── */
-.filtros-panel{display:block} /* visible en PC */
-
-/* ── RESPONSIVE MÓVIL ───────────────────────────── */
+/* ══ RESPONSIVE MÓVIL ══════════════════════════════════════════ */
 .mobile-tabs{display:none}
+.filtros-panel{display:block}
 
 @media (max-width: 768px){
-  /* ── LAYOUT PRINCIPAL ── */
-  body{height:100vh;overflow:hidden}
-  #appScreen{height:100vh;overflow:hidden}
-  .main{flex-direction:column;flex:1;overflow:hidden;height:calc(100vh - 96px)}
-
-  /* ── TOPBAR ── */
-  .topbar{padding:8px 12px;gap:6px;flex-shrink:0}
-  .topbar-logo img{height:22px}
+  .mobile-tabs{display:flex;flex-shrink:0;background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+  .mobile-tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+  .mobile-tab.active{color:var(--green-dark);border-bottom-color:var(--green)}
+  .mobile-tab-badge{display:inline-block;background:var(--green);color:#fff;border-radius:20px;font-size:10px;padding:0 5px;margin-left:4px;vertical-align:middle;min-width:16px;text-align:center}
   .nav{display:none}
-  .topbar-right .btn-logout{display:inline-flex}
-
-  /* ── TABS MÓVIL ── */
-  .mobile-tabs{display:flex;flex-shrink:0}
-  .mobile-tab{font-size:12px;padding:8px 4px}
-
-  /* ── SIDEBAR (CATÁLOGO) ── */
-  .sidebar{
-    display:none;
-    width:100%;border-right:none;
-    flex-direction:column;
-    height:100%;
-    overflow:hidden;
-  }
+  .topbar{padding:8px 12px}
+  .topbar-logo img{height:22px}
+  .main{flex-direction:column;height:calc(100vh - 96px);overflow:hidden}
+  .sidebar{display:none;width:100%;border-right:none;height:100%;flex-direction:column;overflow:hidden}
   .sidebar.mobile-active{display:flex}
-  .sidebar-header{padding:6px 10px;flex-shrink:0}
-  .sidebar-header strong,.sidebar-header p{display:none}
-  .filtros-panel{display:none}
-  .filtros-panel.open{display:block}
-  .trm-bar{padding:4px 10px;flex-shrink:0}
-  .trm-bar label{font-size:10px}
-  .trm-bar input{width:75px;font-size:13px;padding:3px 6px}
-  .trm-bar span{font-size:10px}
-  .maq-list{
-    flex:1;
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    padding:6px;
-    min-height:0;
-  }
-  .filter-row select{padding:5px 6px;font-size:13px}
-  .filter-row{gap:4px;margin-top:4px}
-
-  /* ── CARDS CATÁLOGO COMPACTAS ── */
+  .sidebar-header{padding:6px 10px}
+  .sidebar-header p{display:none}
+  .trm-bar{padding:4px 10px}
+  .trm-bar input{width:80px;font-size:13px}
+  .maq-list{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:6px;min-height:0}
   .grupo-header{padding:8px 10px}
   .grupo-name{font-size:12px}
-  .grupo-marca{font-size:10px;margin-top:1px}
+  .grupo-marca{font-size:10px}
   .precio-usd{font-size:11px}
   .precio-cop{font-size:9px}
-  .stock-row{margin-top:4px;gap:3px}
+  .stock-row{margin-top:4px}
   .stock-badge{font-size:9px;padding:1px 6px}
-  .grupo-actions{padding:0 8px 8px;gap:4px}
+  .grupo-actions{padding:0 8px 8px}
   .btn-cat{padding:5px 6px;font-size:11px}
-  .bp-card{padding:8px 10px;margin-bottom:6px}
+  .bp-card{padding:8px 10px}
   .bp-name{font-size:12px}
-  .bp-sub{font-size:10px}
   .btn-add-bp{padding:5px;font-size:11px}
-  .section-label{font-size:9px;padding:5px 4px 2px}
-  .grupo-card{margin-bottom:6px}
-
-  /* ── CONTENT (CARRITO) ── */
-  .content{
-    display:none;
-    width:100%;
-    flex-direction:column;
-    height:100%;
-    overflow:hidden;
-  }
+  .content{display:none;width:100%;flex-direction:column;height:100%;overflow:hidden}
   .content.mobile-active{display:flex}
-  .content-top{
-    flex-shrink:0;
-    padding:6px 10px;
-    gap:5px;
-    display:none; /* oculto por defecto en móvil */
-    flex-wrap:wrap;
-  }
-  .content-top.mobile-open{display:flex}
+  .content-top{flex-shrink:0;padding:6px 10px;gap:6px;overflow-y:auto;max-height:200px;-webkit-overflow-scrolling:touch}
   .field-group{width:calc(50% - 3px);min-width:0}
-  .field-group input,.field-group select{min-width:0;width:100%;font-size:14px;padding:5px 8px}
-  .field-group label{font-size:10px}
-  .oferta-badge{font-size:11px;padding:4px 10px;margin-left:auto}
-  .cot-area{
-    flex:1;
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    padding:8px;
-    min-height:0;
-  }
-  .footer{
-    flex-shrink:0;
-    padding:8px 10px;
-    gap:6px;
-    border-top:2px solid var(--border);
-    background:#fff;
-  }
+  .field-group input,.field-group select{min-width:0;width:100%}
+  .oferta-badge{font-size:11px;padding:4px 10px}
+  .cot-area{flex:1;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:8px;min-height:0}
+  .footer{flex-shrink:0;padding:8px 10px;gap:6px;flex-wrap:wrap}
   .footer .field-group{width:calc(50% - 3px)}
-  .totales{margin-left:0;width:100%;gap:8px;flex-wrap:wrap;justify-content:space-between}
+  .totales{margin-left:0;width:100%;gap:6px;flex-wrap:wrap;justify-content:flex-end}
   .total-val.big{font-size:14px}
-  .total-val.sub2,.total-val.big2{font-size:10px}
-  .btn-primary{padding:9px 14px;font-size:12px}
-  .btn-sec{padding:8px 10px;font-size:12px}
-
-  #carritoTopBar{display:none}
-  .content.mobile-active #carritoTopBar{display:flex}
-  .content-top#contentTopPanel{display:none}
-  .content-top#contentTopPanel.mobile-open{display:flex}
-
-  /* ── HISTORIAL Y CLIENTES ── */
-  #historialView{
-    display:none;
-    height:100%;
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    padding:10px;
-    flex-direction:column;
-  }
-  #historialView.mobile-active{display:flex}
-  #clientesView{
-    display:none;
-    height:100%;
-    overflow-y:scroll;
-    -webkit-overflow-scrolling:touch;
-    padding:10px;
-    flex-direction:column;
-  }
-  #clientesView.mobile-active{display:flex}
-  .hist-table{font-size:11px}
+  #historialView{height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px}
+  #clientesView{height:100%;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:10px}
   .hist-table th:nth-child(2),.hist-table td:nth-child(2),
   .hist-table th:nth-child(4),.hist-table td:nth-child(4){display:none}
-  .cli-table{font-size:11px}
   .cli-table th:nth-child(3),.cli-table td:nth-child(3),
   .cli-table th:nth-child(5),.cli-table td:nth-child(5){display:none}
-
-  /* ── TABLA ITEMS CARRITO ── */
-  .items-table{font-size:11px}
-  .items-table th:nth-child(4),.items-table td:nth-child(4){display:none}
+  .items-table th:nth-child(4),.items-table td:nth-child(4),
   .items-table th:nth-child(5),.items-table td:nth-child(5){display:none}
-
-  /* ── MODALES ── */
-  #modalCliente > div,#modalCondPago > div,#modalEntrega > div{
-    width:95vw!important;padding:18px 14px!important;max-height:90vh;overflow-y:auto
-  }
+  #modalCliente>div,#modalCondPago>div,#modalEntrega>div{width:95vw!important;padding:16px!important;max-height:90vh;overflow-y:auto}
 }
-
-@media (max-width: 480px){
-  .field-group{width:100%}
-  .footer .field-group{width:calc(50% - 3px)}
-  .items-table th:nth-child(3),.items-table td:nth-child(3){display:none}
-  .mobile-tab{font-size:11px;padding:9px 4px}
+@media (max-width:480px){
+  .field-group,.footer .field-group{width:100%}
+  .totales{flex-direction:column;align-items:flex-end}
 }
-
 @media (hover:none) and (pointer:coarse){
-  .btn-cat,.btn-add-bp,.btn-cli-usar{padding:9px 10px;font-size:13px}
   input[type="number"],input[type="text"],select{font-size:16px!important}
-  .grupo-card,.bp-card{margin-bottom:10px}
-}
-
-
-
-
-/* Touch improvements */
-@media (hover:none) and (pointer:coarse){
-  .btn-cat,.btn-add-bp,.btn-cli-usar{padding:8px 10px;font-size:12px}
-  .grupo-card{margin-bottom:10px}
-  .nav button{min-height:36px}
-  input[type="number"],input[type="text"],select{font-size:16px!important} /* evitar zoom en iOS */
 }
 </style>
 </head>
@@ -364,19 +251,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   </div>
   <!-- TABS MÓVIL -->
   <div class="mobile-tabs" id="mobileTabs">
-    <button class="mobile-tab active" onclick="mobileTab('catalogo',this)">
-      <i class="ti ti-package" style="font-size:14px;vertical-align:-1px"></i> Catálogo
-    </button>
-    <button class="mobile-tab" onclick="mobileTab('carrito',this)">
-      <i class="ti ti-shopping-cart" style="font-size:14px;vertical-align:-1px"></i> Carrito
-      <span class="mobile-tab-badge" id="carritoCount" style="display:none">0</span>
-    </button>
-    <button class="mobile-tab" onclick="mobileTab('clientes',this)">
-      <i class="ti ti-users" style="font-size:14px;vertical-align:-1px"></i> Clientes
-    </button>
-    <button class="mobile-tab" onclick="mobileTab('historial',this)">
-      <i class="ti ti-history" style="font-size:14px;vertical-align:-1px"></i> Historial
-    </button>
+    <button class="mobile-tab active" onclick="mobileTab('catalogo',this)"><i class="ti ti-package" style="font-size:14px;vertical-align:-1px"></i> Catálogo</button>
+    <button class="mobile-tab" onclick="mobileTab('carrito',this)"><i class="ti ti-shopping-cart" style="font-size:14px;vertical-align:-1px"></i> Carrito<span class="mobile-tab-badge" id="carritoCount" style="display:none">0</span></button>
+    <button class="mobile-tab" onclick="mobileTab('clientes',this)"><i class="ti ti-users" style="font-size:14px;vertical-align:-1px"></i> Clientes</button>
+    <button class="mobile-tab" onclick="mobileTab('historial',this)"><i class="ti ti-history" style="font-size:14px;vertical-align:-1px"></i> Historial</button>
   </div>
   <div class="main">
     <div class="sidebar">
@@ -409,21 +287,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
       </div>
     </div>
     <div class="content" id="nuevaView">
-      <!-- Barra sticky carrito móvil -->
-      <div id="carritoTopBar" style="display:none;padding:6px 10px;background:#fff;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center;gap:8px;flex-wrap:wrap">
-        <div style="flex:1;min-width:0">
-          <div id="carritoClienteLabel" style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Sin cliente</div>
-          <div class="oferta-badge" id="ofertaNumMobil" style="font-size:10px;padding:2px 8px;display:inline-block;margin-top:2px">COT-2026-001</div>
-        </div>
-        <button onclick="toggleContentTop()" style="padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;font-size:11px;font-family:inherit;cursor:pointer;white-space:nowrap">
-          <i class="ti ti-settings" style="font-size:12px;vertical-align:-1px"></i> Datos
-        </button>
-      </div>
-      <div class="content-top" id="contentTopPanel">
+      <div class="content-top">
         <div class="field-group">
           <label>Cliente</label>
           <div style="display:flex;gap:6px;align-items:center">
-            <input type="text" id="clienteInput" placeholder="Buscar cliente..." list="clientesList" style="min-width:160px" oninput="filtrarClienteInput(this.value);actualizarCarritoTopBar()">
+            <input type="text" id="clienteInput" placeholder="Buscar cliente..." list="clientesList" style="min-width:160px" oninput="filtrarClienteInput(this.value)">
             <datalist id="clientesList"></datalist>
             <button onclick="abrirModalCliente()" title="Nuevo cliente" style="padding:6px 10px;border:1px solid var(--green);border-radius:var(--radius);background:none;color:var(--green-dark);cursor:pointer;font-size:13px;white-space:nowrap"><i class="ti ti-user-plus"></i></button>
           </div>
@@ -489,7 +357,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
               oninput="actualizarNumOferta()">
           </div>
         </div>
-      </div>
       </div>
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
@@ -1210,6 +1077,7 @@ function toggleBP(id){
 }
 
 function renderCarrito(){
+  actualizarBadgeCarrito();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
@@ -1292,33 +1160,6 @@ function getDescuento(){
   const base=parseFloat(document.getElementById('descInput').value)||0;
   const especial=document.getElementById('descEspecialChk').checked?3:0;
   return base+especial;
-}
-
-function toggleContentTop(){
-  const panel=document.getElementById('contentTopPanel');
-  panel.classList.toggle('mobile-open');
-}
-
-function actualizarCarritoTopBar(){
-  const label=document.getElementById('carritoClienteLabel');
-  const numMobil=document.getElementById('ofertaNumMobil');
-  if(label){
-    const cli=document.getElementById('clienteInput')?.value||'Sin cliente';
-    label.textContent=cli;
-  }
-  if(numMobil){
-    numMobil.textContent=document.getElementById('ofertaNum')?.textContent||'';
-  }
-}
-
-function toggleFiltrosMobil(){
-  const panel=document.getElementById('filtrosPanel');
-  const label=document.getElementById('filtrosLabel');
-  const btn=document.getElementById('btnFiltros');
-  const open=panel.classList.toggle('open');
-  label.textContent=open?'Cerrar':'Filtros';
-  btn.style.borderColor=open?'var(--green)':'var(--border)';
-  btn.style.color=open?'var(--green-dark)':'inherit';
 }
 
 function nuevaCotizacion(){
@@ -1414,7 +1255,7 @@ async function guardarCotizacion(){
       }catch(e){console.warn('No se pudo actualizar LinkPDF:',e.message);}
     }
     await generarNumOferta();
-  if(esMobil()){document.querySelector('.sidebar').classList.add('mobile-active');}
+  if(esMobil()){const s=document.querySelector('.sidebar');if(s)s.classList.add('mobile-active');}
   }catch(e){showToast('Error: '+e.message,'error');}
   finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
 }
@@ -1727,52 +1568,6 @@ function duplicarOferta(cliente, itemsData){
   showToast('Oferta cargada en carrito — '+cliente,'success');
 }
 
-function esMobil(){return window.innerWidth<=768;}
-
-function mobileTab(tab, btn){
-  // Actualizar botones activos
-  document.querySelectorAll('.mobile-tab').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-
-  const sidebar=document.querySelector('.sidebar');
-  const content=document.getElementById('nuevaView');
-
-  if(tab==='catalogo'){
-    sidebar.classList.add('mobile-active');
-    content.classList.remove('mobile-active');
-    document.getElementById('historialView').style.display='none';
-    document.getElementById('clientesView').style.display='none';
-  } else if(tab==='carrito'){
-    sidebar.classList.remove('mobile-active');
-    content.classList.add('mobile-active');
-    document.getElementById('historialView').style.display='none';
-    document.getElementById('clientesView').style.display='none';
-  } else if(tab==='clientes'){
-    sidebar.classList.remove('mobile-active');
-    content.classList.remove('mobile-active');
-    document.getElementById('historialView').style.display='none';
-    document.getElementById('clientesView').style.display='flex';
-    cargarClientes();
-  } else if(tab==='historial'){
-    sidebar.classList.remove('mobile-active');
-    content.classList.remove('mobile-active');
-    document.getElementById('clientesView').style.display='none';
-    document.getElementById('historialView').style.display='flex';
-    cargarHistorial();
-  }
-}
-
-function actualizarBadgeCarrito(){
-  const badge=document.getElementById('carritoCount');
-  if(!badge) return;
-  if(carrito.length>0){
-    badge.style.display='inline-block';
-    badge.textContent=carrito.length;
-  } else {
-    badge.style.display='none';
-  }
-}
-
 function switchView(v){
   document.getElementById('nuevaView').style.display=v==='nueva'?'flex':'none';
   document.getElementById('historialView').style.display=v==='historial'?'flex':'none';
@@ -1945,6 +1740,29 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(type?' '+type:'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
 }
+
+function esMobil(){return window.innerWidth<=768;}
+function mobileTab(tab,btn){
+  document.querySelectorAll('.mobile-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const sidebar=document.querySelector('.sidebar');
+  const content=document.getElementById('nuevaView');
+  sidebar.classList.remove('mobile-active');
+  content.classList.remove('mobile-active');
+  document.getElementById('historialView').style.display='none';
+  document.getElementById('clientesView').style.display='none';
+  if(tab==='catalogo'){sidebar.classList.add('mobile-active');}
+  else if(tab==='carrito'){content.classList.add('mobile-active');}
+  else if(tab==='clientes'){document.getElementById('clientesView').style.display='flex';cargarClientes();}
+  else if(tab==='historial'){document.getElementById('historialView').style.display='flex';cargarHistorial();}
+}
+function actualizarBadgeCarrito(){
+  const b=document.getElementById('carritoCount');
+  if(!b)return;
+  if(carrito.length>0){b.style.display='inline-block';b.textContent=carrito.length;}
+  else b.style.display='none';
+}
+
 initMsal();
 </script>
 </body></html>
