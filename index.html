@@ -353,6 +353,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           <div class="total-item">
             <span class="total-label">Flete nacional</span>
             <span class="total-val" id="tFleteCOP" style="color:#666">COP 0</span>
+            <span class="total-val sub2" id="tFleteUSD" style="color:#999"></span>
           </div>
           <div class="total-item">
             <span class="total-label">Total oferta</span>
@@ -1044,6 +1045,8 @@ function calcTotales(){
   const fleteUSD=trm>0?fleteCOP/trm:0;
   const fleteLabel=document.getElementById('fleteUSDLabel');
   if(fleteLabel) fleteLabel.textContent=fleteCOP>0?'≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO'):'';
+  const tFleteUSD=document.getElementById('tFleteUSD');
+  if(tFleteUSD) tFleteUSD.textContent=fleteCOP>0?'≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO'):'';
   document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
