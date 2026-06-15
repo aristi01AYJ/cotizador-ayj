@@ -1225,7 +1225,7 @@ function generarPDF(d, soloRetornar=false){
     +'<tr>'
     +'<td style="vertical-align:middle;width:50%"><img src="https://aristi01ayj.github.io/cotizador-ayj/logo.png" alt="AYJ" style="height:36px;width:auto;"></td>'
     +'<td style="text-align:right;vertical-align:middle;font-size:10px;color:#999;">'
-    +'<strong style="color:#575756;font-size:11px;">'+d.numOferta+'</strong> · '+d.cliente+'<br>'
+    +'<strong style="color:#575756;font-size:11px;">'+d.numOferta+'</strong>'+(d.idSynergy?'<br><span style="color:#80A61B;font-size:10px;font-weight:600;">Synergy: '+d.idSynergy+'</span>':'')+'<br>'+d.cliente+'<br>'
     +'Condiciones Comerciales'
     +'</td></tr></table>'
     +'<div style="background:#f9f9f7;border-radius:8px;border:1px solid #e0e0dc;padding:16px 20px;margin-bottom:14px;">'
