@@ -1588,6 +1588,7 @@ function switchView(v){
 
 // ── MÓDULO CLIENTES ──────────────────────────────────
 let clientesData=[];
+let _listaFiltradaClientes=[];
 
 async function cargarClientes(forzar=false){
   if(!siteId||!listIdClientes)return;
@@ -1666,7 +1667,6 @@ function renderTablaClientes(){
   </table>`;
 }
 
-let _listaFiltradaClientes=[];
 function usarClienteIdx(idx){
   const c=_listaFiltradaClientes[idx];
   if(c) usarCliente(c.titulo,c.nombre,c.ciudad,c.telefono);
