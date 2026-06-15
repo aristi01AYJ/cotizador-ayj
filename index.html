@@ -322,76 +322,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   input[type="number"],input[type="text"],select{font-size:16px!important}
   .grupo-card,.bp-card{margin-bottom:10px}
 }
-@media (max-width: 768px){
-  .main{flex-direction:column}
-  .sidebar{width:100%;height:auto;max-height:50vh;border-right:none;border-bottom:1px solid var(--border)}
-  .content{min-height:0}
-  .topbar{padding:8px 12px;flex-wrap:wrap;gap:6px}
-  .topbar-logo img{height:22px}
-  .nav button{padding:5px 10px;font-size:12px}
-  .topbar-right{display:none}
-  .content-top{padding:10px 12px;gap:8px}
-  .field-group input,.field-group select{min-width:0;width:100%}
-  .field-group{width:calc(50% - 4px)}
-  .oferta-badge{font-size:12px;padding:5px 10px}
-  #ofertaNum{font-size:12px}
-  .cot-area{padding:10px}
-  .items-table th:nth-child(4),.items-table th:nth-child(5),
-  .items-table td:nth-child(4),.items-table td:nth-child(5){display:none}
-  .footer{padding:10px 12px;gap:8px;flex-wrap:wrap}
-  .footer .field-group{width:calc(50% - 4px)}
-  .totales{width:100%;flex-direction:row;flex-wrap:wrap;gap:10px;margin-left:0;justify-content:flex-end}
-  .total-val.big{font-size:16px}
-  .btn-primary,.btn-sec{padding:8px 12px;font-size:12px}
-  #clientesView,#historialView{padding:12px}
-  .cli-table{font-size:12px}
-  .cli-table th:nth-child(3),.cli-table td:nth-child(3),
-  .cli-table th:nth-child(5),.cli-table td:nth-child(5){display:none}
-  .hist-table th:nth-child(2),.hist-table td:nth-child(2),
-  .hist-table th:nth-child(4),.hist-table td:nth-child(4){display:none}
-  .grupo-card,.bp-card{margin-bottom:8px}
-  .sidebar-header{padding:6px 10px}
-  .sidebar-header strong,.sidebar-header p{display:none}
-  .filtros-panel{display:none} /* oculto por defecto en móvil */
-  .filtros-panel.open{display:block}
-  .search-wrap{margin-top:0}
-  .search-wrap input{padding:5px 10px 5px 28px;font-size:14px}
-  .filter-row{gap:4px;margin-top:4px}
-  .filter-row select{padding:5px 6px;font-size:13px}
-  .trm-bar{padding:4px 10px}
-  .trm-bar label{font-size:10px}
-  .trm-bar input{width:75px;padding:3px 6px;font-size:13px}
-  .trm-bar span{font-size:10px}
-  .maq-list{padding:5px}
-  .grupo-card{padding:0;margin-bottom:5px}
-  .grupo-header{padding:7px 10px}
-  .grupo-name{font-size:12px}
-  .grupo-marca{font-size:10px;margin-top:1px}
-  .precio-usd{font-size:11px}
-  .precio-cop{font-size:9px}
-  .stock-badge{font-size:9px;padding:1px 6px}
-  .stock-row{margin-top:4px;gap:3px}
-  .grupo-actions{padding:0 8px 7px;gap:4px}
-  .btn-cat{padding:4px 6px;font-size:10px}
-  .bp-card{padding:7px 10px;margin-bottom:5px}
-  .bp-name{font-size:12px}
-  .bp-sub{font-size:10px}
-  .bp-badge{font-size:9px;padding:1px 6px}
-  .btn-add-bp{margin-top:5px;padding:4px;font-size:11px}
-  .section-label{font-size:9px;padding:5px 4px 2px}
-  #historialView .content-top,.historialView .content-top{flex-direction:column}
-  [id="hFiltDesde"],[id="hFiltHasta"]{width:100%}
-  .modal-inner{width:95vw!important;padding:20px!important}
-  #modalCliente > div, #modalCondPago > div, #modalEntrega > div{width:95vw!important;padding:20px 16px!important}
-}
 
-@media (max-width: 480px){
-  .field-group{width:100%}
-  .footer .field-group{width:100%}
-  .totales{flex-direction:column;align-items:flex-end}
-  .nav button{padding:4px 8px;font-size:11px}
-  .items-table th:nth-child(3),.items-table td:nth-child(3){display:none}
-}
+
+
 
 /* Touch improvements */
 @media (hover:none) and (pointer:coarse){
