@@ -329,7 +329,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
         </div>
         <div class="field-group">
           <label>Flete nacional (COP)</label>
-          <input type="number" id="fleteVal" value="0" min="0" style="width:120px" oninput="calcTotales()">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <input type="number" id="fleteVal" value="0" min="0" style="width:120px" oninput="calcTotales()">
+            <span id="fleteUSDLabel" style="font-size:11px;color:var(--text2);white-space:nowrap"></span>
+          </div>
         </div>
         <div class="totales">
           <div class="total-item">
@@ -1038,6 +1041,9 @@ function calcTotales(){
   document.getElementById('tIVAUSD').textContent=fmtUSD(ivaUSD);
   document.getElementById('tIVACOP').textContent=fmtCOP(ivaUSD);
   document.getElementById('tFleteCOP').textContent='COP '+Math.round(fleteCOP).toLocaleString('es-CO');
+  const fleteUSD=trm>0?fleteCOP/trm:0;
+  const fleteLabel=document.getElementById('fleteUSDLabel');
+  if(fleteLabel) fleteLabel.textContent=fleteCOP>0?'≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO'):'';
   document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
@@ -1251,8 +1257,9 @@ function generarPDF(d, soloRetornar=false){
   const descRow=(d.desc||0)>0
     ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">incl. 3% especial</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
     :'';
+  const fleteUSDpdf=d.trm>0?(d.fleteCOP||0)/d.trm:0;
   const fleteRow=(d.fleteCOP||0)>0
-    ?'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;font-size:11px;">COP '+Math.round(d.fleteCOP||0).toLocaleString('es-CO')+'</td></tr>'
+    ?'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Flete nacional</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;"><div style="font-size:12px;font-weight:500;">COP '+Math.round(d.fleteCOP||0).toLocaleString('es-CO')+'</div><div style="font-size:10px;color:#999;">≈ '+fUSD(fleteUSDpdf)+'</div></td></tr>'
     :'';
 
   const html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">'
