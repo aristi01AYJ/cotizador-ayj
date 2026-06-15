@@ -399,7 +399,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
   .nav button{min-height:36px}
   input[type="number"],input[type="text"],select{font-size:16px!important} /* evitar zoom en iOS */
 }
-
 </style>
 </head>
 <body>
@@ -1277,6 +1276,8 @@ function toggleBP(id){
 }
 
 function renderCarrito(){
+  actualizarBadgeCarrito();
+  actualizarCarritoTopBar();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
