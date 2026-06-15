@@ -1131,13 +1131,21 @@ function validarDescuento(input){
 
 function toggleDescEspecial(checked){
   const label=document.getElementById('descEspecialLabel');
+  const causal=document.getElementById('descEspecialCausal');
+  const custom=document.getElementById('descEspecialCausalCustom');
   if(checked){
     label.style.color='var(--amber)';
     label.style.fontWeight='600';
-    showToast('✓ Descuento especial +3% habilitado','success');
+    causal.style.display='inline-block';
+    causal.value='';
+    custom.style.display='none';
   } else {
     label.style.color='var(--text2)';
     label.style.fontWeight='400';
+    causal.style.display='none';
+    causal.value='';
+    custom.style.display='none';
+    custom.value='';
   }
   actualizarDescBadge();
   calcTotales();
@@ -1145,7 +1153,16 @@ function toggleDescEspecial(checked){
 
 function actualizarDescBadge(){
   const base=parseFloat(document.getElementById('descInput').value)||0;
-  const especial=document.getElementById('descEspecialChk').checked?3:0;
+  const chk=document.getElementById('descEspecialChk').checked;
+  const causalSel=document.getElementById('descEspecialCausal');
+  const causalCustom=document.getElementById('descEspecialCausalCustom');
+  // Mostrar/ocultar campo personalizado
+  if(causalSel&&causalSel.value==='__custom__'){
+    causalCustom.style.display='inline-block';
+  } else if(causalCustom){
+    causalCustom.style.display='none';
+  }
+  const especial=chk?3:0;
   const total=base+especial;
   const badge=document.getElementById('descTotalBadge');
   if(especial>0){
@@ -1154,6 +1171,13 @@ function actualizarDescBadge(){
   } else {
     badge.style.display='none';
   }
+}
+
+function getCausalEspecial(){
+  const sel=document.getElementById('descEspecialCausal');
+  if(!sel||!sel.value||sel.value==='') return '';
+  if(sel.value==='__custom__') return document.getElementById('descEspecialCausalCustom')?.value||'Personalizado';
+  return sel.value;
 }
 
 function getDescuento(){
@@ -1169,6 +1193,8 @@ function nuevaCotizacion(){
   document.getElementById('descInput').value='0';
   document.getElementById('descEspecialChk').checked=false;
   toggleDescEspecial(false);
+  if(document.getElementById('descEspecialCausal'))document.getElementById('descEspecialCausal').value='';
+  if(document.getElementById('descEspecialCausalCustom'))document.getElementById('descEspecialCausalCustom').value='';
   document.getElementById('fleteVal').value='0';
   renderCarrito();calcTotales();renderCatalogo();generarNumOferta();
 }
@@ -1192,6 +1218,11 @@ async function generarNumOferta(){
 async function guardarCotizacion(){
   const cliente=document.getElementById('clienteInput').value.trim();
   const vendedor=currentUserName;
+  // Validar causal descuento especial
+  if(document.getElementById('descEspecialChk').checked){
+    const causal=getCausalEspecial();
+    if(!causal){showToast('Debes seleccionar una causal para el descuento especial +3%','error');return;}
+  }
   const condPago=getCondPago();
   const cuotasPago=document.getElementById('condPagoSel').value==='__custom__'?[...condCuotas]:null;
   const validez=document.getElementById('validezSel').value;
@@ -1238,9 +1269,9 @@ async function guardarCotizacion(){
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Generar HTML, subir a SharePoint, luego abrir con link
-    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
+    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink);
-    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
+    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
     const pdfWin=window.open('','_blank','width=960,height=860');
     if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
@@ -1328,7 +1359,7 @@ function generarPDF(d, soloRetornar=false){
   const descBase=d.descBase||d.desc||0;
   const tieneEspecial=d.descEspecial||false;
   const descRow=(d.desc||0)>0
-    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">incl. 3% especial</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
+    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">+3% especial: '+d.causalEspecial+'</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span></td></tr>'
     :'';
   const fleteUSDpdf=d.trm>0?(d.fleteCOP||0)/d.trm:0;
   const fleteRow=(d.fleteCOP||0)>0
