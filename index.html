@@ -1429,7 +1429,20 @@ function generarPDF(d, soloRetornar=false){
     +'<strong style="color:#575756;">Aspectos Legales:</strong> Autorizamos a Aristizábal y Jinete S.A.S. para uso comercial de los datos suministrados, bajo Ley 1581 de 2012. '
     +'Consultas: info@ayj.com.co · 601-2688600. El COMPRADOR garantiza que los recursos provienen de actividades lícitas. '
     +'Discrepancias se dirimen en Bogotá D.C., Colombia.'
-    +'</div></div>';
+    +'</div>'
+    +'<div style="margin-top:32px;display:flex;gap:40px;padding-top:16px;border-top:1px solid #e0e0dc;">'
+    +'<div style="flex:1;">'
+    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
+    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
+    +'<div style="font-size:10px;color:#888;margin-top:2px;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>'
+    +'</div></div>'
+    +'<div style="flex:1;">'
+    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
+    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.cliente+'</div>'
+    +'<div style="font-size:10px;color:#888;margin-top:2px;">Firma de aceptación · Fecha: _______________</div>'
+    +'</div></div></div>'
+    +'</div>'
+    +'</div>';
 
   const descBase=d.descBase||d.desc||0;
   const tieneEspecial=d.descEspecial||false;
@@ -1514,17 +1527,6 @@ function generarPDF(d, soloRetornar=false){
     +(d.modoCOP?'<div style="font-weight:800;font-size:16px;color:#fff;">'+fCOP(d.totalUSD||0)+'</div>':'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div><div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
     +'</td></tr></table></td></tr></table>'
 
-    +'<div style="margin-top:32px;display:flex;gap:40px;padding-top:16px;border-top:1px solid #e0e0dc;">'
-    +'<div style="flex:1;">'
-    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
-    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
-    +'<div style="font-size:10px;color:#888;margin-top:2px;">Asesor Comercial · AYJ Maquinaria S.A.S.</div>'
-    +'</div></div>'
-    +'<div style="flex:1;">'
-    +'<div style="border-top:2px solid #575756;padding-top:8px;margin-top:32px;">'
-    +'<div style="font-size:12px;font-weight:700;color:#575756;">'+d.cliente+'</div>'
-    +'<div style="font-size:10px;color:#888;margin-top:2px;">Firma de aceptación · Fecha: _______________</div>'
-    +'</div></div></div>'
 
     +'<div style="margin-top:24px;border-top:3px solid #80A61B;padding-top:10px;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:9px;color:#666;">'
