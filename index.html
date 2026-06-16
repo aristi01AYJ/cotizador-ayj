@@ -220,6 +220,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
 @media (hover:none) and (pointer:coarse){
   input[type="number"],input[type="text"],select{font-size:16px!important}
 }
+
+/* ── MODO COP ─────────────────────────── */
+body.modo-cop .precio-cop{font-size:13px;font-weight:700;color:var(--green-dark)}
+body.modo-cop .precio-usd{display:none}
+body.modo-cop .price-usd-item{display:none}
+body.modo-cop .price-cop-item{font-size:13px;font-weight:700;color:var(--text)}
+body.modo-cop #tSubCOP,body.modo-cop #tDescCOP,body.modo-cop #tIvaCOP,body.modo-cop #tTotalCOP{font-size:14px;font-weight:700;color:var(--text)}
+body.modo-cop #tSubUSD,body.modo-cop #tDescUSD,body.modo-cop #tIvaUSD,body.modo-cop #tTotalUSD{display:none}
+body.modo-cop .trm-bar{opacity:0.4;pointer-events:none}
+body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-child(4){display:none}
 </style>
 </head>
 <body>
@@ -349,6 +359,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-siz
           <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;color:var(--text2)">
+            <input type="checkbox" id="modoCOPChk" onchange="toggleModoCOP(this.checked)" style="cursor:pointer">
+            <span>Solo precios en COP</span>
+          </label>
           <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
           <div style="display:flex;align-items:center;gap:6px;">
             <label style="font-size:10px;color:var(--text2);white-space:nowrap">ID Synergy</label>
@@ -725,7 +739,7 @@ function getCondPago(){
   return sel;
 }
 
-function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP){
+function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false){
   // cuotas: array [{concepto, pct}] si es personalizada, sino null
   let items=[];
   if(cuotas&&cuotas.length){
@@ -746,10 +760,11 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP){
     else return '';
   }
 
+  const esCOP=!!mCOP;
   const rows=items.map(c=>'<tr>'
     +'<td style="padding:6px 12px;border-bottom:1px solid #eee;">'+c.label+'</td>'
-    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>'
-    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;color:#666;">'+fmtCOP(totalUSD*c.pct)+'</td>'
+    +(esCOP?'':'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>')
+    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;'+(esCOP?'font-weight:600;':'color:#666;')+'">'+fmtCOP(totalUSD*c.pct)+'</td>'
     +'</tr>'
   ).join('');
 
@@ -758,13 +773,13 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP){
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
     +'<thead><tr style="background:#f5f7f0;">'
     +'<th style="padding:6px 12px;text-align:left;font-size:10px;color:#575756;font-weight:600;">Concepto</th>'
-    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>'
-    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">COP (ref.)</th>'
+    +(esCOP?'':'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>')
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">'+(esCOP?'COP':'COP (ref.)')+'</th>'
     +'</tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#f5f7f0;">'
     +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
-    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>'
+    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>')
     +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
     +'</tr></tfoot>'
     +'</table></div>';
@@ -804,13 +819,13 @@ function _oldTablaPagos_REMOVED(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
     +'<thead><tr style="background:#f5f7f0;">'
     +'<th style="padding:6px 12px;text-align:left;font-size:10px;color:#575756;font-weight:600;">Concepto</th>'
-    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>'
-    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">COP (ref.)</th>'
+    +(esCOP?'':'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>')
+    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">'+(esCOP?'COP':'COP (ref.)')+'</th>'
     +'</tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#f5f7f0;">'
     +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
-    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>'
+    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>')
     +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
     +'</tr></tfoot>'
     +'</table></div>';
@@ -1198,10 +1213,23 @@ function getDescuento(){
   return base+especial;
 }
 
+// ── MODO COP ──────────────────────────────────────────
+let modoCOP=false;
+
+function toggleModoCOP(checked){
+  modoCOP=checked;
+  document.body.classList.toggle('modo-cop', checked);
+  renderCarrito();
+  calcTotales();
+}
+
 function nuevaCotizacion(){
   if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
   ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('modoCOPChk').checked=false;
+  modoCOP=false;
+  document.body.classList.remove('modo-cop');
   document.getElementById('descInput').value='0';
   document.getElementById('descEspecialChk').checked=false;
   toggleDescEspecial(false);
@@ -1282,9 +1310,9 @@ async function guardarCotizacion(){
     showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Generar HTML, subir a SharePoint, luego abrir con link
-    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito]},true);
+    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink);
-    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
+    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
     const pdfWin=window.open('','_blank','width=960,height=860');
     if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
@@ -1346,7 +1374,7 @@ function generarPDF(d, soloRetornar=false){
     +'<table style="width:100%;border-collapse:collapse;font-size:11px;">'
     +'<tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Tiempo de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+(d.entrega||'Inmediato Salvo venta')+'</strong> — Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>'
-    +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda / TRM</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Ofertas en USD se liquidarán a la TRM negociada con la mesa de dinero del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia: '+fTRM(d.trm)+' COP/USD.</strong></td></tr>'
+    +(d.modoCOP?'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>Precio en Pesos Colombianos (COP).</strong> El precio pactado es en moneda local y no está referenciado a dólares ni a la TRM.</td></tr>':'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda / TRM</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Ofertas en USD se liquidarán a la TRM negociada con la mesa de dinero del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia: '+fTRM(d.trm)+' COP/USD.</strong></td></tr>')
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Condición de pago</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+d.condPago+'.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Garantía</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+garantiaTexto+'</strong>, considerando un turno de 8 horas, la condición que se cumpla primero. Cubre defectos de fabricación; excluye desgaste normal, mantenimiento deficiente o negligencia.</td></tr>'
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Instalación</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Personal especializado AYJ con colaboración del COMPRADOR. Si en 15 días desde la entrega física no se puede instalar por causas del COMPRADOR, se da por entregado y se pagan los saldos.</td></tr>'
@@ -1430,7 +1458,7 @@ function generarPDF(d, soloRetornar=false){
     +'<thead><tr style="background:#575756;color:#fff;">'
     +'<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:600;width:28px;">#</th>'
     +'<th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Descripción del Equipo</th>'
-    +'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:150px;text-transform:uppercase;letter-spacing:0.5px;">Precio</th>'
+    +(d.modoCOP?'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:160px;text-transform:uppercase;letter-spacing:0.5px;">Precio COP</th>':'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:150px;text-transform:uppercase;letter-spacing:0.5px;">Precio</th>')
     +'</tr></thead>'
     +'<tbody>'+filas+'</tbody></table>'
 
@@ -1438,20 +1466,18 @@ function generarPDF(d, soloRetornar=false){
     +'<tr>'
     +'<td style="width:52%;vertical-align:top;">'
     +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
-    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD,fUSD,fCOP)
+    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD,fUSD,fCOP,d.modoCOP)
     +'</td>'
     +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
-    +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+fUSD(d.subUSD)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.subUSD)+'</span></td></tr>'
+    +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+(d.modoCOP?fCOP(d.subUSD):fUSD(d.subUSD)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.subUSD)+'</span>')+'</td></tr>'
     +descRow
     +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+fUSD(d.ivaUSD||0)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.ivaUSD||0)+'</span></td></tr>'
     +fleteRow
     +'<tr style="background:#80A61B;">'
     +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;">TOTAL OFERTA</td>'
     +'<td style="padding:12px 10px;text-align:right;">'
-    +'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div>'
-    +'<div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div>'
-    +'<div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>'
+    +(d.modoCOP?'<div style="font-weight:800;font-size:16px;color:#fff;">'+fCOP(d.totalUSD||0)+'</div>':'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div><div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
     +'</td></tr></table></td></tr></table>'
 
     +'<div style="margin-top:32px;display:flex;gap:40px;padding-top:16px;border-top:1px solid #e0e0dc;">'
