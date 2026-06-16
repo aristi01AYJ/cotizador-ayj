@@ -1088,7 +1088,10 @@ function buildGrupoCard(g){
 function buildBpCard(m){
   const inCart=carrito.some(i=>i.id===m.id);
   const div=document.createElement('div');div.className='bp-card'+(inCart?' en-carrito':'');
-  div.innerHTML=`<div class="bp-top"><div style="min-width:0"><div class="bp-name">${m.title}</div><div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}${m.tipologia?' · '+m.tipologia:''}</div><span class="bp-badge">Bajo Pedido</span></div><div class="grupo-precio"><div class="precio-usd">${fmtUSD(m.tarifa)}</div><div class="precio-cop">${fmtCOP(m.tarifa)}</div></div></div><button class="btn-add-bp ${inCart?'remove':''}" onclick="toggleBP('${m.id}')"><i class="ti ti-${inCart?'x':'shopping-cart'}"></i> ${inCart?'Eliminar del Carrito':'Agregar al Carrito'}</button>`;
+  const pdfIcon=m.fichaTecnica?`<a href="${m.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:'';
+  const ytIcon=m.ytVideo?`<a href="${m.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video en YouTube"><i class="ti ti-brand-youtube"></i></a>`:'';
+  const iconos=(pdfIcon||ytIcon)?`<div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${pdfIcon}${ytIcon}</div>`:'';
+  div.innerHTML=`<div class="bp-top"><div style="min-width:0"><div class="bp-name">${m.title}</div><div class="bp-sub">${m.marca}${m.modelo?' · '+m.modelo:''}${m.tipologia?' · '+m.tipologia:''}</div><span class="bp-badge">Bajo Pedido</span></div><div class="grupo-precio">${iconos}<div class="precio-usd">${fmtUSD(m.tarifa)}</div><div class="precio-cop">${fmtCOP(m.tarifa)}</div></div></div><button class="btn-add-bp ${inCart?'remove':''}" onclick="toggleBP('${m.id}')"><i class="ti ti-${inCart?'x':'shopping-cart'}"></i> ${inCart?'Eliminar del Carrito':'Agregar al Carrito'}</button>`;
   return div;
 }
 
