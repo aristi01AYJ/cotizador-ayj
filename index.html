@@ -744,7 +744,7 @@ function getCondPago(){
   return sel;
 }
 
-function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false){
+function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false, fleteCOP=0, trm=1){
   // cuotas: array [{concepto, pct}] si es personalizada, sino null
   let items=[];
   if(cuotas&&cuotas.length){
@@ -766,6 +766,13 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false){
   }
 
   const esCOP=!!mCOP;
+  const fleteUSD=trm>0?fleteCOP/trm:0;
+  const fleteRow=(fleteCOP>0)
+    ?'<tr><td style="padding:6px 12px;border-bottom:1px solid #eee;color:#555;">Flete nacional</td>'
+     +(esCOP?'':`<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;">≈ ${fmtUSD(fleteUSD)}</td>`)
+     +`<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;">COP ${Math.round(fleteCOP).toLocaleString('es-CO')}</td></tr>`
+    :'';
+  const totalConFlete=totalUSD+(fleteCOP>0?fleteUSD:0);
   const rows=items.map(c=>'<tr>'
     +'<td style="padding:6px 12px;border-bottom:1px solid #eee;">'+c.label+'</td>'
     +(esCOP?'':'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>')
@@ -784,8 +791,8 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false){
     +'<tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#f5f7f0;">'
     +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
-    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>')
-    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
+    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalConFlete)+'</td>')
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalConFlete)+'</td>'
     +'</tr></tfoot>'
     +'</table></div>';
 }
@@ -830,8 +837,8 @@ function _oldTablaPagos_REMOVED(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
     +'<tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#f5f7f0;">'
     +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
-    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalUSD)+'</td>')
-    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalUSD)+'</td>'
+    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalConFlete)+'</td>')
+    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalConFlete)+'</td>'
     +'</tr></tfoot>'
     +'</table></div>';
 }
@@ -1554,7 +1561,7 @@ function generarPDF(d, soloRetornar=false){
     +'<tr>'
     +'<td style="width:52%;vertical-align:top;">'
     +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
-    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD,fUSD,fCOP,d.modoCOP)
+    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD,fUSD,fCOP,d.modoCOP,d.fleteCOP||0,d.trm||1)
     +'</td>'
     +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
