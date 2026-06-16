@@ -226,9 +226,9 @@ body.modo-cop .precio-cop{font-size:13px;font-weight:700;color:var(--green-dark)
 body.modo-cop .precio-usd{display:none}
 body.modo-cop .price-usd-item{display:none}
 body.modo-cop .price-cop-item{font-size:13px;font-weight:700;color:var(--text)}
-body.modo-cop #tSubCOP,body.modo-cop #tDescCOP,body.modo-cop #tIvaCOP,body.modo-cop #tTotalCOP{font-size:14px;font-weight:700;color:var(--text)}
-body.modo-cop #tSubUSD,body.modo-cop #tDescUSD,body.modo-cop #tIvaUSD,body.modo-cop #tTotalUSD{display:none}
-body.modo-cop .trm-bar{opacity:0.4;pointer-events:none}
+body.modo-cop #tSubCOP,body.modo-cop #tDescCOP,body.modo-cop #tIVACOP,body.modo-cop #tTotalCOP,body.modo-cop #tFleteCOP{font-size:14px;font-weight:700;color:var(--text)}
+body.modo-cop #tSubUSD,body.modo-cop #tDescUSD,body.modo-cop #tIVAUSD,body.modo-cop #tTotalUSD,body.modo-cop #tFleteUSD{display:none}
+body.modo-cop .trm-bar{opacity:0.6}
 body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-child(4){display:none}
 </style>
 </head>
@@ -359,10 +359,10 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;cursor:pointer;color:var(--text2)">
-            <input type="checkbox" id="modoCOPChk" onchange="toggleModoCOP(this.checked)" style="cursor:pointer">
-            <span>Solo precios en COP</span>
-          </label>
+          <button id="modoCOPBtn" onclick="toggleModoCOPBtn()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.15s">
+            <span id="modoCOPIcon">💲</span> <span id="modoCOPTxt">Ver en COP</span>
+          </button>
+          <input type="checkbox" id="modoCOPChk" onchange="toggleModoCOP(this.checked)" style="display:none">
           <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
           <div style="display:flex;align-items:center;gap:6px;">
             <label style="font-size:10px;color:var(--text2);white-space:nowrap">ID Synergy</label>
@@ -1113,7 +1113,7 @@ function renderCarrito(){
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--red);white-space:nowrap;"><i class="ti ti-file-type-pdf" style="font-size:14px"></i> Ver Ficha Técnica</a>`:'';
     const ytCell=item.ytVideo?`<a class="btn-pdf" href="${item.ytVideo}" target="_blank" title="Ver video en YouTube" style="color:#FF0000"><i class="ti ti-brand-youtube"></i></a>`:'';
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span></td><td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td><td class="price-cell"><div class="price-usd-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span></td><td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -1216,7 +1216,34 @@ function getDescuento(){
 // ── MODO COP ──────────────────────────────────────────
 let modoCOP=false;
 
+function toggleModoCOPBtn(){
+  const chk=document.getElementById('modoCOPChk');
+  chk.checked=!chk.checked;
+  toggleModoCOP(chk.checked);
+}
+
 function toggleModoCOP(checked){
+  const btn=document.getElementById('modoCOPBtn');
+  const icon=document.getElementById('modoCOPIcon');
+  const txt=document.getElementById('modoCOPTxt');
+  if(btn){
+    if(checked){
+      btn.style.background='var(--green)';
+      btn.style.color='#fff';
+      btn.style.borderColor='var(--green-dark)';
+      btn.style.fontWeight='600';
+      icon.textContent='🪙';
+      txt.textContent='Solo COP ✓';
+    } else {
+      btn.style.background='#fff';
+      btn.style.color='var(--text2)';
+      btn.style.borderColor='var(--border)';
+      btn.style.fontWeight='400';
+      icon.textContent='💲';
+      txt.textContent='Ver en COP';
+    }
+  }
+function _ignorar(checked){
   modoCOP=checked;
   document.body.classList.toggle('modo-cop', checked);
   renderCarrito();
@@ -1230,6 +1257,7 @@ function nuevaCotizacion(){
   document.getElementById('modoCOPChk').checked=false;
   modoCOP=false;
   document.body.classList.remove('modo-cop');
+  toggleModoCOP(false);
   document.getElementById('descInput').value='0';
   document.getElementById('descEspecialChk').checked=false;
   toggleDescEspecial(false);
