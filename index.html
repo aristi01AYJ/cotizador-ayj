@@ -401,7 +401,8 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <input type="number" id="descInput" value="0" min="0" max="20" style="width:60px"
               oninput="validarDescuento(this)">
-            <span style="font-size:11px;color:var(--text2)">máx 20%</span>
+            <span style="font-size:11px;color:var(--text2)" id="descMaxLabel">máx 20%</span>
+            <button onclick="solicitarClaveDesc()" id="descLockBtn" title="Desbloquear descuento especial" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:0 2px;line-height:1">🔒</button>
             <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;margin-left:4px;">
               <input type="checkbox" id="descEspecialChk" onchange="toggleDescEspecial(this.checked)" style="cursor:pointer">
               <span id="descEspecialLabel" style="color:var(--text2)">+3% especial</span>
@@ -1151,9 +1152,40 @@ function calcTotales(){
 }
 
 // ── DESCUENTO ──────────────────────────────────────────
+let descMaximo=20; // 20 normal, 30 con clave
+
+function solicitarClaveDesc(){
+  if(descMaximo===30){
+    // Ya desbloqueado — relockear
+    descMaximo=20;
+    const input=document.getElementById('descInput');
+    if(parseFloat(input.value)>20){input.value=20;}
+    document.getElementById('descMaxLabel').textContent='máx 20%';
+    document.getElementById('descMaxLabel').style.color='var(--text2)';
+    document.getElementById('descLockBtn').textContent='🔒';
+    document.getElementById('descLockBtn').title='Desbloquear descuento especial';
+    actualizarDescBadge();
+    calcTotales();
+    showToast('Descuento vuelto al límite normal (20%)','success');
+    return;
+  }
+  const clave=prompt('Ingresa la clave para habilitar descuento hasta 30%:');
+  if(clave===null) return;
+  if(clave==='AYJ860'){
+    descMaximo=30;
+    document.getElementById('descMaxLabel').textContent='máx 30% 🔓';
+    document.getElementById('descMaxLabel').style.color='var(--amber)';
+    document.getElementById('descLockBtn').textContent='🔓';
+    document.getElementById('descLockBtn').title='Bloquear (volver a 20%)';
+    showToast('✓ Descuento especial hasta 30% habilitado','success');
+  } else {
+    showToast('Clave incorrecta','error');
+  }
+}
+
 function validarDescuento(input){
   let val=parseFloat(input.value)||0;
-  if(val>20){val=20;input.value=20;}
+  if(val>descMaximo){val=descMaximo;input.value=descMaximo;}
   if(val<0){val=0;input.value=0;}
   actualizarDescBadge();
   calcTotales();
@@ -1261,6 +1293,12 @@ function nuevaCotizacion(){
   modoCOP=false;
   document.body.classList.remove('modo-cop');
   toggleModoCOP(false);
+  // Reset clave descuento
+  descMaximo=20;
+  const dml=document.getElementById('descMaxLabel');
+  const dlb=document.getElementById('descLockBtn');
+  if(dml){dml.textContent='máx 20%';dml.style.color='var(--text2)';}
+  if(dlb){dlb.textContent='🔒';dlb.title='Desbloquear descuento especial';}
   document.getElementById('descInput').value='0';
   document.getElementById('descEspecialChk').checked=false;
   toggleDescEspecial(false);
@@ -1447,7 +1485,7 @@ function generarPDF(d, soloRetornar=false){
   const descBase=d.descBase||d.desc||0;
   const tieneEspecial=d.descEspecial||false;
   const descRow=(d.desc||0)>0
-    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">+3% especial: '+d.causalEspecial+'</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">'+(d.modoCOP?'-'+fCOP(d.descUSD||0):'-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span>')+'</td></tr>'
+    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">+3% especial: '+d.causalEspecial+'</span>':'')+(d.desc>20?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FCEBEB;color:#A32D2D;">Aut. Gerencia</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">'+(d.modoCOP?'-'+fCOP(d.descUSD||0):'-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span>')+'</td></tr>'
     :'';
   const fleteUSDpdf=d.trm>0?(d.fleteCOP||0)/d.trm:0;
   const fleteRow=(d.fleteCOP||0)>0
