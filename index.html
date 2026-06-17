@@ -997,7 +997,7 @@ async function cargarMaquinas(){
 
 function procesarCatalogo(){
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
-  bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO');
+  bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO').sort((a,b)=>a.title.localeCompare(b.title,'es'));
   const mapa={};
   disponibles.forEach(m=>{
     const key=m.title.toLowerCase().trim();
