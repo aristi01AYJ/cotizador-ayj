@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cotizador AYJ Maquinaria</title>
 <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -253,6 +254,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
       <button class="active" id="navNueva" onclick="switchView('nueva')">Nueva oferta</button>
       <button id="navClientes" onclick="switchView('clientes')">Clientes</button>
       <button id="navHistorial" onclick="switchView('historial')">Historial</button>
+      <button id="navDashboard" onclick="switchView('dashboard')"><i class="ti ti-chart-bar"></i> Inteligencia</button>
     </div>
     <div class="topbar-right">
       <span class="user-chip" id="userChip">—</span>
@@ -265,6 +267,8 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
     <button class="mobile-tab" onclick="mobileTab('carrito',this)"><i class="ti ti-shopping-cart" style="font-size:14px;vertical-align:-1px"></i> Carrito<span class="mobile-tab-badge" id="carritoCount" style="display:none">0</span></button>
     <button class="mobile-tab" onclick="mobileTab('clientes',this)"><i class="ti ti-users" style="font-size:14px;vertical-align:-1px"></i> Clientes</button>
     <button class="mobile-tab" onclick="mobileTab('historial',this)"><i class="ti ti-history" style="font-size:14px;vertical-align:-1px"></i> Historial</button>
+    <button class="mobile-tab" onclick="mobileTab('dashboard',this)"><i class="ti ti-chart-bar" style="font-size:14px;vertical-align:-1px"></i> Intel</button>
+    <button class="mobile-tab" onclick="mobileTab('dashboard',this)"><i class="ti ti-chart-bar" style="font-size:14px;vertical-align:-1px"></i> Intel</button>
   </div>
   <div class="main">
     <div class="sidebar">
@@ -475,8 +479,9 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <select id="hFiltEstado" onchange="filtrarHistorial()" style="min-width:110px">
             <option value="">Todos</option>
             <option>Enviada</option>
-            <option>Aprobada</option>
-            <option>Rechazada</option>
+            <option>En negociación</option>
+            <option>Cerrada-Ganada</option>
+            <option>Cerrada-Perdida</option>
           </select>
         </div>
         <div class="field-group">
@@ -515,6 +520,39 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
       </div>
     </div>
   </div>
+
+    <div id="dashboardView" style="display:none;flex:1;flex-direction:column;overflow-y:auto;background:var(--bg);padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <strong style="font-size:16px">Inteligencia Comercial</strong>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="dashAnio" onchange="cargarDashboard()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+            <option>2026</option><option>2025</option>
+          </select>
+          <button class="btn-sec" onclick="cargarDashboard()"><i class="ti ti-refresh"></i></button>
+        </div>
+      </div>
+      <div id="dashKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Pipeline por Estado</div>
+          <canvas id="chartEstados" height="200"></canvas>
+        </div>
+        <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Ventas por Asesor (USD)</div>
+          <canvas id="chartAsesores" height="200"></canvas>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Tasa de Cierre por Asesor</div>
+          <canvas id="chartCierre" height="200"></canvas>
+        </div>
+        <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px">
+          <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Top Tipologías (USD)</div>
+          <canvas id="chartTipologias" height="200"></canvas>
+        </div>
+      </div>
+    </div>
 </div>
 
 <!-- MODAL TIEMPO DE ENTREGA PERSONALIZADO -->
@@ -1649,6 +1687,8 @@ async function cargarHistorial(){
         fechaStr:fechaRaw?new Date(fechaRaw).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—',
         items:f.Items?JSON.parse(f.Items||'[]'):[],
         linkPDF:f.LinkPDF||'',
+        prob:parseFloat(f.Probabilidad||0),
+        id:i.id,
       };
     });
     filtrarHistorial();
@@ -1684,8 +1724,9 @@ function filtrarHistorial(){
     +'<th>N° Oferta</th><th>Fecha</th><th>Cliente</th><th>Vendedor</th><th>Estado</th><th style="text-align:right">Total USD</th><th style="text-align:center">Acciones</th>'
     +'</tr></thead><tbody>'
     +lista.map((r,i)=>{
-      const estadoBg=r.estado==='Aprobada'?'var(--green-light)':r.estado==='Rechazada'?'var(--red-light)':'var(--amber-light)';
-      const estadoColor=r.estado==='Aprobada'?'var(--green-dark)':r.estado==='Rechazada'?'var(--red)':'var(--amber)';
+      const eCfg=ESTADOS_CONFIG[r.estado]||{bg:'var(--amber-light)',text:'var(--amber)',color:'var(--amber)'};
+      const estadoBg=eCfg.bg;
+      const estadoColor=eCfg.text;
       return '<tr>'
         +'<td class="num">'+r.num+'</td>'
         +'<td style="white-space:nowrap;color:var(--text2);font-size:12px">'+r.fechaStr+'</td>'
@@ -1693,9 +1734,11 @@ function filtrarHistorial(){
         +'<td style="font-size:12px">'+r.vendedor+'</td>'
         +'<td><span style="font-size:10px;padding:2px 8px;border-radius:20px;background:'+estadoBg+';color:'+estadoColor+'">'+r.estado+'</span></td>'
         +'<td class="total">USD '+r.total.toLocaleString('es-CO')+'</td>'
-        +'<td style="text-align:center">'
+        +'<td style="text-align:center;white-space:nowrap">'
         +(r.linkPDF?'<a href="'+r.linkPDF+'" target="_blank" class="btn-cli-usar" style="border-color:var(--red);color:var(--red);text-decoration:none;" title="Ver oferta"><i class="ti ti-file-type-pdf"></i></a> ':'' )
         +(r.items.length?'<button class="btn-cli-usar" onclick=\'duplicarOferta('+JSON.stringify(r.cliente)+','+JSON.stringify(r.items)+')\' title="Duplicar en carrito"><i class="ti ti-copy"></i></button>':'' )
+        +' <button class="btn-cli-usar" onclick="cambiarEstado(\''+r.id+'\',\''+r.estado+'\')" title="Cambiar estado" style="border-color:var(--blue);color:var(--blue-dark)"><i class="ti ti-pencil"></i></button>'
+        +' <button class="btn-cli-usar" onclick="editarProbabilidad(\''+r.id+'\','+r.prob+',\''+r.vendedor+'\')" title="Probabilidad: '+r.prob+'%" style="border-color:var(--green);color:var(--green-dark);font-size:10px;padding:2px 6px">'+r.prob+'%</button>'
         +'</td>'
         +'</tr>';
     }).join('')
@@ -1732,8 +1775,10 @@ function switchView(v){
   document.getElementById('nuevaView').style.display=v==='nueva'?'flex':'none';
   document.getElementById('historialView').style.display=v==='historial'?'flex':'none';
   document.getElementById('clientesView').style.display=v==='clientes'?'flex':'none';
+  document.getElementById('dashboardView').style.display=v==='dashboard'?'flex':'none';
+  if(v==='dashboard')cargarDashboard();
   ['navNueva','navHistorial','navClientes'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='';});
-  const navMap={nueva:'navNueva',historial:'navHistorial',clientes:'navClientes'};
+  const navMap={nueva:'navNueva',historial:'navHistorial',clientes:'navClientes',dashboard:'navDashboard'};
   if(navMap[v])document.getElementById(navMap[v]).className='active';
   if(v==='historial')cargarHistorial();
   if(v==='clientes')renderTablaClientes();
@@ -1933,12 +1978,194 @@ function mobileTab(tab,btn){
   else if(tab==='carrito'){content.classList.add('mobile-active');}
   else if(tab==='clientes'){document.getElementById('clientesView').style.display='flex';cargarClientes();}
   else if(tab==='historial'){document.getElementById('historialView').style.display='flex';cargarHistorial();}
+  else if(tab==='dashboard'){document.getElementById('dashboardView').style.display='flex';cargarDashboard();}
 }
 function actualizarBadgeCarrito(){
   const b=document.getElementById('carritoCount');
   if(!b)return;
   if(carrito.length>0){b.style.display='inline-block';b.textContent=carrito.length;}
   else b.style.display='none';
+}
+
+
+// ══ DASHBOARD INTELIGENCIA COMERCIAL ══════════════════════════════════
+const ESTADOS_CONFIG = {
+  'Enviada':       {color:'#F59E0B',bg:'#FEF3C7',text:'#92400E'},
+  'En negociación':{color:'#3B82F6',bg:'#DBEAFE',text:'#1E3A8A'},
+  'Cerrada-Ganada':{color:'#22C55E',bg:'#DCFCE7',text:'#14532D'},
+  'Cerrada-Perdida':{color:'#EF4444',bg:'#FEE2E2',text:'#7F1D1D'},
+};
+
+let dashCharts={};
+let dashData=[];
+
+async function cargarDashboard(){
+  document.getElementById('dashKpis').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text2)"><span class="spinner dark"></span> Cargando datos...</div>';
+  try{
+    const data=await graphGetAll(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$top=500`);
+    dashData=data.map(i=>{
+      const f=i.fields;
+      const fechaRaw=f.Fecha_x005f_Cotizacion||i.createdDateTime||null;
+      return{
+        num:f.ID_SYNERGY||f.Title||'',
+        cliente:f.Cliente||'',
+        vendedor:f.Vendedor||'',
+        estado:f.Estado||'Enviada',
+        total:parseFloat(f.GranTotal||0),
+        prob:parseFloat(f.Probabilidad||0),
+        fecha:fechaRaw?new Date(fechaRaw):null,
+        anio:fechaRaw?new Date(fechaRaw).getFullYear():2026,
+        items:f.Items?JSON.parse(f.Items||'[]'):[],
+        id:i.id,
+      };
+    });
+    renderDashboard();
+  }catch(e){
+    document.getElementById('dashKpis').innerHTML=`<div style="grid-column:1/-1;color:var(--red);padding:20px">Error: ${e.message}</div>`;
+  }
+}
+
+function renderDashboard(){
+  const anio=parseInt(document.getElementById('dashAnio')?.value||2026);
+  const datos=dashData.filter(d=>d.anio===anio);
+
+  // ── KPIs ──
+  const total=datos.length;
+  const totalUSD=datos.reduce((s,d)=>s+d.total,0);
+  const ganadas=datos.filter(d=>d.estado==='Cerrada-Ganada');
+  const perdidas=datos.filter(d=>d.estado==='Cerrada-Perdida');
+  const enviadas=datos.filter(d=>d.estado==='Enviada');
+  const negociacion=datos.filter(d=>d.estado==='En negociación');
+  const cerradas=ganadas.length+perdidas.length;
+  const tasaCierre=cerradas>0?Math.round(ganadas.length/cerradas*100):0;
+  const pipeline=[...enviadas,...negociacion].reduce((s,d)=>s+d.total,0);
+
+  const kpis=[
+    {label:'Total Ofertas',val:total,sub:anio,icon:'ti-file-text',color:'#575756'},
+    {label:'Pipeline Activo',val:'USD '+Math.round(pipeline).toLocaleString('es-CO'),sub:`${enviadas.length} env. · ${negociacion.length} neg.`,icon:'ti-trending-up',color:'#3B82F6'},
+    {label:'Cerradas Ganadas',val:'USD '+Math.round(ganadas.reduce((s,d)=>s+d.total,0)).toLocaleString('es-CO'),sub:`${ganadas.length} ofertas`,icon:'ti-trophy',color:'#22C55E'},
+    {label:'Tasa de Cierre',val:tasaCierre+'%',sub:`${ganadas.length} gan. / ${cerradas} cerradas`,icon:'ti-target',color:tasaCierre>=50?'#22C55E':'#F59E0B'},
+  ];
+
+  document.getElementById('dashKpis').innerHTML=kpis.map(k=>`
+    <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <span style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px">${k.label}</span>
+        <i class="ti ${k.icon}" style="font-size:18px;color:${k.color};opacity:0.8"></i>
+      </div>
+      <div style="font-size:22px;font-weight:800;color:${k.color}">${k.val}</div>
+      <div style="font-size:11px;color:var(--text3)">${k.sub}</div>
+    </div>`).join('');
+
+  // ── Chart 1: Pipeline por Estado ──
+  const estadosKeys=Object.keys(ESTADOS_CONFIG);
+  const estadosCounts=estadosKeys.map(e=>datos.filter(d=>d.estado===e).reduce((s,d)=>s+d.total,0));
+  renderChart('chartEstados','doughnut',
+    estadosKeys,estadosCounts,
+    estadosKeys.map(e=>ESTADOS_CONFIG[e].color),
+    {plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}}}
+  );
+
+  // ── Chart 2: Ventas por Asesor ──
+  const asesoresMap={};
+  datos.forEach(d=>{
+    const a=d.vendedor.split(' ')[0]||'—';
+    if(!asesoresMap[a])asesoresMap[a]={total:0,ganadas:0};
+    asesoresMap[a].total+=d.total;
+    if(d.estado==='Cerrada-Ganada')asesoresMap[a].ganadas+=d.total;
+  });
+  const ases=Object.entries(asesoresMap).sort((a,b)=>b[1].total-a[1].total).slice(0,6);
+  renderChart('chartAsesores','bar',
+    ases.map(([k])=>k),
+    ases.map(([,v])=>Math.round(v.total)),
+    '#80A61B',
+    {indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'$'+Math.round(v/1000)+'K'}}}}
+  );
+
+  // ── Chart 3: Tasa de cierre por asesor ──
+  const asesoresCierre=Object.entries(asesoresMap).map(([nombre,v])=>{
+    const ofertas=datos.filter(d=>d.vendedor.startsWith(nombre));
+    const c=ofertas.filter(d=>['Cerrada-Ganada','Cerrada-Perdida'].includes(d.estado)).length;
+    const g=ofertas.filter(d=>d.estado==='Cerrada-Ganada').length;
+    return{nombre,tasa:c>0?Math.round(g/c*100):0};
+  }).sort((a,b)=>b.tasa-a.tasa).slice(0,6);
+  renderChart('chartCierre','bar',
+    asesoresCierre.map(a=>a.nombre),
+    asesoresCierre.map(a=>a.tasa),
+    asesoresCierre.map(a=>a.tasa>=50?'#22C55E':'#F59E0B'),
+    {plugins:{legend:{display:false}},scales:{y:{max:100,ticks:{callback:v=>v+'%'}}}}
+  );
+
+  // ── Chart 4: Top Tipologías ──
+  const tipMap={};
+  datos.forEach(d=>{
+    d.items.forEach(item=>{
+      const tip=item.tipologia||item.tipo||'Otro';
+      tipMap[tip]=(tipMap[tip]||0)+(item.tarifaUSD||item.tarifa||0)*(item.cantidad||1);
+    });
+  });
+  const tips=Object.entries(tipMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  renderChart('chartTipologias','bar',
+    tips.map(([k])=>k),
+    tips.map(([,v])=>Math.round(v)),
+    ['#80A61B','#575756','#3B82F6','#F59E0B','#22C55E','#EF4444'],
+    {indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>'$'+Math.round(v/1000)+'K'}}}}
+  );
+}
+
+function renderChart(id, type, labels, data, colors, options={}){
+  const canvas=document.getElementById(id);
+  if(!canvas)return;
+  if(dashCharts[id]){dashCharts[id].destroy();delete dashCharts[id];}
+  const bgColors=Array.isArray(colors)?colors:Array(labels.length).fill(colors);
+  dashCharts[id]=new Chart(canvas,{
+    type,
+    data:{labels,datasets:[{data,backgroundColor:bgColors,borderRadius:4,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,...options}
+  });
+}
+
+// ── CAMBIO DE ESTADO DESDE HISTORIAL ──
+async function cambiarEstado(itemId, estadoActual){
+  const opciones=Object.keys(ESTADOS_CONFIG).filter(e=>e!==estadoActual);
+  const html=opciones.map(e=>`<button onclick="aplicarEstado('${itemId}','${e}',this.closest('.modal-estado'))" style="display:block;width:100%;margin-bottom:8px;padding:10px 16px;border-radius:var(--radius);border:none;cursor:pointer;font-size:13px;font-weight:600;background:${ESTADOS_CONFIG[e].bg};color:${ESTADOS_CONFIG[e].text}">${e}</button>`).join('');
+  const modal=document.createElement('div');
+  modal.className='modal-estado';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML=`<div style="background:#fff;border-radius:var(--radius-lg);padding:24px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.2)"><div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:16px">Cambiar estado — oferta</div><div style="font-size:12px;color:var(--text2);margin-bottom:12px">Estado actual: <strong>${estadoActual}</strong></div>${html}<button onclick="this.closest('.modal-estado').remove()" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;cursor:pointer;font-family:inherit;font-size:13px;color:var(--text2)">Cancelar</button></div>`;
+  document.body.appendChild(modal);
+}
+
+// ── PROBABILIDAD ──
+async function editarProbabilidad(itemId, probActual, vendedorOferta){
+  if(vendedorOferta&&!currentUserName.toLowerCase().includes(vendedorOferta.split(' ')[0].toLowerCase())){
+    showToast('Solo puedes editar la probabilidad de tus propias ofertas','error');return;
+  }
+  const nueva=prompt(`Probabilidad de cierre (0-100%):`, probActual||'');
+  if(nueva===null)return;
+  const val=Math.min(100,Math.max(0,parseInt(nueva)||0));
+  try{
+    const token=await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${itemId}/fields`,{
+      method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({Probabilidad:val})
+    });
+    showToast('✓ Probabilidad actualizada a '+val+'%','success');
+    cargarHistorial();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function aplicarEstado(itemId, nuevoEstado, modal){
+  try{
+    const token=await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${itemId}/fields`,{
+      method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({Estado:nuevoEstado})
+    });
+    if(modal)modal.remove();
+    showToast('✓ Estado actualizado a '+nuevoEstado,'success');
+    cargarHistorial();
+  }catch(e){showToast('Error: '+e.message,'error');}
 }
 
 initMsal();
