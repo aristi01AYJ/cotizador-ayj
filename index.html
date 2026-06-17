@@ -431,7 +431,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <span style="font-size:12px;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:0.5px">🔒 Margen y Comisión — Solo uso interno</span>
             <button onclick="toggleMGPanel()" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3)">×</button>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px">
             <div style="background:#fff;border-radius:var(--radius);padding:10px;text-align:center;border:1px solid var(--border)">
               <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Descuento</div>
               <div style="font-size:18px;font-weight:800;color:var(--gris)" id="mgDescPct">0%</div>
@@ -439,6 +439,10 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <div style="background:#fff;border-radius:var(--radius);padding:10px;text-align:center;border:1px solid var(--border)">
               <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Margen</div>
               <div style="font-size:18px;font-weight:800;color:var(--green-dark)" id="mgMargenPct">50.000%</div>
+            </div>
+            <div style="background:#fff;border-radius:var(--radius);padding:10px;text-align:center;border:1px solid var(--border)">
+              <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Comisión %</div>
+              <div style="font-size:18px;font-weight:800;color:#3B82F6" id="mgComPct">7.500%</div>
             </div>
             <div style="background:#fff;border-radius:var(--radius);padding:10px;text-align:center;border:1px solid var(--border)">
               <div style="font-size:10px;color:var(--text2);margin-bottom:4px">Comisión USD</div>
@@ -1273,6 +1277,7 @@ function calcMG(){
   const comCOP=comUSD*trm;
   document.getElementById('mgDescPct').textContent=desc+'%';
   document.getElementById('mgMargenPct').textContent=margen.toFixed(3)+'%';
+  document.getElementById('mgComPct').textContent=comPct.toFixed(3)+'%';
   document.getElementById('mgComUSD').textContent='USD '+Math.round(comUSD).toLocaleString('es-CO');
   document.getElementById('mgComCOP').textContent='COP '+Math.round(comCOP).toLocaleString('es-CO');
   document.getElementById('mgBaseUSD').textContent='USD '+Math.round(baseUSD).toLocaleString('es-CO');
