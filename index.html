@@ -450,8 +450,8 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           </div>
           <div class="total-item">
             <span class="total-label">Flete nacional</span>
-            <span class="total-val" id="tFleteCOP" style="color:#666">COP 0</span>
-            <span class="total-val sub2" id="tFleteUSD" style="color:#999"></span>
+            <span class="total-val" id="tFleteUSD" style="color:#666">USD 0</span>
+            <span class="total-val sub2" id="tFleteCOP" style="color:#999">COP 0</span>
           </div>
           <div class="total-item">
             <span class="total-label">Total oferta</span>
@@ -1190,12 +1190,12 @@ function calcTotales(){
   document.getElementById('tDescCOP').textContent='-'+fmtCOP(descUSD);
   document.getElementById('tIVAUSD').textContent=fmtUSD(ivaUSD);
   document.getElementById('tIVACOP').textContent=fmtCOP(ivaUSD);
-  document.getElementById('tFleteCOP').textContent='COP '+Math.round(fleteCOP).toLocaleString('es-CO');
-  const fleteUSD=trm>0?fleteCOP/trm:0;
-  const fleteLabel=document.getElementById('fleteUSDLabel');
-  if(fleteLabel) fleteLabel.textContent=fleteCOP>0?'≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO'):'';
   const tFleteUSD=document.getElementById('tFleteUSD');
-  if(tFleteUSD) tFleteUSD.textContent=fleteCOP>0?'≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO'):'';
+  const tFleteCOP=document.getElementById('tFleteCOP');
+  if(tFleteUSD) tFleteUSD.textContent=fleteCOP>0?fmtUSD(fleteUSD):'USD 0';
+  if(tFleteCOP) tFleteCOP.textContent=fleteCOP>0?'COP '+Math.round(fleteCOP).toLocaleString('es-CO'):'COP 0';
+  const fleteLabel=document.getElementById('fleteUSDLabel');
+  if(fleteLabel) fleteLabel.textContent=fleteCOP>0?'≈ '+fmtUSD(fleteUSD):'';
   document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
 }
