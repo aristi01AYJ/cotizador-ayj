@@ -880,19 +880,24 @@ function _oldTablaPagos_REMOVED(condPago, totalUSD, totalCOP, fmtUSD, fmtCOP){
     +'</tr></tfoot>'
     +'</table></div>';
 }
-function emailVendedor(nombre){
-  const mapa={
-    'Elkin Vera':'evera@ayj.com.co',
-    'Wilson Valencia':'w.valencia@ayj.com.co',
-    'Arnulfo Villadiego':'a.villadiego@ayj.com.co',
-    'Jorge Salamanca':'j.salamanca@ayj.com.co',
-    'Jorge Pulido':'j.pulido@ayj.com.co',
-    'Adolfo Aristizábal':'adolfojose@ayj.com.co',
-  };
-  // Buscar por nombre parcial
-  const key=Object.keys(mapa).find(k=>nombre&&nombre.toLowerCase().includes(k.split(' ')[0].toLowerCase()));
-  return key?mapa[key]:'';
+const VENDEDORES={
+  'Adolfo':  {email:'adolfojose@ayj.com.co', tel:'+57 312 449 00 88'},
+  'Elkin':   {email:'evera@ayj.com.co',      tel:'+57 311 231 94 22'},
+  'Jorge S': {email:'j.salamanca@ayj.com.co',tel:'+57 313 252 65 17'},
+  'Salamanca':{email:'j.salamanca@ayj.com.co',tel:'+57 313 252 65 17'},
+  'Jorge P': {email:'j.pulido@ayj.com.co',   tel:'+57 312 449 52 72'},
+  'Pulido':  {email:'j.pulido@ayj.com.co',   tel:'+57 312 449 52 72'},
+  'Wilson':  {email:'w.valencia@ayj.com.co', tel:'+57 310 309 41 36'},
+  'Arnulfo': {email:'a.villadiego@ayj.com.co',tel:'+57 322 352 03 83'},
+};
+
+function getVendedorInfo(nombre){
+  if(!nombre) return {email:'',tel:''};
+  const key=Object.keys(VENDEDORES).find(k=>nombre.toLowerCase().includes(k.toLowerCase()));
+  return key?VENDEDORES[key]:{email:'',tel:''};
 }
+function emailVendedor(nombre){ return getVendedorInfo(nombre).email; }
+function telVendedor(nombre){ return getVendedorInfo(nombre).tel; }
 async function initMsal(){
   msalInstance=new msal.PublicClientApplication(msalConfig);
   await msalInstance.initialize();
@@ -1586,7 +1591,7 @@ function generarPDF(d, soloRetornar=false){
     +'<div style="font-size:15px;font-weight:700;color:#575756;">'+d.vendedor+'</div>'
     +'<div style="font-size:11px;color:#575756;margin-top:3px;font-weight:600;">AYJ Maquinaria · Aristizábal y Jinete S.A.S.</div>'
     +(emailVendedor(d.vendedor)?'<div style="font-size:11px;color:#777;margin-top:2px;"><a href="mailto:'+emailVendedor(d.vendedor)+'" style="color:#80A61B;text-decoration:none;">'+emailVendedor(d.vendedor)+'</a></div>':'')
-    +'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95</div>'
+    +(telVendedor(d.vendedor)?'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: '+telVendedor(d.vendedor)+'</div>':'<div style="font-size:11px;color:#777;margin-top:1px;">Tel: 313.391.67.95</div>')
     +'</td></tr></table>'
 
     +'<table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #ddd;">'
