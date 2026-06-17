@@ -1181,8 +1181,9 @@ function calcTotales(){
   const descUSD=subUSD*desc/100;
   const baseUSD=subUSD-descUSD;
   const ivaUSD=baseUSD*ivaPct/100;
-  const totalUSD=baseUSD+ivaUSD;
-  const totalCOP=Math.round(totalUSD*trm)+fleteCOP;
+  const fleteUSD=trm>0?fleteCOP/trm:0;
+  const totalUSD=baseUSD+ivaUSD+fleteUSD;
+  const totalCOP=Math.round(totalUSD*trm);
   document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
   document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
   document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
@@ -1398,8 +1399,9 @@ async function guardarCotizacion(){
   const descUSD=subUSD*desc/100;
   const baseUSD=subUSD-descUSD;
   const ivaUSD=baseUSD*ivaPct/100;
-  const totalUSD=baseUSD+ivaUSD;
-  const totalCOP=Math.round(totalUSD*trm)+fleteCOP;
+  const fleteUSD=trm>0?fleteCOP/trm:0;
+  const totalUSD=baseUSD+ivaUSD+fleteUSD;
+  const totalCOP=Math.round(totalUSD*trm);
   const numOferta=document.getElementById('ofertaNum').textContent;
   const idSynergy=(document.getElementById('idSynergyInput')?.value||'').trim();
   const btn=document.getElementById('btnGuardar');
