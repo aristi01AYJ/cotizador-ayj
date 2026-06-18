@@ -1195,16 +1195,18 @@ function fmtCOP(n){return 'COP '+Math.round(n*trm).toLocaleString('es-CO');}
 function buildGrupoCard(g){
   const inStock=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='stock');
   const inImport=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='importacion');
+  const inPedido=carrito.some(i=>i.grupoKey===g.key&&i.tipo==='pedido');
   const div=document.createElement('div');
-  div.className='grupo-card'+(inStock||inImport?' en-carrito':'');
+  div.className='grupo-card'+(inStock||inImport||inPedido?' en-carrito':'');
   const acciones=[];
   const ks=g.key.replace(/'/g,"\\'");
+  const kid=g.key.replace(/[^a-z0-9]/gi,'_');
   if(g.stockCount>0){
     if(inStock) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
     else acciones.push(
       `<div style="display:flex;align-items:center;gap:4px">`
       +`<button onclick="ajustarCantGrupo('${ks}','stock',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
-      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_stock" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
+      +`<span id="cantg_${kid}_stock" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
       +`<button onclick="ajustarCantGrupo('${ks}','stock',1)" style="width:26px;height:26px;border:1px solid var(--green);border-radius:4px;background:var(--green-light);cursor:pointer;font-size:15px;line-height:1;color:var(--green-dark);font-family:inherit">+</button>`
       +`<button class="btn-cat add-stock" onclick="agregarGrupo('${ks}','stock')" style="flex:1"><i class="ti ti-shopping-cart"></i> En Stock</button>`
       +`</div>`
@@ -1215,11 +1217,24 @@ function buildGrupoCard(g){
     else acciones.push(
       `<div style="display:flex;align-items:center;gap:4px">`
       +`<button onclick="ajustarCantGrupo('${ks}','importacion',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
-      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_importacion" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
+      +`<span id="cantg_${kid}_importacion" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
       +`<button onclick="ajustarCantGrupo('${ks}','importacion',1)" style="width:26px;height:26px;border:1px solid #3B82F6;border-radius:4px;background:#DBEAFE;cursor:pointer;font-size:15px;line-height:1;color:#1E3A8A;font-family:inherit">+</button>`
       +`<button class="btn-cat add-import" onclick="agregarGrupo('${ks}','importacion')" style="flex:1"><i class="ti ti-ship"></i> En Importación</button>`
       +`</div>`
     );
+  }
+  // Opción "Agregar como Pedido" — siempre disponible si no está ya en carrito como pedido
+  if(!inPedido){
+    acciones.push(
+      `<div style="display:flex;align-items:center;gap:4px">`
+      +`<button onclick="ajustarCantGrupo('${ks}','pedido',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
+      +`<span id="cantg_${kid}_pedido" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
+      +`<button onclick="ajustarCantGrupo('${ks}','pedido',1)" style="width:26px;height:26px;border:1px solid #F59E0B;border-radius:4px;background:#FEF3C7;cursor:pointer;font-size:15px;line-height:1;color:#92400E;font-family:inherit">+</button>`
+      +`<button class="btn-cat" onclick="agregarGrupo('${ks}','pedido')" style="flex:1;background:#FEF3C7;color:#92400E;border-color:#F59E0B"><i class="ti ti-clock"></i> Como Pedido</button>`
+      +`</div>`
+    );
+  } else {
+    acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','pedido')"><i class="ti ti-x"></i> Quitar Pedido</button>`);
   }
   div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
   return div;
@@ -1230,7 +1245,7 @@ function ajustarCantGrupo(key, tipo, delta){
   const el=document.getElementById(idEl);
   if(!el) return;
   const g=grupos.find(x=>x.key===key);
-  const max=tipo==='stock'?(g?.stockCount||99):(g?.importCount||99);
+  const max=tipo==='stock'?(g?.stockCount||99):tipo==='importacion'?(g?.importCount||99):99;
   const val=Math.max(1, Math.min(max, parseInt(el.textContent||1)+delta));
   el.textContent=val;
 }
