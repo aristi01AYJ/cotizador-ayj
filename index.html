@@ -1198,12 +1198,41 @@ function buildGrupoCard(g){
   const div=document.createElement('div');
   div.className='grupo-card'+(inStock||inImport?' en-carrito':'');
   const acciones=[];
-  if(g.stockCount>0){if(inStock)acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(`<button class="btn-cat add-stock" onclick="agregarGrupo('${g.key.replace(/'/g,"\\'")}','stock')"><i class="ti ti-shopping-cart"></i> Agregar al Carrito</button>`);}
-  if(g.importCount>0){if(inImport)acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${g.key}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${g.key.replace(/'/g,"\\'")}','importacion')"><i class="ti ti-shopping-cart"></i> + Importación</button>`);}
+  const ks=g.key.replace(/'/g,"\\'");
+  if(g.stockCount>0){
+    if(inStock) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(
+      `<div style="display:flex;align-items:center;gap:4px">`
+      +`<button onclick="ajustarCantGrupo('${ks}','stock',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
+      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_stock" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
+      +`<button onclick="ajustarCantGrupo('${ks}','stock',1)" style="width:26px;height:26px;border:1px solid var(--green);border-radius:4px;background:var(--green-light);cursor:pointer;font-size:15px;line-height:1;color:var(--green-dark);font-family:inherit">+</button>`
+      +`<button class="btn-cat add-stock" onclick="agregarGrupo('${ks}','stock')" style="flex:1"><i class="ti ti-shopping-cart"></i> En Stock</button>`
+      +`</div>`
+    );
+  }
+  if(g.importCount>0){
+    if(inImport) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
+    else acciones.push(
+      `<div style="display:flex;align-items:center;gap:4px">`
+      +`<button onclick="ajustarCantGrupo('${ks}','importacion',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
+      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_importacion" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
+      +`<button onclick="ajustarCantGrupo('${ks}','importacion',1)" style="width:26px;height:26px;border:1px solid #3B82F6;border-radius:4px;background:#DBEAFE;cursor:pointer;font-size:15px;line-height:1;color:#1E3A8A;font-family:inherit">+</button>`
+      +`<button class="btn-cat add-import" onclick="agregarGrupo('${ks}','importacion')" style="flex:1"><i class="ti ti-ship"></i> En Importación</button>`
+      +`</div>`
+    );
+  }
   div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
   return div;
+}
+
+function ajustarCantGrupo(key, tipo, delta){
+  const idEl='cantg_'+key.replace(/[^a-z0-9]/gi,'_')+'_'+tipo;
+  const el=document.getElementById(idEl);
+  if(!el) return;
+  const g=grupos.find(x=>x.key===key);
+  const max=tipo==='stock'?(g?.stockCount||99):(g?.importCount||99);
+  const val=Math.max(1, Math.min(max, parseInt(el.textContent||1)+delta));
+  el.textContent=val;
 }
 
 function buildBpCard(m){
@@ -1219,9 +1248,11 @@ function buildBpCard(m){
 function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
   if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
-  const cant=tipo==='stock'?g.stockCount:g.importCount;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant});
-  renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
+  const idEl='cantg_'+key.replace(/[^a-z0-9]/gi,'_')+'_'+tipo;
+  const el=document.getElementById(idEl);
+  const cant=el?parseInt(el.textContent)||1:1;
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa*cant,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant});
+  renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+cant+'× '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
@@ -2425,6 +2456,15 @@ function guardarStockMin(title, val){
   try{localStorage.setItem('ayj_stockMin',JSON.stringify(stockMin));}catch(e){}
   renderStock(); // refrescar semáforos
 }
+function generarEstrellas(titulo, prio){
+  const tid=titulo.replace(/[^a-z0-9]/gi,'_');
+  return [1,2,3,4,5].map(s=>
+    '<span onclick="setPrioridad(\''+titulo+'\','+s+')" '
+    +'style="cursor:pointer;font-size:20px;color:'+(prio>=s?'#F59E0B':'#ddd')+';line-height:1" '
+    +'title="'+s+' estrella'+(s>1?'s':'')+'">★</span>'
+  ).join('');
+}
+
 function setPrioridad(title, estrellas){
   if(!pedido[title]) return;
   pedido[title].prioridad=estrellas;
@@ -2622,7 +2662,7 @@ function renderPedido(){
     </td>
     <td style="padding:10px 14px;text-align:right;font-size:13px">USD ${Math.round(p.tarifa).toLocaleString('es-CO')}</td>
     <td style="padding:10px 14px;text-align:center">
-      <div style="display:flex;gap:2px;justify-content:center">${[1,2,3,4,5].map(s=>`<span onclick="setPrioridad('${p.titulo}',${s})" style="cursor:pointer;font-size:16px;color:${(pedido['${p.titulo}']?.prioridad||0)>=s?'#F59E0B':'#ddd'}" title="${s} estrella${s>1?'s':''}">★</span>`).join('')}</div>
+      <div style="display:flex;gap:2px;justify-content:center">${generarEstrellas(p.titulo,p.prioridad||0)}</div>
     </td>
     <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--green-dark)">USD ${Math.round(p.qty*p.tarifa).toLocaleString('es-CO')}</td>
     <td style="padding:10px 14px;text-align:center">
