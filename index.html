@@ -1881,8 +1881,8 @@ function filtrarHistorial(){
         +(r.items.length?'<button class="btn-cli-usar" onclick=\'duplicarOferta('+JSON.stringify(r.cliente)+','+JSON.stringify(r.items)+')\' title="Duplicar en carrito"><i class="ti ti-copy"></i></button>':'' )
         +' <button class="btn-cli-usar" onclick="cambiarEstado(\''+r.id+'\',\''+r.estado+'\')" title="Cambiar estado" style="border-color:var(--blue);color:var(--blue-dark)"><i class="ti ti-pencil"></i></button>'
         +(r.vendedor&&currentUserName&&(r.vendedor===currentUserName||currentUserName.toLowerCase().includes(r.vendedor.split(' ')[0].toLowerCase()))?
-          ' <button class="btn-cli-usar" onclick="editarOfertaIdx('+i+')" title="Editar oferta" style="border-color:var(--green);color:var(--green-dark)"><i class="ti ti-edit"></i></button>'
-          +' <button class="btn-cli-usar" onclick="borrarOfertaIdx('+i+')" title="Borrar oferta" style="border-color:var(--red);color:var(--red)"><i class="ti ti-trash"></i></button>'
+          ' <button class="btn-cli-usar" onclick="editarOfertaIdx(\''+r.id+'\')" title="Editar oferta" style="border-color:var(--green);color:var(--green-dark)"><i class="ti ti-edit"></i></button>'
+          +' <button class="btn-cli-usar" onclick="borrarOfertaIdx(\''+r.id+'\')" title="Borrar oferta" style="border-color:var(--red);color:var(--red)"><i class="ti ti-trash"></i></button>'
           :'')
         +' <button class="btn-cli-usar" onclick="editarProbabilidad(\''+r.id+'\','+r.prob+',\''+r.vendedor+'\')" title="Probabilidad: '+r.prob+'%" style="border-color:var(--green);color:var(--green-dark);font-size:10px;padding:2px 6px">'+r.prob+'%</button>'
         +'</td>'
@@ -2307,13 +2307,15 @@ async function editarProbabilidad(itemId, probActual, vendedorOferta){
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
-function editarOfertaIdx(idx){
-  const r=lista[idx];
+function editarOfertaIdx(id){
+  const r=historialData.find(h=>h.id===id);
   if(r) editarOferta(r.id, r);
+  else showToast('Error: oferta no encontrada','error');
 }
-function borrarOfertaIdx(idx){
-  const r=lista[idx];
+function borrarOfertaIdx(id){
+  const r=historialData.find(h=>h.id===id);
   if(r) borrarOferta(r.id, r.num, r.vendedor);
+  else showToast('Error: oferta no encontrada','error');
 }
 
 async function editarOferta(itemId, r){
