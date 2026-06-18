@@ -1557,15 +1557,9 @@ async function guardarCotizacion(){
     };
     let itemCreado;
     if(modoEdicion){
-      // PATCH — actualizar oferta existente
-      const token=await getToken();
-      await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${modoEdicion.itemId}/fields`,{
-        method:'PATCH',
-        headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-        body:JSON.stringify(fields)
-      });
-      itemCreado={id:modoEdicion.itemId};
-      showToast('✓ Oferta '+numOferta+' actualizada','success');
+      // POST nuevo registro con número de revisión (conserva el original)
+      itemCreado=await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
+      showToast('✓ Revisión '+numOferta+' guardada (original: '+modoEdicion.original+')','success');
     } else {
       itemCreado=await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
       showToast('✓ Oferta '+numOferta+' guardada','success');
@@ -1851,7 +1845,7 @@ function filtrarHistorial(){
   const desde=document.getElementById('hFiltDesde')?.value?new Date(document.getElementById('hFiltDesde').value):null;
   const hasta=document.getElementById('hFiltHasta')?.value?new Date(document.getElementById('hFiltHasta').value+'T23:59:59'):null;
 
-  const lista=historialData.filter(r=>{
+  window._historialLista=historialData.filter(r=>{
     if(qCli&&!r.cliente.toLowerCase().includes(qCli)) return false;
     if(qVen&&!r.vendedor.toLowerCase().includes(qVen)) return false;
     if(qEst&&r.estado!==qEst) return false;
@@ -1861,6 +1855,7 @@ function filtrarHistorial(){
   });
 
   const wrap=document.getElementById('historialBody');
+  const lista=window._historialLista||[];
   if(!lista.length){wrap.innerHTML='<div class="loading-list">Sin resultados</div>';return;}
 
   const totalFiltrado=lista.reduce((s,r)=>s+r.total,0);
@@ -1886,8 +1881,8 @@ function filtrarHistorial(){
         +(r.items.length?'<button class="btn-cli-usar" onclick=\'duplicarOferta('+JSON.stringify(r.cliente)+','+JSON.stringify(r.items)+')\' title="Duplicar en carrito"><i class="ti ti-copy"></i></button>':'' )
         +' <button class="btn-cli-usar" onclick="cambiarEstado(\''+r.id+'\',\''+r.estado+'\')" title="Cambiar estado" style="border-color:var(--blue);color:var(--blue-dark)"><i class="ti ti-pencil"></i></button>'
         +(r.vendedor&&currentUserName&&(r.vendedor===currentUserName||currentUserName.toLowerCase().includes(r.vendedor.split(' ')[0].toLowerCase()))?
-          ' <button class="btn-cli-usar" onclick="editarOferta(\''+r.id+'\','+JSON.stringify(r)+')" title="Editar oferta" style="border-color:var(--green);color:var(--green-dark)"><i class="ti ti-edit"></i></button>'
-          +' <button class="btn-cli-usar" onclick="borrarOferta(\''+r.id+'\',\''+r.num+'\',\''+r.vendedor+'\')" title="Borrar oferta" style="border-color:var(--red);color:var(--red)"><i class="ti ti-trash"></i></button>'
+          ' <button class="btn-cli-usar" onclick="editarOfertaIdx('+i+')" title="Editar oferta" style="border-color:var(--green);color:var(--green-dark)"><i class="ti ti-edit"></i></button>'
+          +' <button class="btn-cli-usar" onclick="borrarOfertaIdx('+i+')" title="Borrar oferta" style="border-color:var(--red);color:var(--red)"><i class="ti ti-trash"></i></button>'
           :'')
         +' <button class="btn-cli-usar" onclick="editarProbabilidad(\''+r.id+'\','+r.prob+',\''+r.vendedor+'\')" title="Probabilidad: '+r.prob+'%" style="border-color:var(--green);color:var(--green-dark);font-size:10px;padding:2px 6px">'+r.prob+'%</button>'
         +'</td>'
@@ -2312,6 +2307,15 @@ async function editarProbabilidad(itemId, probActual, vendedorOferta){
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
+function editarOfertaIdx(idx){
+  const r=lista[idx];
+  if(r) editarOferta(r.id, r);
+}
+function borrarOfertaIdx(idx){
+  const r=lista[idx];
+  if(r) borrarOferta(r.id, r.num, r.vendedor);
+}
+
 async function editarOferta(itemId, r){
   // Cargar datos de la oferta en el carrito
   if(carrito.length>0){
@@ -2340,18 +2344,29 @@ async function editarOferta(itemId, r){
     if(opciones.includes(r.estado)) condSel.value=r.estado;
   }
 
+  // Generar número con sufijo de revisión
+  const baseNum=r.num.replace(/-R\d+$/, ''); // quitar revisión anterior si existe
+  const revisiones=historialData.filter(h=>h.num.startsWith(baseNum));
+  const maxRev=revisiones.reduce((max, h)=>{
+    const m=h.num.match(/-R(\d+)$/);
+    return m?Math.max(max,parseInt(m[1])):Math.max(max,1);
+  },1);
+  const numRevision=baseNum+'-R'+(maxRev+1);
+
   // Activar modo edición
-  modoEdicion={itemId, numOferta:r.num};
+  modoEdicion={itemId, numOferta:numRevision, original:r.num};
 
   // Cambiar botón guardar
   const btn=document.getElementById('btnGuardar');
   if(btn){
-    btn.innerHTML='<i class="ti ti-device-floppy"></i> Actualizar oferta';
+    btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar Revisión';
     btn.style.background='#3B82F6';
   }
-  // Badge número
+  // Badge número con revisión
   const badge=document.getElementById('ofertaNum');
-  if(badge) badge.textContent=r.num;
+  if(badge) badge.textContent=numRevision;
+  const idSynInput=document.getElementById('idSynergyInput');
+  if(idSynInput) idSynInput.value='';
 
   showToast('Oferta '+r.num+' cargada para editar','success');
   switchView('nueva');
