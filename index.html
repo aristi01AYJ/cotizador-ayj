@@ -554,7 +554,6 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
         <div class="loading-list"><span class="spinner dark"></span> Cargando...</div>
       </div>
     </div>
-  </div>
 
     <div id="dashboardView" style="display:none;flex:1;flex-direction:column;overflow-y:auto;background:var(--bg);padding:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
@@ -627,6 +626,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
 
     </div>
 </div>
+  </div><!-- fin main -->
 
 <!-- MODAL TIEMPO DE ENTREGA PERSONALIZADO -->
 <div id="modalEntrega" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
@@ -1908,6 +1908,9 @@ function switchView(v){
   if(v==='dashboard')cargarDashboard();
   document.getElementById('stockView').style.display=v==='stock'?'flex':'none';
   if(v==='stock')cargarStock();
+  // Ocultar sidebar en vistas de pantalla completa
+  const sidebar=document.querySelector('.sidebar');
+  if(sidebar) sidebar.style.display=(v==='dashboard'||v==='stock')?'none':'';
   ['navNueva','navHistorial','navClientes','navDashboard','navStock'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='';});
   const navMap={nueva:'navNueva',historial:'navHistorial',clientes:'navClientes',dashboard:'navDashboard',stock:'navStock'};
   if(navMap[v])document.getElementById(navMap[v]).className='active';
