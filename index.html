@@ -391,8 +391,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
               <tr>
                 <th style="width:28px">#</th>
                 <th>Máquina</th>
-                <th style="width:80px;text-align:center">Cant.</th>
-                <th style="width:110px">Tipología / Estado</th>
+                <th style="width:110px">Tipología</th>
                 <th style="width:70px;text-align:center">Docs</th>
                 <th style="width:130px;text-align:right">USD</th>
                 <th style="width:130px;text-align:right">COP</th>
@@ -1280,7 +1279,6 @@ function toggleBP(id){
 
 function renderCarrito(){
   actualizarBadgeCarrito();
-  actualizarCarritoTopBar();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
@@ -1289,46 +1287,10 @@ function renderCarrito(){
     const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--red);white-space:nowrap;"><i class="ti ti-file-type-pdf" style="font-size:14px"></i> Ver Ficha Técnica</a>`:'';
     const ytCell=item.ytVideo?`<a class="btn-pdf" href="${item.ytVideo}" target="_blank" title="Ver video en YouTube" style="color:#FF0000"><i class="ti ti-brand-youtube"></i></a>`:'';
-    const precioUnit=item.cantidad>0?item.tarifa/item.cantidad:item.tarifa;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td>`
-      +`<td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div></td>`
-      +`<td style="text-align:center;vertical-align:middle">`
-        +`<div style="display:flex;align-items:center;gap:3px;justify-content:center">`
-          +`<button onclick="cambiarCantItem(${i},-1)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:#fff;cursor:pointer;font-size:13px;line-height:1;font-family:inherit">−</button>`
-          +`<input type="number" min="1" value="${item.cantidad||1}" onchange="setCantItem(${i},this.value)" style="width:36px;text-align:center;padding:2px;border:1px solid var(--border);border-radius:3px;font-size:13px;font-family:inherit;font-weight:600">`
-          +`<button onclick="cambiarCantItem(${i},1)" style="width:22px;height:22px;border:1px solid var(--green);border-radius:3px;background:var(--green-light);cursor:pointer;font-size:13px;line-height:1;color:var(--green-dark);font-family:inherit">+</button>`
-        +`</div>`
-        +`<div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtUSD(precioUnit)}/u</div>`
-      +`</td>`
-      +`<td style="vertical-align:middle">`
-        +`<span class="item-tipo-badge ${tipoClass}">${tipoLabel}</span>`
-        +`${item.tipologia?`<div style="font-size:10px;color:var(--text2);margin-top:3px">${item.tipologia}</div>`:''}`
-      +`</td>`
-      +`<td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td>`
-      +`<td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td>`
-      +`<td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span></td><td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
-}
-
-function cambiarCantItem(idx, delta){
-  const item=carrito[idx];
-  if(!item) return;
-  const precioUnit=item.cantidad>0?item.tarifa/item.cantidad:item.tarifa;
-  const nuevaCant=Math.max(1,(item.cantidad||1)+delta);
-  carrito[idx].cantidad=nuevaCant;
-  carrito[idx].tarifa=precioUnit*nuevaCant;
-  renderCarrito();calcTotales();
-}
-function setCantItem(idx, val){
-  const item=carrito[idx];
-  if(!item) return;
-  const precioUnit=item.cantidad>0?item.tarifa/item.cantidad:item.tarifa;
-  const nuevaCant=Math.max(1,parseInt(val)||1);
-  carrito[idx].cantidad=nuevaCant;
-  carrito[idx].tarifa=precioUnit*nuevaCant;
-  calcTotales();
 }
 function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();renderCatalogo();}
 
@@ -1691,7 +1653,6 @@ function generarPDF(d, soloRetornar=false){
       +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
       +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
       +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
-      +(item.cantidad>1?'<div style="font-size:10px;color:#777;margin-top:2px;">Cantidad: <strong>'+item.cantidad+'</strong> uds · Precio unitario: '+fUSD((item.tarifa||0)/item.cantidad)+'</div>':'')
     +(item.fichaTecnica?'<a href="'+item.fichaTecnica+'" target="_blank" style="font-size:10px;color:#c0392b;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-top:4px;">📄 Ver Ficha Técnica</a>':'')
     +(item.ytVideo?'<div style="margin-top:3px;"><a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">▶ Ver video del equipo en YouTube</a></div>':'')
       +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';display:inline-block;margin-top:4px;font-weight:500;">'+tipoLabel+(item.cantidad>1?' · '+item.cantidad+' uds':'')+'</span>'
