@@ -1460,6 +1460,10 @@ function nuevaCotizacion(){
   if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
   ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  // Limpiar modo edición
+  modoEdicion=null;
+  const btnG=document.getElementById('btnGuardar');
+  if(btnG){btnG.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';btnG.style.background='';}
   document.getElementById('modoCOPChk').checked=false;
   modoCOP=false;
   document.body.classList.remove('modo-cop');
@@ -1551,9 +1555,22 @@ async function guardarCotizacion(){
       Validez:validez,
       Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
     };
-    const itemCreado=await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
+    let itemCreado;
+    if(modoEdicion){
+      // PATCH — actualizar oferta existente
+      const token=await getToken();
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${modoEdicion.itemId}/fields`,{
+        method:'PATCH',
+        headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify(fields)
+      });
+      itemCreado={id:modoEdicion.itemId};
+      showToast('✓ Oferta '+numOferta+' actualizada','success');
+    } else {
+      itemCreado=await graphPost(`/sites/${siteId}/lists/${listIdCotizaciones}/items`,{fields});
+      showToast('✓ Oferta '+numOferta+' guardada','success');
+    }
     const itemId=itemCreado?.id||null;
-    showToast('✓ Oferta '+numOferta+' guardada','success');
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Generar HTML, subir a SharePoint, luego abrir con link
     const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito]},true);
@@ -1793,6 +1810,7 @@ async function guardarHTMLEnSharePoint(numOferta, htmlContent){
 
 
 let historialData=[];
+let modoEdicion=null; // {itemId, numOferta} si estamos editando
 
 async function cargarHistorial(){
   if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
@@ -1867,6 +1885,10 @@ function filtrarHistorial(){
         +(r.linkPDF?'<a href="'+r.linkPDF+'" target="_blank" class="btn-cli-usar" style="border-color:var(--red);color:var(--red);text-decoration:none;" title="Ver oferta"><i class="ti ti-file-type-pdf"></i></a> ':'' )
         +(r.items.length?'<button class="btn-cli-usar" onclick=\'duplicarOferta('+JSON.stringify(r.cliente)+','+JSON.stringify(r.items)+')\' title="Duplicar en carrito"><i class="ti ti-copy"></i></button>':'' )
         +' <button class="btn-cli-usar" onclick="cambiarEstado(\''+r.id+'\',\''+r.estado+'\')" title="Cambiar estado" style="border-color:var(--blue);color:var(--blue-dark)"><i class="ti ti-pencil"></i></button>'
+        +(r.vendedor&&currentUserName&&(r.vendedor===currentUserName||currentUserName.toLowerCase().includes(r.vendedor.split(' ')[0].toLowerCase()))?
+          ' <button class="btn-cli-usar" onclick="editarOferta(\''+r.id+'\','+JSON.stringify(r)+')" title="Editar oferta" style="border-color:var(--green);color:var(--green-dark)"><i class="ti ti-edit"></i></button>'
+          +' <button class="btn-cli-usar" onclick="borrarOferta(\''+r.id+'\',\''+r.num+'\',\''+r.vendedor+'\')" title="Borrar oferta" style="border-color:var(--red);color:var(--red)"><i class="ti ti-trash"></i></button>'
+          :'')
         +' <button class="btn-cli-usar" onclick="editarProbabilidad(\''+r.id+'\','+r.prob+',\''+r.vendedor+'\')" title="Probabilidad: '+r.prob+'%" style="border-color:var(--green);color:var(--green-dark);font-size:10px;padding:2px 6px">'+r.prob+'%</button>'
         +'</td>'
         +'</tr>';
@@ -2287,6 +2309,74 @@ async function editarProbabilidad(itemId, probActual, vendedorOferta){
     });
     showToast('✓ Probabilidad actualizada a '+val+'%','success');
     cargarHistorial();
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function editarOferta(itemId, r){
+  // Cargar datos de la oferta en el carrito
+  if(carrito.length>0){
+    if(!confirm('El carrito actual se reemplazará con los datos de esta oferta. ¿Continuar?')) return;
+  }
+  // Cargar items
+  carrito=r.items.map(i=>({
+    id:i.nombre,
+    grupoKey:null,
+    tipo:i.tipo||'stock',
+    nombre:i.nombre,
+    marca:'',modelo:'',tipologia:'',
+    tarifa:i.tarifaUSD||i.tarifa||0,
+    descripcion:'',fichaTecnica:'',ytVideo:'',
+    cantidad:i.cantidad||1,
+  }));
+
+  // Cargar cliente
+  const clienteInput=document.getElementById('clienteInput');
+  if(clienteInput) clienteInput.value=r.cliente||'';
+
+  // Cargar condición de pago
+  const condSel=document.getElementById('condPagoSel');
+  if(condSel){
+    const opciones=[...condSel.options].map(o=>o.value);
+    if(opciones.includes(r.estado)) condSel.value=r.estado;
+  }
+
+  // Activar modo edición
+  modoEdicion={itemId, numOferta:r.num};
+
+  // Cambiar botón guardar
+  const btn=document.getElementById('btnGuardar');
+  if(btn){
+    btn.innerHTML='<i class="ti ti-device-floppy"></i> Actualizar oferta';
+    btn.style.background='#3B82F6';
+  }
+  // Badge número
+  const badge=document.getElementById('ofertaNum');
+  if(badge) badge.textContent=r.num;
+
+  showToast('Oferta '+r.num+' cargada para editar','success');
+  switchView('nueva');
+  renderCarrito();
+  calcTotales();
+}
+
+async function borrarOferta(itemId, numOferta, vendedor){
+  // Verificar que sea el dueño
+  if(!currentUserName.toLowerCase().includes(vendedor.split(' ')[0].toLowerCase())){
+    showToast('Solo puedes borrar tus propias ofertas','error');return;
+  }
+  if(!confirm('¿Borrar la oferta '+numOferta+'? Esta acción no se puede deshacer.')) return;
+  try{
+    const token=await getToken();
+    const r=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${itemId}`,{
+      method:'DELETE',
+      headers:{Authorization:'Bearer '+token}
+    });
+    if(r.ok||r.status===204){
+      showToast('✓ Oferta '+numOferta+' eliminada','success');
+      cargarHistorial();
+    } else {
+      showToast('Error al borrar: '+r.status,'error');
+    }
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
