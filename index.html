@@ -1669,9 +1669,15 @@ function generarPDF(d, soloRetornar=false){
       +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
       +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
       +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
-    +(item.fichaTecnica?'<a href="'+item.fichaTecnica+'" target="_blank" style="font-size:10px;color:#c0392b;text-decoration:none;display:inline-flex;align-items:center;gap:3px;margin-top:4px;">📄 Ver Ficha Técnica</a>':'')
-    +(item.ytVideo?'<div style="margin-top:3px;"><a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:3px;">▶ Ver video del equipo en YouTube</a></div>':'')
-      +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';display:inline-block;margin-top:4px;font-weight:500;">'+tipoLabel+(item.cantidad>1?' · '+item.cantidad+' uds':'')+'</span>'
+    +(item.fichaTecnica||item.ytVideo||tipoLabel?
+      '<div style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+      +(item.fichaTecnica?'<a href="'+item.fichaTecnica+'" target="_blank" style="font-size:10px;color:#c0392b;text-decoration:none;display:inline-flex;align-items:center;gap:2px;border:1px solid #f5c6c6;border-radius:4px;padding:1px 6px;background:#fff8f8"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Ficha Técnica</a>':'')
+      +(item.fichaTecnica&&item.ytVideo?'<span style="color:#ccc;font-size:10px">|</span>':'')
+      +(item.ytVideo?'<a href="'+item.ytVideo+'" target="_blank" style="font-size:10px;color:#FF0000;text-decoration:none;display:inline-flex;align-items:center;gap:2px;border:1px solid #ffd0d0;border-radius:4px;padding:1px 6px;background:#fff8f8"><svg width="10" height="10" viewBox="0 0 24 24" fill="#FF0000"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58a2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg> Video</a>':'')
+      +((item.fichaTecnica||item.ytVideo)&&tipoLabel?'<span style="color:#ccc;font-size:10px">|</span>':'')
+      +'<span style="font-size:10px;padding:1px 8px;border-radius:20px;background:'+tipoBg+';color:'+tipoColor+';font-weight:500;">'+tipoLabel+'</span>'
+      +'</div>'
+      :'')
       +'</td>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">'
       +(d.modoCOP
