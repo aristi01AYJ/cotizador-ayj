@@ -1251,7 +1251,7 @@ function agregarGrupo(key,tipo){
   const idEl='cantg_'+key.replace(/[^a-z0-9]/gi,'_')+'_'+tipo;
   const el=document.getElementById(idEl);
   const cant=el?parseInt(el.textContent)||1:1;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa*cant,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant});
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa*cant,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant,stockCount:g.stockCount,importCount:g.importCount});
   renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+cant+'× '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
@@ -1629,9 +1629,10 @@ function generarPDF(d, soloRetornar=false){
   const cli=d.clienteInfo||{};
 
   const filas=d.items.map((item,idx)=>{
-    const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
-    const tipoBg=item.tipo==='stock'?'#eaf2d7':item.tipo==='importacion'?'#e8eef7':'#faeeda';
-    const tipoColor=item.tipo==='stock'?'#4a6a0a':item.tipo==='importacion'?'#2a4a7a':'#854F0B';
+    const esUltimaUnidad=item.tipo==='stock'&&(item.stockCount===1||item.cantidad===1&&item.stockCount<=1);
+    const tipoLabel=esUltimaUnidad?'🔥 ÚLTIMA UNIDAD':item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
+    const tipoBg=esUltimaUnidad?'#FEE2E2':item.tipo==='stock'?'#eaf2d7':item.tipo==='importacion'?'#e8eef7':'#faeeda';
+    const tipoColor=esUltimaUnidad?'#991B1B':item.tipo==='stock'?'#4a6a0a':item.tipo==='importacion'?'#2a4a7a':'#854F0B';
     return '<tr>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;font-size:11px;color:#999;text-align:center;">'+(idx+1)+'</td>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;">'
