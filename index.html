@@ -1208,7 +1208,7 @@ function buildGrupoCard(g){
     if(inImport) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
     else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${ks}','importacion')"><i class="ti ti-ship"></i> + Importación</button>`);
   }
-  div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge ${g.stockCount===1?'':'stock'}"><i class="ti ti-${g.stockCount===1?'flame':'check'}" style="font-size:10px"></i> ${g.stockCount===1?'🔥 Última':'En Stock: '+g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
+  div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?(g.stockCount===1?'<span class="stock-badge" style="background:#FEE2E2;color:#991B1B;font-weight:700">🔥 ÚLTIMA UNIDAD</span>':'<span class="stock-badge stock">✅ En Stock · '+g.stockCount+' uds</span>'):''} ${g.importCount>0?'<span class="stock-badge importacion">🚢 En Importación · '+g.importCount+' uds</span>':''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
   return div;
 }
 
@@ -1238,16 +1238,36 @@ function toggleBP(id){
 
 function renderCarrito(){
   actualizarBadgeCarrito();
+  actualizarCarritoTopBar();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
   carrito.forEach((item,i)=>{
-    const tipoLabel=item.tipo==='stock'?'En Stock':item.tipo==='importacion'?'En Importación':'Bajo Pedido';
-    const tipoClass=item.tipo==='stock'?'stock':item.tipo==='importacion'?'importacion':'pedido';
     const pdfCell=item.fichaTecnica?`<a class="btn-pdf" href="${item.fichaTecnica}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--red);white-space:nowrap;"><i class="ti ti-file-type-pdf" style="font-size:14px"></i> Ver Ficha Técnica</a>`:'';
     const ytCell=item.ytVideo?`<a class="btn-pdf" href="${item.ytVideo}" target="_blank" title="Ver video en YouTube" style="color:#FF0000"><i class="ti ti-brand-youtube"></i></a>`:'';
+    const badge=item.tipo==='stock'&&item.stockCount===1
+      ?`<span class="item-tipo-badge" style="background:#FEE2E2;color:#991B1B;font-weight:700">🔥 ÚLTIMA UNIDAD</span>`
+      :item.tipo==='stock'
+        ?`<span class="item-tipo-badge stock">✅ En Stock · ${item.stockCount||''} uds</span>`
+        :item.tipo==='importacion'
+          ?`<span class="item-tipo-badge importacion">🚢 En Importación · ${item.importCount||''} uds</span>`
+          :`<span class="item-tipo-badge pedido">📦 Bajo Pedido</span>`;
+    const precioUnit=item.tarifa/(item.cantidad||1);
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td><td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div><span class="item-tipo-badge ${tipoClass}">${tipoLabel}${item.cantidad>1?' · '+item.cantidad+' uds':''}</span></td><td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td><td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td><td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td><td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
+    tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td>`
+      +`<td><div class="item-name">${item.nombre}</div><div class="item-sub">${item.marca}${item.modelo?' · '+item.modelo:''}</div>${badge}</td>`
+      +`<td style="vertical-align:middle"><span class="item-tipo-badge" style="background:var(--bg);color:var(--text2)">${item.tipologia||'—'}</span></td>`
+      +`<td style="text-align:center;vertical-align:middle">${pdfCell}${ytCell}</td>`
+      +`<td style="text-align:center;vertical-align:middle;white-space:nowrap">`
+        +`<div style="display:flex;align-items:center;gap:3px;justify-content:center">`
+          +`<button onclick="cambiarCantCarrito(${i},-1)" style="width:22px;height:22px;border:1px solid var(--border);border-radius:3px;background:#fff;cursor:pointer;font-size:13px;line-height:1;font-family:inherit">−</button>`
+          +`<span style="min-width:20px;text-align:center;font-weight:600;font-size:13px">${item.cantidad||1}</span>`
+          +`<button onclick="cambiarCantCarrito(${i},1)" style="width:22px;height:22px;border:1px solid var(--green);border-radius:3px;background:var(--green-light);cursor:pointer;font-size:13px;line-height:1;color:var(--green-dark);font-family:inherit">+</button>`
+        +`</div>`
+        +`<div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtUSD(precioUnit)}/u</div>`
+      +`</td>`
+      +`<td class="price-cell"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td>`
+      +`<td><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
   });
 }
