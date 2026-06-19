@@ -1668,7 +1668,7 @@ function generarPDF(d, soloRetornar=false){
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;">'
       +'<div style="font-weight:700;font-size:13px;color:#2a2a2a;">'+item.nombre+'</div>'
       +(item.marca||item.modelo?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(item.marca||'')+(item.modelo?' · '+item.modelo:'')+'</div>':'')
-      +(item.descripcion?'<div style="font-size:11px;color:#999;margin-top:3px;">'+item.descripcion+'</div>':'')
+      +(item.tipologia?'<div style="font-size:11px;color:#777;margin-top:3px;font-weight:500;">'+item.tipologia+'</div>':'')
     +(item.fichaTecnica||item.ytVideo||tipoLabel?
       '<div style="margin-top:5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
       +(item.fichaTecnica?'<a href="'+item.fichaTecnica+'" target="_blank" style="font-size:10px;color:#c0392b;text-decoration:none;display:inline-flex;align-items:center;gap:2px;border:1px solid #f5c6c6;border-radius:4px;padding:1px 6px;background:#fff8f8"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Ficha Técnica</a>':'')
