@@ -1207,7 +1207,7 @@ function buildGrupoCard(g){
   } else {
     if(g.stockCount>0){
       if(inStock) acciones.push('<button class="btn-cat remove" onclick="quitarGrupoData(this,\'stock\')"><i class="ti ti-x"></i> Quitar del Carrito</button>');
-      else acciones.push('<button class="btn-cat add-stock" onclick="agregarGrupoData(this,\'stock\')">'+(g.stockCount===1?'<i class="ti ti-flame" style="color:#EF4444"></i> ULTIMA UNIDAD':'<i class="ti ti-shopping-cart"></i> Agregar al Carrito')+'</button>');
+      else acciones.push('<button class="btn-cat add-stock" onclick="agregarGrupoData(this,\'stock\')"><i class="ti ti-shopping-cart"></i> '+(g.stockCount===1?'Ultima Unidad':'Agregar al Carrito')+'</button>');
     }
     if(g.importCount>0){
       if(inImport) acciones.push('<button class="btn-cat remove" onclick="quitarGrupoData(this,\'importacion\')"><i class="ti ti-x"></i> Quitar del Carrito</button>');
@@ -1218,7 +1218,7 @@ function buildGrupoCard(g){
     ?'<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock</span>'
     :g.stockCount>0
       ?(g.stockCount===1
-        ?'<span class="stock-badge" style="background:#FEE2E2;color:#991B1B;font-weight:700"><i class="ti ti-flame" style="font-size:10px"></i> ULTIMA UNIDAD</span>'
+        ?'<span class="stock-badge" style="background:#FEE2E2;color:#991B1B;font-weight:700">ULTIMA UNIDAD</span>'
         :'<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: '+g.stockCount+'</span>')
       :'';
   const importBadge=!esHerramienta&&g.importCount>0
@@ -1264,7 +1264,7 @@ function toggleBP(id){
 
 function renderCarrito(){
   actualizarBadgeCarrito();
-  actualizarCarritoTopBar();
+  if(typeof actualizarCarritoTopBar==="function") actualizarCarritoTopBar();
   const empty=document.getElementById('emptyState'),wrap=document.getElementById('itemsWrap'),tbody=document.getElementById('itemsBody');
   if(!carrito.length){empty.style.display='block';wrap.style.display='none';return;}
   empty.style.display='none';wrap.style.display='block';tbody.innerHTML='';
