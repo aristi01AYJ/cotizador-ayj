@@ -392,6 +392,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
                 <th style="width:28px">#</th>
                 <th>Máquina</th>
                 <th style="width:110px">Tipología</th>
+                <th style="width:80px;text-align:center">Cant.</th>
                 <th style="width:70px;text-align:center">Docs</th>
                 <th style="width:130px;text-align:right">USD</th>
                 <th style="width:130px;text-align:right">COP</th>
@@ -1201,38 +1202,14 @@ function buildGrupoCard(g){
   const ks=g.key.replace(/'/g,"\\'");
   if(g.stockCount>0){
     if(inStock) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','stock')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(
-      `<div style="display:flex;align-items:center;gap:4px">`
-      +`<button onclick="ajustarCantGrupo('${ks}','stock',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
-      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_stock" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
-      +`<button onclick="ajustarCantGrupo('${ks}','stock',1)" style="width:26px;height:26px;border:1px solid var(--green);border-radius:4px;background:var(--green-light);cursor:pointer;font-size:15px;line-height:1;color:var(--green-dark);font-family:inherit">+</button>`
-      +`<button class="btn-cat add-stock" onclick="agregarGrupo('${ks}','stock')" style="flex:1"><i class="ti ti-shopping-cart"></i> En Stock</button>`
-      +`</div>`
-    );
+    else acciones.push(`<button class="btn-cat add-stock" onclick="agregarGrupo('${ks}','stock')"><i class="ti ti-shopping-cart"></i> ${g.stockCount===1?'🔥 Última Unidad':'Agregar al Carrito'}</button>`);
   }
   if(g.importCount>0){
     if(inImport) acciones.push(`<button class="btn-cat remove" onclick="quitarGrupo('${ks}','importacion')"><i class="ti ti-x"></i> Quitar del Carrito</button>`);
-    else acciones.push(
-      `<div style="display:flex;align-items:center;gap:4px">`
-      +`<button onclick="ajustarCantGrupo('${ks}','importacion',-1)" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:15px;line-height:1;font-family:inherit">−</button>`
-      +`<span id="cantg_${g.key.replace(/[^a-z0-9]/gi,'_')}_importacion" style="min-width:22px;text-align:center;font-size:13px;font-weight:600">1</span>`
-      +`<button onclick="ajustarCantGrupo('${ks}','importacion',1)" style="width:26px;height:26px;border:1px solid #3B82F6;border-radius:4px;background:#DBEAFE;cursor:pointer;font-size:15px;line-height:1;color:#1E3A8A;font-family:inherit">+</button>`
-      +`<button class="btn-cat add-import" onclick="agregarGrupo('${ks}','importacion')" style="flex:1"><i class="ti ti-ship"></i> En Importación</button>`
-      +`</div>`
-    );
+    else acciones.push(`<button class="btn-cat add-import" onclick="agregarGrupo('${ks}','importacion')"><i class="ti ti-ship"></i> + Importación</button>`);
   }
-  div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge stock"><i class="ti ti-check" style="font-size:10px"></i> En Stock: ${g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
+  div.innerHTML=`<div class="grupo-header"><div class="grupo-top"><div style="min-width:0"><div class="grupo-name">${g.title}</div><div class="grupo-marca">${g.marca}${g.modelo?' · '+g.modelo:''}${g.tipologia?' · '+g.tipologia:''}</div></div><div class="grupo-precio"><div style="display:flex;gap:5px;justify-content:flex-end;margin-bottom:4px;">${g.fichaTecnica?`<a href="${g.fichaTecnica}" target="_blank" style="color:var(--red);font-size:15px;" title="Ver ficha técnica"><i class="ti ti-file-type-pdf"></i></a>`:''}${g.ytVideo?`<a href="${g.ytVideo}" target="_blank" style="color:#FF0000;font-size:15px;" title="Ver video"><i class="ti ti-brand-youtube"></i></a>`:''}</div><div class="precio-usd">${fmtUSD(g.tarifa)}</div><div class="precio-cop">${fmtCOP(g.tarifa)}</div></div></div><div class="stock-row">${g.stockCount>0?`<span class="stock-badge ${g.stockCount===1?'':'stock'}"><i class="ti ti-${g.stockCount===1?'flame':'check'}" style="font-size:10px"></i> ${g.stockCount===1?'🔥 Última':'En Stock: '+g.stockCount}</span>`:''}${g.importCount>0?`<span class="stock-badge importacion"><i class="ti ti-ship" style="font-size:10px"></i> En Importación: ${g.importCount}</span>`:''}</div></div>${acciones.length?`<div class="grupo-actions">${acciones.join('')}</div>`:''}`;
   return div;
-}
-
-function ajustarCantGrupo(key, tipo, delta){
-  const idEl='cantg_'+key.replace(/[^a-z0-9]/gi,'_')+'_'+tipo;
-  const el=document.getElementById(idEl);
-  if(!el) return;
-  const g=grupos.find(x=>x.key===key);
-  const max=tipo==='stock'?(g?.stockCount||99):(g?.importCount||99);
-  const val=Math.max(1, Math.min(max, parseInt(el.textContent||1)+delta));
-  el.textContent=val;
 }
 
 function buildBpCard(m){
@@ -1248,11 +1225,8 @@ function buildBpCard(m){
 function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
   if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
-  const idEl='cantg_'+key.replace(/[^a-z0-9]/gi,'_')+'_'+tipo;
-  const el=document.getElementById(idEl);
-  const cant=el?parseInt(el.textContent)||1:1;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa*cant,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:cant,stockCount:g.stockCount,importCount:g.importCount});
-  renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+cant+'× '+g.title,'success');
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:1,stockCount:g.stockCount,importCount:g.importCount});
+  renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
@@ -1277,6 +1251,15 @@ function renderCarrito(){
     tbody.appendChild(tr);
   });
 }
+function cambiarCantCarrito(idx, delta){
+  if(!carrito[idx]) return;
+  const precioUnit=carrito[idx].tarifa/(carrito[idx].cantidad||1);
+  const nuevaCant=Math.max(1,(carrito[idx].cantidad||1)+delta);
+  carrito[idx].cantidad=nuevaCant;
+  carrito[idx].tarifa=precioUnit*nuevaCant;
+  renderCarrito();calcTotales();
+}
+
 function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();renderCatalogo();}
 
 function calcTotales(){
