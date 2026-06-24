@@ -1816,16 +1816,20 @@ function generarPDF(d, soloRetornar=false){
     +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+(d.modoCOP?fCOP(d.ivaUSD||0):fUSD(d.ivaUSD||0)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.ivaUSD||0)+'</span>')+'</td></tr>'
     +fleteRow
     +'<tr style="background:#80A61B;">'
-    +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;">TOTAL OFERTA</td>'
-    +'<td style="padding:12px 10px;text-align:right;">'
-    +(d.modoCOP?'<div style="font-weight:800;font-size:16px;color:#fff;">'+fCOP(d.totalUSD||0)+'</div>':'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div><div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
+    +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;width:120px;">TOTAL OFERTA</td>'
+    +'<td style="padding:10px 14px;text-align:right;min-width:220px;">'
+    +(d.modoCOP
+      ?'<div style="font-weight:800;font-size:18px;color:#fff;white-space:nowrap;">'+fCOP(d.totalUSD||0)+'</div>'
+      :'<div style="font-weight:800;font-size:18px;color:#fff;white-space:nowrap;">'+fUSD(d.totalUSD||0)+'</div>'
+       +'<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:3px;font-weight:600;white-space:nowrap;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div>'
+       +'<div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:3px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
     +'</td></tr></table></td></tr></table>'
 
 
     +'<div style="margin-top:24px;border-top:3px solid #80A61B;padding-top:10px;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:9px;color:#666;">'
     +'<tr>'
-    +'<td style="padding:0 12px 0 0;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Bogotá</strong><br>Carrera 40 No. 17A - 44<br>Tel: 601.805.18.3636<br><a href="mailto:info@ayj.com.co" style="color:#80A61B;text-decoration:none;">info@ayj.com.co</a></td>'
+    +'<td style="padding:0 12px 0 0;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Bogotá</strong><br>Carrera 40 No. 17A - 44<br>Tel: 601.805.18.36<br><a href="mailto:info@ayj.com.co" style="color:#80A61B;text-decoration:none;">info@ayj.com.co</a></td>'
     +'<td style="padding:0 12px;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Medellín</strong><br>Calle 29C No. 54A – 18<br>Tel: 604.332.2487<br><a href="mailto:medellin@ayj.com.co" style="color:#80A61B;text-decoration:none;">medellin@ayj.com.co</a></td>'
     +'<td style="padding:0 12px;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">CAT</strong><br>Centro de Asistencia Técnica<br>Tel: 313.391.67.95<br><a href="mailto:cat@ayj.com.co" style="color:#80A61B;text-decoration:none;">cat@ayj.com.co</a></td>'
     +'<td style="padding:0 0 0 12px;vertical-align:top;text-align:right;"><a href="https://www.ayj.com.co" target="_blank" style="color:#80A61B;text-decoration:none;font-weight:700;font-size:10px;">www.ayj.com.co</a><br><span style="color:#aaa;font-size:8px;">Lunes a viernes 7:30–12:30 / 13:30–17:00</span>'+(d.idSynergy?'<br><span style="color:#575756;font-size:9px;font-weight:700;">Synergy: '+d.idSynergy+'</span>':'')+'</td>'
