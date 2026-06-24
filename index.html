@@ -294,10 +294,12 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <select id="filtroTipologia" onchange="renderCatalogo()"><option value="">Todas las tipologías</option></select>
         </div>
       </div>
-      <div class="trm-bar">
+      <div class="trm-bar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <label><i class="ti ti-currency-dollar" style="font-size:13px;vertical-align:-1px"></i> TRM</label>
         <input type="number" id="trmInput" value="3650" step="10" oninput="onTrmChange()">
         <span id="trmLabel">$ 4.200 COP/USD</span>
+        <button onclick="resetTRM()" title="Restaurar TRM del Banco de la República" style="background:none;border:1px solid var(--border);border-radius:var(--radius);padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap"><i class="ti ti-refresh" style="font-size:11px;vertical-align:-1px"></i> BanRep</button>
+        <button onclick="solicitarClavePrecio()" id="precioLockBtn" title="Modificar precios" style="margin-left:auto;background:#f0f4e8;border:1.5px solid var(--green);color:var(--green-dark);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">💲 Precio</button>
       </div>
       <div class="maq-list" id="maqList">
         <div class="loading-list"><span class="spinner dark"></span> Cargando catálogo...</div>
@@ -1151,6 +1153,11 @@ async function cargarTRM(){
   document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
 }
 
+function resetTRM(){
+  cargarTRM();
+  showToast('Actualizando TRM del Banco de la República...','success');
+}
+
 function onTrmChange(){
   trm=parseFloat(document.getElementById('trmInput').value)||1;
   document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
@@ -1292,7 +1299,11 @@ function renderCarrito(){
         +`</div>`
         +`<div style="font-size:9px;color:var(--text3);margin-top:1px">${fmtUSD(precioUnit)}/u</div>`
       +`</td>`
-      +`<td class="price-cell" style="vertical-align:middle"><div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div></td>`
+      +`<td class="price-cell" style="vertical-align:middle">`
+      +(window.precioDesbloqueado
+        ?`<div style="display:flex;align-items:center;gap:3px;justify-content:center"><span style="font-size:10px;color:var(--text2)">USD</span><input type="number" min="0" value="${Math.round(item.tarifa/(item.cantidad||1))}" onchange="editarPrecioItem(${i},this.value)" style="width:70px;padding:2px 4px;border:1px solid #F59E0B;border-radius:3px;font-size:12px;font-family:inherit;text-align:right;background:#fffbf0"></div>`
+        :`<div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div>`)
+      +`</td>`
       +`<td class="price-cell" style="vertical-align:middle"><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td>`
       +`<td style="vertical-align:middle"><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
     tbody.appendChild(tr);
@@ -1339,6 +1350,41 @@ function calcTotales(){
 }
 
 // ── DESCUENTO ──────────────────────────────────────────
+// ── EDICIÓN DE PRECIOS ────────────────────────────────
+window.precioDesbloqueado=false;
+const CLAVE_PRECIO='AYJ860';
+
+function solicitarClavePrecio(){
+  if(window.precioDesbloqueado){
+    window.precioDesbloqueado=false;
+    const btn=document.getElementById('precioLockBtn');
+    if(btn){btn.textContent='💲 Precio';btn.style.background='#f0f4e8';btn.style.color='var(--green-dark)';}
+    renderCarrito();calcTotales();
+    showToast('Edición de precios bloqueada','success');
+    return;
+  }
+  const clave=prompt('Clave para modificar precios:');
+  if(clave===null) return;
+  if(clave!==CLAVE_PRECIO){showToast('Clave incorrecta','error');return;}
+  window.precioDesbloqueado=true;
+  const btn=document.getElementById('precioLockBtn');
+  if(btn){btn.textContent='🔓 Precio';btn.style.background='#F59E0B';btn.style.color='#fff';}
+  renderCarrito();
+  showToast('✓ Precios desbloqueados para edición','success');
+}
+
+function editarPrecioItem(idx, nuevoPrecioUnit){
+  if(!window.precioDesbloqueado) return;
+  const val=parseFloat(nuevoPrecioUnit)||0;
+  if(val<0) return;
+  const cant=carrito[idx].cantidad||1;
+  carrito[idx].tarifa=val*cant;
+  // En modo edición USD es un input — solo actualizar COP
+  const elCOP=document.getElementById('pcop_'+idx);
+  if(elCOP) elCOP.textContent=fmtCOP(carrito[idx].tarifa);
+  calcTotales();
+}
+
 let descMaximo=20; // 20 normal, 30 con clave
 
 const TABLA_MG={0:[50.0,7.5],1:[49.495,7.424],2:[48.98,7.347],3:[48.454,7.268],4:[47.917,7.188],5:[47.368,7.105],6:[46.809,7.021],7:[46.237,6.935],8:[45.652,6.848],9:[45.055,6.758],10:[44.444,6.667],11:[43.82,6.573],12:[43.182,6.477],13:[42.529,6.379],14:[41.86,6.279],15:[41.176,6.176],16:[40.476,6.071],17:[39.759,5.964],18:[39.024,5.854],19:[38.272,5.741],20:[37.5,5.625],21:[36.709,5.506],22:[35.897,5.385],23:[35.065,5.26],24:[34.211,5.132],25:[33.333,5.0],26:[32.432,4.865],27:[31.507,4.726],28:[30.556,4.583],29:[29.577,4.437],30:[28.571,4.286],31:[27.536,4.13],32:[26.471,3.971],33:[25.373,3.806],34:[24.242,3.636],35:[23.077,3.462],36:[21.875,3.281],37:[20.635,3.095],38:[19.355,2.903],39:[18.033,2.705],40:[16.667,2.5],41:[15.254,2.288],42:[13.793,2.069],43:[12.281,1.842],44:[10.714,1.607],45:[9.091,1.364],46:[7.407,1.111],47:[5.66,0.849],48:[3.846,0.577],49:[1.961,0.294],50:[0.0,0.0]};
@@ -1523,6 +1569,10 @@ function nuevaCotizacion(){
   ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   // Limpiar modo edición
   modoEdicion=null;
+  // Bloquear precios
+  window.precioDesbloqueado=false;
+  const pb=document.getElementById('precioLockBtn');
+  if(pb){pb.textContent='💲 Precio';pb.style.background='#f0f4e8';pb.style.color='var(--green-dark)';}
   const btnG=document.getElementById('btnGuardar');
   if(btnG){btnG.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';btnG.style.background='';}
   document.getElementById('modoCOPChk').checked=false;
@@ -1816,20 +1866,16 @@ function generarPDF(d, soloRetornar=false){
     +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+(d.modoCOP?fCOP(d.ivaUSD||0):fUSD(d.ivaUSD||0)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.ivaUSD||0)+'</span>')+'</td></tr>'
     +fleteRow
     +'<tr style="background:#80A61B;">'
-    +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;width:120px;">TOTAL OFERTA</td>'
-    +'<td style="padding:10px 14px;text-align:right;min-width:220px;">'
-    +(d.modoCOP
-      ?'<div style="font-weight:800;font-size:18px;color:#fff;white-space:nowrap;">'+fCOP(d.totalUSD||0)+'</div>'
-      :'<div style="font-weight:800;font-size:18px;color:#fff;white-space:nowrap;">'+fUSD(d.totalUSD||0)+'</div>'
-       +'<div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:3px;font-weight:600;white-space:nowrap;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div>'
-       +'<div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:3px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
+    +'<td style="padding:12px 10px;font-weight:700;font-size:13px;color:#fff;">TOTAL OFERTA</td>'
+    +'<td style="padding:12px 10px;text-align:right;">'
+    +(d.modoCOP?'<div style="font-weight:800;font-size:16px;color:#fff;">'+fCOP(d.totalUSD||0)+'</div>':'<div style="font-weight:800;font-size:16px;color:#fff;">'+fUSD(d.totalUSD||0)+'</div><div style="font-size:11px;color:rgba(255,255,255,0.85);margin-top:2px;font-weight:600;">COP '+Math.round(d.totalCOP||0).toLocaleString('es-CO')+'</div><div style="font-size:9px;color:rgba(255,255,255,0.65);margin-top:2px;">TRM ref: '+fTRM(d.trm||0)+' COP/USD</div>')
     +'</td></tr></table></td></tr></table>'
 
 
     +'<div style="margin-top:24px;border-top:3px solid #80A61B;padding-top:10px;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:9px;color:#666;">'
     +'<tr>'
-    +'<td style="padding:0 12px 0 0;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Bogotá</strong><br>Carrera 40 No. 17A - 44<br>Tel: 601.805.18.36<br><a href="mailto:info@ayj.com.co" style="color:#80A61B;text-decoration:none;">info@ayj.com.co</a></td>'
+    +'<td style="padding:0 12px 0 0;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Bogotá</strong><br>Carrera 40 No. 17A - 44<br>Tel: 601.805.18.00<br><a href="mailto:info@ayj.com.co" style="color:#80A61B;text-decoration:none;">info@ayj.com.co</a></td>'
     +'<td style="padding:0 12px;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">Sede Medellín</strong><br>Calle 29C No. 54A – 18<br>Tel: 604.332.2487<br><a href="mailto:medellin@ayj.com.co" style="color:#80A61B;text-decoration:none;">medellin@ayj.com.co</a></td>'
     +'<td style="padding:0 12px;border-right:1px solid #ddd;vertical-align:top;"><strong style="color:#575756;">CAT</strong><br>Centro de Asistencia Técnica<br>Tel: 313.391.67.95<br><a href="mailto:cat@ayj.com.co" style="color:#80A61B;text-decoration:none;">cat@ayj.com.co</a></td>'
     +'<td style="padding:0 0 0 12px;vertical-align:top;text-align:right;"><a href="https://www.ayj.com.co" target="_blank" style="color:#80A61B;text-decoration:none;font-weight:700;font-size:10px;">www.ayj.com.co</a><br><span style="color:#aaa;font-size:8px;">Lunes a viernes 7:30–12:30 / 13:30–17:00</span>'+(d.idSynergy?'<br><span style="color:#575756;font-size:9px;font-weight:700;">Synergy: '+d.idSynergy+'</span>':'')+'</td>'
