@@ -482,6 +482,11 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <span class="total-val" id="tDescUSD" style="color:#e24b4a">-USD 0</span>
             <span class="total-val sub2" id="tDescCOP" style="color:#e24b4a">-COP 0</span>
           </div>
+          <div class="total-item" id="tBaseIvaWrap" style="border-top:1px dashed var(--border);padding-top:4px;margin-top:2px">
+            <span class="total-label" style="color:var(--text);font-weight:600">Precio antes de IVA</span>
+            <span class="total-val" id="tBaseIvaUSD" style="color:var(--text);font-weight:600">USD 0</span>
+            <span class="total-val sub2" id="tBaseIvaCOP" style="color:var(--text2)">COP 0</span>
+          </div>
           <div class="total-item">
             <span class="total-label">IVA 19%</span>
             <span class="total-val" id="tIVAUSD" style="color:#666">USD 0</span>
@@ -1350,6 +1355,10 @@ function calcTotales(){
   document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
   document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
   document.getElementById('tDescCOP').textContent='-'+fmtCOP(descUSD);
+  // Precio antes de IVA = subtotal - descuento
+  const baseIvaUSD=baseUSD;
+  document.getElementById('tBaseIvaUSD').textContent=fmtUSD(baseIvaUSD);
+  document.getElementById('tBaseIvaCOP').textContent=fmtCOP(baseIvaUSD);
   document.getElementById('tIVAUSD').textContent=fmtUSD(ivaUSD);
   document.getElementById('tIVACOP').textContent=fmtCOP(ivaUSD);
   const tFleteUSD=document.getElementById('tFleteUSD');
