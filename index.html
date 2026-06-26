@@ -1897,6 +1897,36 @@ function generarPDF(d, soloRetornar=false){
 
     +condiciones;
 }
+async function cargarHistorial(){
+  if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
+  document.getElementById('historialBody').innerHTML='<div class="loading-list"><span class="spinner dark"></span> Cargando...</div>';
+  // Pre-llenar el filtro vendedor con el usuario actual si no está marcado "ver todas"
+  const verTodas=document.getElementById('histVerTodas')?.checked||false;
+  const filtVen=document.getElementById('hFiltVendedor');
+  if(filtVen&&!verTodas&&!filtVen.value) filtVen.value=currentUserName||'';
+  try{
+    const data=await graphGetAll(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$orderby=id desc&$top=200`);
+    historialData=data.map(i=>{
+      const f=i.fields;
+      const fechaRaw=f.Fecha_x005f_Cotizacion||f.FechaCotizacion||i.createdDateTime||null;
+      return{
+        num:f.ID_SYNERGY||f.Title||'—',
+        cliente:f.Cliente||'—',
+        vendedor:f.Vendedor||'—',
+        estado:f.Estado||'—',
+        total:Math.round(f.GranTotal||0),
+        fecha:fechaRaw?new Date(fechaRaw):null,
+        fechaStr:fechaRaw?new Date(fechaRaw).toLocaleDateString('es-CO',{day:'2-digit',month:'short',year:'numeric'}):'—',
+        items:f.Items?JSON.parse(f.Items||'[]'):[],
+        linkPDF:f.LinkPDF||'',
+        prob:parseFloat(f.Probabilidad||0),
+        id:i.id,
+      };
+    });
+    filtrarHistorial();
+  }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
+}
+
 function filtrarHistorial(){
   const qCli=(document.getElementById('hFiltCliente')?.value||'').toLowerCase();
   const verTodas=document.getElementById('histVerTodas')?.checked||false;
