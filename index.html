@@ -342,36 +342,6 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <option value="24m">24 meses o 4.000 horas</option>
           </select>
         </div>
-        <div class="field-group">
-          <label>Validez oferta</label>
-          <span style="font-size:13px;color:var(--text2);padding:6px 0;display:block">15 días</span>
-          <input type="hidden" id="validezSel" value="15 días">
-        </div>
-        <div class="field-group">
-          <label>Tiempo de entrega</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <select id="entregaSel" onchange="onEntregaChange(this.value)" style="min-width:180px">
-              <option value="Inmediato Salvo venta">Inmediato Salvo venta</option>
-              <option value="30 días">30 días</option>
-              <option value="60 días">60 días</option>
-              <option value="90 días">90 días</option>
-              <option value="120 días">120 días</option>
-              <option value="__custom_entrega__">✏️ Personalizar...</option>
-            </select>
-          </div>
-          <div id="entregaLabel" style="font-size:11px;color:var(--text2);margin-top:3px;display:none"></div>
-        </div>
-        <div class="field-group">
-          <label>Voltaje requerido</label>
-          <select id="voltajeSel" onchange="onVoltajeChange(this.value)" style="min-width:200px">
-            <option value="No requiere — Máquina a Combustible">No requiere — Máquina a Combustible</option>
-            <option value="110V — 1 Fase — 60Hz">110V — 1 Fase — 60Hz</option>
-            <option value="220V — 3 Fases — 60Hz" selected>220V — 3 Fases — 60Hz</option>
-            <option value="440V — 3 Fases — 60Hz">440V — 3 Fases — 60Hz</option>
-            <option value="__custom_voltaje__">✏️ Personalizar...</option>
-          </select>
-          <input type="text" id="voltajeCustom" placeholder="Especifica el voltaje..." style="display:none;margin-top:4px;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;width:100%">
-        </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <button id="modoCOPBtn" onclick="toggleModoCOPBtn()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.15s">
             <span id="modoCOPIcon">💲</span> <span id="modoCOPTxt">Ver en COP</span>
@@ -384,6 +354,39 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
               style="width:100px;padding:3px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;text-align:center"
               oninput="actualizarNumOferta()">
           </div>
+        </div>
+      </div>
+      <!-- BARRA FIJA: Validez, Entrega, Voltaje -->
+      <div style="padding:8px 14px;border-bottom:1px solid var(--border);background:#f8f9fa;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;flex-shrink:0">
+        <div class="field-group" style="margin:0">
+          <label style="font-size:10px">Validez oferta</label>
+          <span style="font-size:12px;color:var(--text2);padding:4px 0;display:block">15 días</span>
+          <input type="hidden" id="validezSel" value="15 días">
+        </div>
+        <div class="field-group" style="margin:0">
+          <label style="font-size:10px">Tiempo de entrega</label>
+          <div style="display:flex;gap:4px;align-items:center">
+            <select id="entregaSel" onchange="onEntregaChange(this.value)" style="font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit">
+              <option value="Inmediato Salvo venta">Inmediato Salvo venta</option>
+              <option value="30 días">30 días</option>
+              <option value="60 días">60 días</option>
+              <option value="90 días">90 días</option>
+              <option value="120 días">120 días</option>
+              <option value="__custom_entrega__">✏️ Personalizar...</option>
+            </select>
+          </div>
+          <div id="entregaLabel" style="font-size:10px;color:var(--text2);margin-top:2px;display:none"></div>
+        </div>
+        <div class="field-group" style="margin:0">
+          <label style="font-size:10px">Voltaje requerido</label>
+          <select id="voltajeSel" onchange="onVoltajeChange(this.value)" style="font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;min-width:180px">
+            <option value="No requiere — Máquina a Combustible">No requiere — Combustible</option>
+            <option value="110V — 1 Fase — 60Hz">110V — 1 Fase — 60Hz</option>
+            <option value="220V — 3 Fases — 60Hz" selected>220V — 3 Fases — 60Hz</option>
+            <option value="440V — 3 Fases — 60Hz">440V — 3 Fases — 60Hz</option>
+            <option value="__custom_voltaje__">✏️ Personalizar...</option>
+          </select>
+          <input type="text" id="voltajeCustom" placeholder="Especifica el voltaje..." style="display:none;margin-top:3px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;width:100%">
         </div>
       </div>
       <div class="cot-area">
