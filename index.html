@@ -3668,6 +3668,35 @@ function confirmarItemLibre(){
   showToast('✓ '+nombre+' agregado al carrito','success');
 }
 
+async function guardarHTMLEnSharePoint(numOferta, htmlContent){
+  if(!siteId) return '';
+  try{
+    const token=await getToken();
+    const vendedor=(document.getElementById('vendedorSel')?.value||currentUserName||'AYJ').split(' ')[0];
+    const anio=new Date().getFullYear();
+    const folderPath=`General/COTIZACIONES/${vendedor}/${anio}`;
+
+    // Crear carpeta si no existe (PUT con @microsoft.graph.conflictBehavior=replace)
+    await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}:/children`,
+      {method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+       body:JSON.stringify({name:String(anio),folder:{},['@microsoft.graph.conflictBehavior']:'replace'})}
+    ).catch(()=>{});
+
+    // Subir HTML
+    const htmlBytes=new TextEncoder().encode(htmlContent);
+    const resp=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}/${numOferta}.html:/content`,
+      {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'text/html'},body:htmlBytes}
+    );
+    const data=await resp.json();
+    return data.webUrl||'';
+  }catch(e){
+    console.warn('Error guardando HTML en SP:',e.message);
+    return '';
+  }
+}
+
 initMsal();
 </script>
 
