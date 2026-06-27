@@ -732,7 +732,7 @@ const SP_SITE='comercial';
 
 const msalConfig={auth:{clientId:CLIENT_ID,authority:`https://login.microsoftonline.com/${TENANT_ID}`,redirectUri:window.location.origin+window.location.pathname},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
 const loginRequest={scopes:['Sites.ReadWrite.All','User.Read']};
-let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones;
+let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones,listIdLiquidaciones;
 let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
 let currentUserName='';
 
@@ -1043,6 +1043,7 @@ async function resolverSite(){
       if(n.includes('todas_2025'))listIdMaquinas=l.id;
       else if(n.includes('cliente'))listIdClientes=l.id;
       else if(n.includes('cotizaci'))listIdCotizaciones=l.id;
+      else if(n.includes('liquidaci'))listIdLiquidaciones=l.id;
     });
   }catch(e){showToast('Error conectando SharePoint: '+e.message,'error');}
 }
@@ -2932,6 +2933,25 @@ function liqCalc(){
   window._liqPrecioUSD=PVN;
 }
 
+// ── NUMERACIÓN LIQUIDACIONES ──────────────────────────
+let liqNumActual='LIQ-2026-001';
+
+async function generarNumLiquidacion(){
+  if(!siteId||!listIdLiquidaciones) return 'LIQ-2026-001';
+  try{
+    const items=await graphGetAll(`/sites/${siteId}/lists/${listIdLiquidaciones}/items?expand=fields&$select=fields/Title&$top=500`);
+    const anio=new Date().getFullYear();
+    const nums=items.map(i=>{
+      const t=i.fields?.Title||'';
+      const m=t.match(new RegExp(`LIQ-${anio}-(\\d+)`));
+      return m?parseInt(m[1]):0;
+    }).filter(n=>n>0);
+    const max=nums.length?Math.max(...nums):0;
+    liqNumActual=`LIQ-${anio}-${String(max+1).padStart(3,'0')}`;
+    return liqNumActual;
+  }catch(e){return 'LIQ-2026-001';}
+}
+
 // ── LIQUIDADOR MULTI-MÁQUINA ──────────────────────────
 let liqEditandoId=null; // ID del item del carrito que se está editando
 
@@ -3107,6 +3127,98 @@ function liqQuitarItem(id){
 
 // Mantener compatibilidad
 function liqEnviarAlCarrito(){ liqAgregarAlCarrito(); }
+
+// ── GUARDAR LIQUIDACIÓN ──────────────────────────────
+async function guardarLiquidacion(){
+  const precio=window._liqPrecioUSD||0;
+  if(!precio){showToast('Calcula primero la liquidación','error');return;}
+  if(!siteId||!listIdLiquidaciones){showToast('Lista Liquidaciones no encontrada en SP','error');return;}
+
+  const num=await generarNumLiquidacion();
+  const TRM=parseFloat(document.getElementById('liqTRM')?.value)||3650;
+  const FOB=parseFloat(document.getElementById('liqFOB')?.value)||0;
+  const totalCostosUSD=parseFloat((document.getElementById('liqCostosTable')?.innerText||'').match(/TOTAL COSTOS.*?USD ([\d.]+)/)?.[1]?.replace(/\./g,'')||0)||0;
+  const margen=parseFloat(document.getElementById('liqMargenSlider')?.value)||50;
+  const selMaq=document.getElementById('liqMaquinaSel');
+  const maqNombre=selMaq?.options[selMaq.selectedIndex]?.text?.split(' · ')[0]||'—';
+  const vendedor=document.getElementById('userChip')?.textContent||currentUserName||'—';
+
+  // Snapshot completo de los campos
+  const snapshot={
+    TRM,FOB,
+    fleteInt:parseFloat(document.getElementById('liqFleteInt')?.value)||0,
+    arancel:document.getElementById('liqArancel')?.value||0,
+    agente:document.getElementById('liqAgente')?.value||0,
+    fleteNal:parseFloat(document.getElementById('liqFleteNal')?.value)||0,
+    descargue:parseFloat(document.getElementById('liqDescargue')?.value)||0,
+    otros:parseFloat(document.getElementById('liqOtros')?.value)||0,
+    garantia:document.getElementById('liqGarantia')?.value||0,
+    instalacion:parseFloat(document.getElementById('liqInstalacion')?.value)||0,
+    costoFin:parseFloat(document.getElementById('liqCostoFin')?.value)||0,
+    margen,
+    descCliente:parseFloat(document.getElementById('liqDescCliente')?.value)||0,
+    maquina:maqNombre,
+    precioVenta:Math.round(precio),
+  };
+
+  try{
+    // Generar HTML y guardarlo en SharePoint
+    const htmlContent=liqGenerarHTML();
+    const anio=new Date().getFullYear();
+    const folderPath=`General/LIQUIDACIONES/${vendedor.split(' ')[0]}/${anio}`;
+
+    // Crear carpeta si no existe
+    const token=await getToken();
+    try{
+      await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}`,{
+        headers:{Authorization:'Bearer '+token}
+      });
+    }catch(e){}
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}`,{
+      method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({folder:{},name:folderPath.split('/').pop()})
+    }).catch(()=>{});
+
+    // Subir HTML
+    const htmlBytes=new TextEncoder().encode(htmlContent);
+    const uploadResp=await fetch(
+      `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}/${num}.html:/content`,
+      {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'text/html'},body:htmlBytes}
+    );
+    const uploadData=await uploadResp.json();
+    const linkHTML=uploadData.webUrl||'';
+
+    // Guardar registro en lista
+    const fields={
+      Title:num,
+      Maquina:maqNombre,
+      Vendedor:vendedor,
+      FOB:FOB,
+      TRM:TRM,
+      TotalCostos:Math.round(precio),
+      Margen:margen,
+      Snapshot:JSON.stringify(snapshot),
+      LinkHTML:linkHTML,
+    };
+    await graphPost(`/sites/${siteId}/lists/${listIdLiquidaciones}/items`,{fields});
+    showToast('✓ Liquidación '+num+' guardada en SharePoint','success');
+  }catch(e){
+    showToast('Error guardando: '+e.message,'error');
+    console.error(e);
+  }
+}
+
+function liqGenerarHTML(){
+  // Reutilizar liqImprimir pero retornar el HTML en lugar de abrir ventana
+  // Llamar a la función que construye el HTML y capturar el resultado
+  const w={_html:''};
+  const origOpen=window.open;
+  let capturedHTML='';
+  window.open=()=>({document:{write:(h)=>{capturedHTML=h;},close:()=>{}}});
+  liqImprimir();
+  window.open=origOpen;
+  return capturedHTML||'<html><body>Liquidación AYJ</body></html>';
+}
 
 // ── INSTALACIÓN ──────────────────────────────────────
 function liqSyncInstMaquina(){
@@ -3603,6 +3715,7 @@ initMsal();
     <div id="liqChips" style="display:flex;gap:6px;flex-wrap:wrap;flex:1"></div>
     <div style="display:flex;gap:6px;flex-shrink:0">
       <button id="liqBtnAgregar" onclick="liqAgregarAlCarrito()" style="background:#80A61B;border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="ti ti-shopping-cart"></i> + Agregar</button>
+      <button onclick="guardarLiquidacion()" style="background:#80A61B;border:none;color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="ti ti-device-floppy"></i> Guardar</button>
       <button onclick="liqImprimir()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit"><i class="ti ti-printer"></i></button>
       <button onclick="cerrarLiquidador()" style="background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:inherit"><i class="ti ti-x"></i></button>
     </div>
