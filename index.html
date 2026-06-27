@@ -567,6 +567,14 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <i class="ti ti-search" style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:13px"></i>
           <input type="text" id="clientesBuscador" placeholder="Buscar por nombre, ciudad, email..." oninput="renderTablaClientes()" style="padding:6px 10px 6px 28px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;width:280px;font-family:inherit">
         </div>
+        <select id="clientesFiltCiudad" onchange="renderTablaClientes()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+          <option value="">Todas las ciudades</option>
+        </select>
+        <select id="clientesOrden" onchange="renderTablaClientes()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+          <option value="ciudad">Por ciudad</option>
+        </select>
         <div style="margin-left:auto;display:flex;gap:8px">
           <button class="btn-sec" onclick="cargarClientes(true)"><i class="ti ti-refresh"></i></button>
           <button class="btn-primary" onclick="abrirModalCliente()"><i class="ti ti-user-plus"></i> Nuevo Cliente</button>
@@ -2087,7 +2095,7 @@ let _listaFiltradaClientes=[];
 
 async function cargarClientes(forzar=false){
   if(!siteId||!listIdClientes)return;
-  if(clientesData.length>0&&!forzar){poblarDatalist();renderTablaClientes();return;}
+  if(clientesData.length>0&&!forzar){poblarDatalist();poblarCiudades();renderTablaClientes();return;}
   try{
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
     clientesData=todos.map(i=>{
@@ -2106,12 +2114,23 @@ async function cargarClientes(forzar=false){
       };
     }).filter(c=>c.titulo);
     poblarDatalist();
+    poblarCiudades();
     renderTablaClientes();
   }catch(e){
     showToast('Error clientes: '+e.message,'error');
     const w=document.getElementById('clientesTablaWrap');
     if(w)w.innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;
   }
+}
+
+function poblarCiudades(){
+  const sel=document.getElementById('clientesFiltCiudad');
+  if(!sel) return;
+  const ciudades=[...new Set(clientesData.map(c=>c.ciudad).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  const current=sel.value;
+  sel.innerHTML='<option value="">Todas las ciudades</option>'
+    +ciudades.map(c=>`<option value="${c.toLowerCase()}">${c}</option>`).join('');
+  if(current) sel.value=current;
 }
 
 function poblarDatalist(){
@@ -2131,10 +2150,16 @@ function filtrarClienteInput(val){
 
 function renderTablaClientes(){
   const q=(document.getElementById('clientesBuscador')?.value||'').toLowerCase();
-  const lista=q?clientesData.filter(c=>
-    c.titulo.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q)||
-    c.ciudad.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)
-  ):clientesData;
+  const ciudad=(document.getElementById('clientesFiltCiudad')?.value||'').toLowerCase();
+  const orden=document.getElementById('clientesOrden')?.value||'az';
+  let lista=clientesData.filter(c=>
+    (!q||(c.titulo.toLowerCase().includes(q)||c.nombre.toLowerCase().includes(q)||
+    c.ciudad.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)))
+    &&(!ciudad||c.ciudad.toLowerCase()===ciudad)
+  );
+  if(orden==='az') lista=[...lista].sort((a,b)=>a.titulo.localeCompare(b.titulo,'es'));
+  else if(orden==='za') lista=[...lista].sort((a,b)=>b.titulo.localeCompare(a.titulo,'es'));
+  else if(orden==='ciudad') lista=[...lista].sort((a,b)=>(a.ciudad||'').localeCompare(b.ciudad||'','es'));
   _listaFiltradaClientes=lista;
   const wrap=document.getElementById('clientesTablaWrap');
   if(!wrap)return;
