@@ -3516,37 +3516,6 @@ function liqImprimir(){
   w.document.close();
 }
 
-<!-- MODAL ÍTEM LIBRE -->
-<div id="modalItemLibre" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:var(--radius-lg);padding:24px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
-    <div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:16px">＋ Agregar Ítem Libre</div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Disponibilidad</label>
-      <select id="itemLibreTipoDisp" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-        <option value="stock">✅ En Stock</option>
-        <option value="importacion">🚢 En Importación</option>
-        <option value="pedido" selected>📦 Bajo Pedido</option>
-        <option value="servicio">🔧 Servicio</option>
-      </select>
-    </div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Descripción</label>
-      <input type="text" id="itemLibreNombre" placeholder="Ej: Ductería, Instalación eléctrica, Transporte..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-    </div>
-    <div style="margin-bottom:12px">
-      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Tipología / Categoría</label>
-      <input type="text" id="itemLibreTipo" placeholder="Ej: ACCESORIO, SERVICIO, MATERIAL..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-    </div>
-    <div style="margin-bottom:16px">
-      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Precio (USD)</label>
-      <input type="number" id="itemLibrePrecio" placeholder="0" min="0" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-    </div>
-    <div style="display:flex;gap:8px">
-      <button onclick="confirmarItemLibre()" class="btn-primary" style="flex:1"><i class="ti ti-check"></i> Agregar al carrito</button>
-      <button onclick="document.getElementById('modalItemLibre').style.display='none'" class="btn-sec">Cancelar</button>
-    </div>
-  </div>
-</div>
 
 
 // ── ÍTEM LIBRE ────────────────────────────────────────
@@ -3589,6 +3558,39 @@ function confirmarItemLibre(){
 
 initMsal();
 </script>
+
+<!-- MODAL ÍTEM LIBRE -->
+<div id="modalItemLibre" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:24px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="font-size:14px;font-weight:700;color:var(--gris);margin-bottom:16px">＋ Agregar Ítem Libre</div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Disponibilidad</label>
+      <select id="itemLibreTipoDisp" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+        <option value="stock">✅ En Stock</option>
+        <option value="importacion">🚢 En Importación</option>
+        <option value="pedido" selected>📦 Bajo Pedido</option>
+        <option value="servicio">🔧 Servicio</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Descripción</label>
+      <input type="text" id="itemLibreNombre" placeholder="Ej: Ductería, Instalación eléctrica, Transporte..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Tipología / Categoría</label>
+      <input type="text" id="itemLibreTipo" placeholder="Ej: ACCESORIO, SERVICIO, MATERIAL..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:11px;color:var(--text2);margin-bottom:4px;font-weight:500">Precio (USD)</label>
+      <input type="number" id="itemLibrePrecio" placeholder="0" min="0" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="confirmarItemLibre()" class="btn-primary" style="flex:1"><i class="ti ti-check"></i> Agregar al carrito</button>
+      <button onclick="document.getElementById('modalItemLibre').style.display='none'" class="btn-sec">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 
 
 
