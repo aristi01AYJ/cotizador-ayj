@@ -3165,7 +3165,7 @@ async function guardarLiquidacion(){
     // Generar HTML y guardarlo en SharePoint
     const htmlContent=liqGenerarHTML();
     const anio=new Date().getFullYear();
-    const folderPath=`General/LIQUIDACIONES/${vendedor.split(' ')[0]}/${anio}`;
+    const folderPath=`General/AYJ_COTIZADOR/Liquidaciones/${vendedor.split(' ')[0]}/${anio}`;
 
     // Crear carpeta si no existe
     const token=await getToken();
@@ -3674,7 +3674,7 @@ async function guardarHTMLEnSharePoint(numOferta, htmlContent){
     const token=await getToken();
     const vendedor=(document.getElementById('vendedorSel')?.value||currentUserName||'AYJ').split(' ')[0];
     const anio=new Date().getFullYear();
-    const folderPath=`General/COTIZACIONES/${vendedor}/${anio}`;
+    const folderPath=`General/AYJ_COTIZADOR/Cotizaciones/${vendedor}/${anio}`;
 
     // Crear carpeta si no existe (PUT con @microsoft.graph.conflictBehavior=replace)
     await fetch(
