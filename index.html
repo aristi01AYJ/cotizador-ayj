@@ -1909,6 +1909,7 @@ function generarPDF(d, soloRetornar=false){
     +'</tr></table></div>'
 
     +condiciones;
+  return html;
 }
 async function cargarHistorial(){
   if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
