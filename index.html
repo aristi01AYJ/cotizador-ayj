@@ -356,7 +356,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           </div>
         </div>
       </div>
-      <!-- BARRA FIJA: Validez, Entrega, Voltaje -->
+      <!-- BARRA FIJA: Validez, Entrega, Voltaje, Observaciones -->
       <div style="padding:8px 14px;border-bottom:1px solid var(--border);background:#f8f9fa;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;flex-shrink:0">
         <div class="field-group" style="margin:0">
           <label style="font-size:10px">Validez oferta</label>
@@ -388,6 +388,10 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           </select>
           <input type="text" id="voltajeCustom" placeholder="Especifica el voltaje..." style="display:none;margin-top:3px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;width:100%">
         </div>
+        <div class="field-group" style="margin:0;flex:1;min-width:200px">
+          <label style="font-size:10px">Observaciones</label>
+          <input type="text" id="obsInput" placeholder="📝 Notas para el cliente..." style="width:100%;padding:5px 8px;border:1px solid #F59E0B;border-radius:var(--radius);font-size:12px;font-family:inherit;background:#fffdf5">
+        </div>
       </div>
       <div class="cot-area">
         <div class="empty-state" id="emptyState">
@@ -414,9 +418,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
         </div>
       </div>
       <div class="footer">
-        <div style="grid-column:1/-1;padding:6px 0 2px">
-          <input type="text" id="obsInput" placeholder="📝 Observaciones para el cliente..." style="width:100%;padding:7px 10px;border:1px solid #F59E0B;border-radius:var(--radius);font-size:12px;font-family:inherit;color:var(--text);background:#fffdf5">
-        </div>
+        <div style="grid-column:1/-1;padding:0">
         <div class="field-group">
           <label>Descuento (%)</label>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
