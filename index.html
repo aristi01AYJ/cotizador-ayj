@@ -2917,7 +2917,8 @@ function liqCalc(){
     +fila('Agente + Gastos ('+Math.round(agente*100)+'%)',fU(agenteUSD),fC(agenteUSD))
     +fila('Flete Nacional',fU(fleteNal),fC(fleteNal))
     +fila('Descargue',fU(descargue),fC(descargue))
-    +fila('Garantías ('+Math.round(garantiaPct*100)+'%)',fU(garantiaUSD),fC(garantiaUSD))
+    +fila('Garantía ('+Math.round(garantiaPct===0.045?3:4.5)+'% del FOB)',fU(garantiaUSD*2/3),fC(garantiaUSD*2/3))
+    +fila('Marketing (1.5% del FOB)',fU(garantiaUSD/3),fC(garantiaUSD/3))
     +fila('🔧 Instalación',fU(instalacion),fC(instalacion))
     +fila('💳 Financiación',fU(costoFin),fC(costoFin))
     +fila('Otros',fU(otros),fC(otros))
@@ -3542,7 +3543,8 @@ function liqImprimir(){
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">IVA Importación 19%</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(ivaImportUSD)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Flete Nacional</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(fleteNal)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Descargue</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(descargue)}</td></tr>
-        <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Garantías (${Math.round(garantiaPct*100)}%)</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(garantiaUSD)}</td></tr>
+        <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Garantía (${garantiaPct===0.045?3:4.5}% del FOB)</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(garantiaUSD*2/3)}<br><span style="font-size:10px;color:#aaa">${fC(garantiaUSD*2/3)}</span></td></tr>
+        <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Marketing (1.5% del FOB)</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(garantiaUSD/3)}<br><span style="font-size:10px;color:#aaa">${fC(garantiaUSD/3)}</span></td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Instalación</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(instalacion)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Costo Financiación</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(costoFin)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Otros${document.getElementById('liqOtrosDesc')?.value?' — '+document.getElementById('liqOtrosDesc').value:''}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(otros)}</td></tr>
@@ -3812,6 +3814,7 @@ initMsal();
           </div>
           <div class="liq-field"><label>Agente Aduanas + Gastos (%CIF)</label>
             <select id="liqAgente" onchange="liqCalc()" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;font-size:13px">
+              <option value="0">0% — Sin agente</option>
               <option value="0.005">0.5%</option><option value="0.01">1.0%</option>
               <option value="0.015">1.5%</option><option value="0.02" selected>2.0%</option>
               <option value="0.025">2.5%</option><option value="0.03">3.0%</option>
@@ -3826,9 +3829,8 @@ initMsal();
           </div>
           <div class="liq-field"><label>Garantías + Marketing (%FOB)</label>
             <select id="liqGarantia" onchange="liqCalc()" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;font-size:13px">
-              <option value="0">0% — No aplica</option>
-              <option value="0.03" selected>3% — 12 meses</option>
-              <option value="0.045">4.5% — 24 meses</option>
+              <option value="0.045" selected>4.5% = Garantía 3% + Marketing 1.5% — 12 meses</option>
+              <option value="0.06">6.0% = Garantía 4.5% + Marketing 1.5% — 24 meses</option>
             </select>
           </div>
           <div class="liq-field" style="background:#f5f7f0;border-radius:6px;padding:8px;border:1px solid #c5d9a0;margin-top:8px">
