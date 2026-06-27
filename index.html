@@ -365,6 +365,17 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <div id="entregaLabel" style="font-size:11px;color:var(--text2);margin-top:3px;display:none"></div>
         </div>
         <div class="field-group">
+          <label>Voltaje requerido</label>
+          <select id="voltajeSel" onchange="onVoltajeChange(this.value)" style="min-width:200px">
+            <option value="No requiere — Máquina a Combustible">No requiere — Máquina a Combustible</option>
+            <option value="110V — 1 Fase — 60Hz">110V — 1 Fase — 60Hz</option>
+            <option value="220V — 3 Fases — 60Hz" selected>220V — 3 Fases — 60Hz</option>
+            <option value="440V — 3 Fases — 60Hz">440V — 3 Fases — 60Hz</option>
+            <option value="__custom_voltaje__">✏️ Personalizar...</option>
+          </select>
+          <input type="text" id="voltajeCustom" placeholder="Especifica el voltaje..." style="display:none;margin-top:4px;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;width:100%">
+        </div>
+        <div class="field-group">
           <label>Observaciones</label>
           <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
@@ -740,6 +751,18 @@ let currentUserName='';
 
 // ── TIEMPO DE ENTREGA PERSONALIZADO ──────────────────
 let entregaPersonalizada='';
+
+function onVoltajeChange(val){
+  const custom=document.getElementById('voltajeCustom');
+  if(custom) custom.style.display=val==='__custom_voltaje__'?'block':'none';
+}
+
+function getVoltaje(){
+  const sel=document.getElementById('voltajeSel');
+  if(!sel) return '';
+  if(sel.value==='__custom_voltaje__') return document.getElementById('voltajeCustom')?.value||'';
+  return sel.value;
+}
 
 function onEntregaChange(val){
   if(val==='__custom_entrega__'){
@@ -1593,6 +1616,11 @@ function toggleModoCOP(checked){
 function nuevaCotizacion(){
   if(carrito.length>0 && !confirm('¿Iniciar una nueva cotización? Se limpiará el carrito actual.')) return;
   carrito=[];
+  // Reset voltaje
+  const voltSel=document.getElementById('voltajeSel');
+  if(voltSel) voltSel.value='220V — 3 Fases — 60Hz';
+  const voltCustom=document.getElementById('voltajeCustom');
+  if(voltCustom){voltCustom.style.display='none';voltCustom.value='';}
   ['clienteInput','obsInput','idSynergyInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   // Limpiar modo edición
   modoEdicion=null;
@@ -1705,9 +1733,10 @@ async function guardarCotizacion(){
     const itemId=itemCreado?.id||null;
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Generar HTML, subir a SharePoint, luego abrir con link
-    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito]},true);
+    const voltaje=getVoltaje();
+    const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink, cliente, idSynergy);
-    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
+    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
     const pdfWin=window.open('','_blank','width=960,height=860');
     if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
@@ -1778,6 +1807,7 @@ function generarPDF(d, soloRetornar=false){
     +'<div style="background:#f9f9f7;border-radius:8px;border:1px solid #e0e0dc;padding:16px 20px;margin-bottom:14px;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:11px;">'
     +'<tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Tiempo de entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+(d.entrega||'Inmediato Salvo venta')+'</strong> — Tiempos estimados, pueden variar por fabricación, logística portuaria o transporte. Se informará oportunamente cualquier cambio.</td></tr>'
+    +(d.voltaje?'<tr><td style="padding:6px 0;color:#575756;width:150px;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Voltaje requerido</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+d.voltaje+'</strong></td></tr>':'')
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Entrega</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">En bodega del cliente sobre plataforma de camión, incluido montaje, puesta en marcha y entrenamiento. Costos de descargue y puesta en sitio no incluidos.</td></tr>'
     +(d.modoCOP?'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>Precio en Pesos Colombianos (COP).</strong> El precio pactado es en moneda local y no está referenciado a dólares ni a la TRM.</td></tr>':'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Moneda / TRM</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;">Ofertas en USD se liquidarán a la TRM negociada con la mesa de dinero del VENDEDOR el día en que giran los recursos. <strong>TRM de referencia: '+fTRM(d.trm)+' COP/USD.</strong></td></tr>')
     +'<tr><td style="padding:6px 0;color:#575756;vertical-align:top;font-weight:700;border-bottom:1px solid #eee;">Condición de pago</td><td style="padding:6px 0;color:#444;border-bottom:1px solid #eee;padding-left:12px;"><strong>'+d.condPago+'.</strong> Una vez aceptada la oferta y recibidos los anticipos, el COMPRADOR podrá desistir dentro de los 10 días calendario siguientes, perdiendo el 30% del valor total a título de sanción.</td></tr>'
