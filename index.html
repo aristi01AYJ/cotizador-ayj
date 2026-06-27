@@ -571,9 +571,9 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           <option value="">Todas las ciudades</option>
         </select>
         <select id="clientesOrden" onchange="renderTablaClientes()" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:inherit">
-          <option value="az">A → Z</option>
-          <option value="za">Z → A</option>
-          <option value="ciudad">Por ciudad</option>
+          <option value="nombre">Por Nombre</option>
+          <option value="ciudad">Por Ciudad</option>
+          <option value="contacto">Por Contacto</option>
         </select>
         <div style="margin-left:auto;display:flex;gap:8px">
           <button class="btn-sec" onclick="cargarClientes(true)"><i class="ti ti-refresh"></i></button>
@@ -2157,9 +2157,9 @@ function renderTablaClientes(){
     c.ciudad.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)))
     &&(!ciudad||c.ciudad.toLowerCase()===ciudad)
   );
-  if(orden==='az') lista=[...lista].sort((a,b)=>a.titulo.localeCompare(b.titulo,'es'));
-  else if(orden==='za') lista=[...lista].sort((a,b)=>b.titulo.localeCompare(a.titulo,'es'));
+  if(orden==='nombre') lista=[...lista].sort((a,b)=>a.titulo.localeCompare(b.titulo,'es'));
   else if(orden==='ciudad') lista=[...lista].sort((a,b)=>(a.ciudad||'').localeCompare(b.ciudad||'','es'));
+  else if(orden==='contacto') lista=[...lista].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
   _listaFiltradaClientes=lista;
   const wrap=document.getElementById('clientesTablaWrap');
   if(!wrap)return;
