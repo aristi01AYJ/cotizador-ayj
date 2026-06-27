@@ -2675,6 +2675,7 @@ async function cargarStock(){
         stock:0, importacion:0, pedido:0,
         fechas:[],
         id:i.id,
+        stockMinSP:parseFloat(String(f.StockMinimo||f.Stock_x0020_Minimo||'0').replace(',','.'))||0,
       };
       const estStock=(f.ESTADO||'').trim();
       if(estStock==='En Stock') mapa[key].stock++;
@@ -2733,7 +2734,14 @@ function renderStock(){
     const diasSinRenovar=m.fechas.length?Math.round((hoy-Math.max(...m.fechas.map(d=>d.getTime())))/(1000*60*60*24)):null;
     const alerta=m.stock===0&&m.importacion===0?'🔴':m.stock===0?'🟡':m.stock<=1?'🟠':'🟢';
     const enPedido=pedido[m.title]?.qty||0;
-    return `<tr style="border-bottom:1px solid var(--border)">
+    // StockMínimo: prioridad SP, fallback localStorage
+    const minSP=m.stockMinSP||0;
+    const minLocal=stockMin[m.title]||0;
+    const minFinal=minSP||minLocal;
+    // A Pedir = StockMín - (En Stock + En Importación) — solo si es positivo
+    const disponible=m.stock+m.importacion;
+    const aPedir=Math.max(0, minFinal-disponible);
+    return `<tr style="border-bottom:1px solid var(--border);${aPedir>0?'background:#FEF9EC;':''}">
       <td style="padding:8px 12px;font-weight:600">${alerta} ${m.title}</td>
       <td style="padding:8px 12px;color:var(--text2);font-size:12px">${m.marca}</td>
       <td style="padding:8px 12px;font-size:12px;color:var(--text2)">${m.tipologia}</td>
@@ -2747,9 +2755,12 @@ function renderStock(){
       <td style="padding:8px 12px;text-align:right;font-size:12px;color:var(--text2)">USD ${Math.round(m.stock*m.tarifa).toLocaleString('es-CO')}</td>
       <td style="padding:8px 12px;text-align:center;font-size:12px;color:${diasSinRenovar>180?'#EF4444':diasSinRenovar>90?'#F59E0B':'var(--text2)'}">${diasSinRenovar!==null?diasSinRenovar+'d':'—'}</td>
       <td style="padding:8px 12px;text-align:center">
-        <input type="number" min="0" max="99" value="${stockMin[m.title]||0}"
-          onchange="guardarStockMin('${m.title}',this.value)"
-          style="width:46px;text-align:center;padding:3px 4px;border:1px solid ${(m.stock)<(stockMin[m.title]||0)?'var(--red)':'var(--border)'};border-radius:var(--radius);font-size:12px;font-family:inherit;background:${(m.stock)<(stockMin[m.title]||0)?'#FEE2E2':'#fff'}">
+        <span style="font-size:12px;font-weight:600;color:${minSP>0?'#575756':'#aaa'}" title="${minSP>0?'Desde SharePoint':'Desde configuración local'}">${minFinal||'—'}</span>
+      </td>
+      <td style="padding:8px 12px;text-align:center">
+        ${aPedir>0
+          ?`<span style="background:#FEF3C7;border:1px solid #F59E0B;color:#92400E;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">⚠ ${aPedir}</span>`
+          :`<span style="color:#22C55E;font-size:12px;font-weight:600">✓ OK</span>`}
       </td>
       <td style="padding:8px 12px;text-align:center">
         <div style="display:flex;align-items:center;gap:4px;justify-content:center">
@@ -2774,6 +2785,7 @@ function renderStock(){
           <th style="padding:8px 12px;text-align:right;font-size:11px;color:var(--text2);font-weight:600;border-bottom:2px solid var(--border)">Valor Stock</th>
           <th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--text2);font-weight:600;border-bottom:2px solid var(--border)">Antigüedad</th>
           <th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--amber);font-weight:600;border-bottom:2px solid var(--border)">Stk.Mín</th>
+          <th style="padding:8px 12px;text-align:center;font-size:11px;color:#EF4444;font-weight:600;border-bottom:2px solid var(--border)">A Pedir</th>
           <th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--green-dark);font-weight:600;border-bottom:2px solid var(--border)">Pedir</th>
         </tr>
       </thead>
