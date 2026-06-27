@@ -2850,51 +2850,84 @@ function limpiarPedido(){
 function renderPedido(){
   const items=Object.values(pedido);
   if(!items.length){
-    document.getElementById('pedidoBody').innerHTML='<div class="loading-list">Agrega unidades desde la tabla de stock con el botón +</div>';
+    document.getElementById('pedidoBody').innerHTML='<div class="loading-list">Sin items a pedir — los items con déficit aparecen automáticamente al abrir esta pestaña</div>';
     return;
   }
-  const totalUSD=items.reduce((s,p)=>s+p.qty*p.tarifa,0);
-  items.sort((a,b)=>(b.prioridad||0)-(a.prioridad||0));
-  const filas=items.map(p=>`<tr style="border-bottom:1px solid var(--border)">
-    <td style="padding:10px 14px;font-weight:600">${p.titulo}</td>
-    <td style="padding:10px 14px;text-align:center">
-      <div style="display:flex;align-items:center;gap:6px;justify-content:center">
-        <button onclick="ajustarPedido('${p.titulo}',-1);renderPedido()" style="width:28px;height:28px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:16px">−</button>
-        <strong style="font-size:16px;color:var(--green-dark);min-width:28px;text-align:center">${p.qty}</strong>
-        <button onclick="ajustarPedido('${p.titulo}',1);renderPedido()" style="width:28px;height:28px;border:1px solid var(--green);border-radius:4px;background:var(--green-light);cursor:pointer;font-size:16px;color:var(--green-dark)">+</button>
-      </div>
-    </td>
-    <td style="padding:10px 14px;text-align:right;font-size:13px">USD ${Math.round(p.tarifa).toLocaleString('es-CO')}</td>
-    <td style="padding:10px 14px;text-align:center">
-      <div style="display:flex;gap:2px;justify-content:center">${generarEstrellas(p.titulo,p.prioridad||0)}</div>
-    </td>
-    <td style="padding:10px 14px;text-align:right;font-weight:700;color:var(--green-dark)">USD ${Math.round(p.qty*p.tarifa).toLocaleString('es-CO')}</td>
-    <td style="padding:10px 14px;text-align:center">
-      <button onclick="delete pedido['${p.titulo}'];renderStock();renderPedido()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:16px"><i class="ti ti-x"></i></button>
-    </td>
-  </tr>`).join('');
 
-  document.getElementById('pedidoBody').innerHTML=`
-    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border)">
-      <thead>
-        <tr style="background:var(--bg)">
-          <th style="padding:10px 14px;text-align:left;font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Máquina</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Cantidad</th>
-          <th style="padding:10px 14px;text-align:right;font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Precio Unit.</th>
-          <th style="padding:10px 14px;text-align:center;font-size:11px;color:var(--amber);font-weight:600;border-bottom:1px solid var(--border)">Prioridad</th>
-          <th style="padding:10px 14px;text-align:right;font-size:11px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Total USD</th>
-          <th style="padding:10px 14px;border-bottom:1px solid var(--border)"></th>
-        </tr>
-      </thead>
-      <tbody>${filas}</tbody>
-      <tfoot>
-        <tr style="background:#f5f7f0">
-          <td colspan="3" style="padding:12px 14px;font-weight:700;color:#575756">TOTAL PEDIDO</td>
-          <td style="padding:12px 14px;text-align:right;font-weight:800;font-size:16px;color:var(--green-dark)">USD ${Math.round(totalUSD).toLocaleString('es-CO')}</td>
-          <td></td>
-        </tr>
-      </tfoot>
-    </table>`;
+  // Enriquecer items con marca desde stockData
+  items.forEach(p=>{
+    const m=stockData.find(x=>x.title===p.titulo);
+    p.marca=m?.marca||'Sin marca';
+    p.tipologia=m?.tipologia||'';
+  });
+
+  // Agrupar por marca
+  const porMarca={};
+  items.forEach(p=>{
+    if(!porMarca[p.marca]) porMarca[p.marca]=[];
+    porMarca[p.marca].push(p);
+  });
+
+  const totalUSD=items.reduce((s,p)=>s+p.qty*p.tarifa,0);
+
+  const bloques=Object.entries(porMarca).sort(([a],[b])=>a.localeCompare(b,'es')).map(([marca,mItems])=>{
+    const subtotal=mItems.reduce((s,p)=>s+p.qty*p.tarifa,0);
+    mItems.sort((a,b)=>(b.prioridad||0)-(a.prioridad||0));
+    const filas=mItems.map(p=>`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 14px;font-weight:600;padding-left:20px">${p.titulo}</td>
+      <td style="padding:8px 14px;font-size:11px;color:var(--text2)">${p.tipologia}</td>
+      <td style="padding:8px 14px;text-align:center">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:center">
+          <button onclick="ajustarPedido('${p.titulo}',-1);renderPedido()" style="width:26px;height:26px;border:1px solid var(--border);border-radius:4px;background:#fff;cursor:pointer;font-size:14px">−</button>
+          <strong style="font-size:15px;color:var(--green-dark);min-width:24px;text-align:center">${p.qty}</strong>
+          <button onclick="ajustarPedido('${p.titulo}',1);renderPedido()" style="width:26px;height:26px;border:1px solid var(--green);border-radius:4px;background:var(--green-light);cursor:pointer;font-size:14px;color:var(--green-dark)">+</button>
+        </div>
+      </td>
+      <td style="padding:8px 14px;text-align:right;font-size:12px;color:var(--text2)">USD ${Math.round(p.tarifa).toLocaleString('es-CO')}</td>
+      <td style="padding:8px 14px;text-align:center">
+        <div style="display:flex;gap:2px;justify-content:center">${generarEstrellas(p.titulo,p.prioridad||0)}</div>
+      </td>
+      <td style="padding:8px 14px;text-align:right;font-weight:700;color:var(--green-dark)">USD ${Math.round(p.qty*p.tarifa).toLocaleString('es-CO')}</td>
+      <td style="padding:8px 14px;text-align:center">
+        <button onclick="delete pedido['${p.titulo}'];renderStock();renderPedido()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:15px"><i class="ti ti-x"></i></button>
+      </td>
+    </tr>`).join('');
+
+    return `
+    <div style="margin-bottom:16px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden">
+      <div style="background:#575756;color:#fff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:13px;font-weight:700;letter-spacing:0.5px">${marca}</span>
+        <span style="font-size:12px;opacity:0.8">${mItems.length} ref · <strong>USD ${Math.round(subtotal).toLocaleString('es-CO')}</strong></span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#fff">
+        <thead>
+          <tr style="background:var(--bg)">
+            <th style="padding:7px 14px;text-align:left;font-size:10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border);padding-left:20px">Referencia</th>
+            <th style="padding:7px 14px;text-align:left;font-size:10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Tipología</th>
+            <th style="padding:7px 14px;text-align:center;font-size:10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Cantidad</th>
+            <th style="padding:7px 14px;text-align:right;font-size:10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Precio Unit.</th>
+            <th style="padding:7px 14px;text-align:center;font-size:10px;color:var(--amber);font-weight:600;border-bottom:1px solid var(--border)">Prioridad</th>
+            <th style="padding:7px 14px;text-align:right;font-size:10px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)">Total USD</th>
+            <th style="padding:7px 14px;border-bottom:1px solid var(--border)"></th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+        <tfoot>
+          <tr style="background:#f5f7f0">
+            <td colspan="5" style="padding:8px 14px;font-size:11px;font-weight:700;color:#575756;padding-left:20px">Subtotal ${marca}</td>
+            <td style="padding:8px 14px;text-align:right;font-weight:800;color:var(--green-dark)">USD ${Math.round(subtotal).toLocaleString('es-CO')}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+  }).join('');
+
+  document.getElementById('pedidoBody').innerHTML=bloques+`
+    <div style="background:#f5f7f0;border:2px solid #80A61B;border-radius:var(--radius-lg);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-weight:700;color:#575756;font-size:14px">TOTAL PEDIDO — ${Object.keys(porMarca).length} marcas · ${items.length} referencias</span>
+      <span style="font-size:20px;font-weight:800;color:var(--green-dark)">USD ${Math.round(totalUSD).toLocaleString('es-CO')}</span>
+    </div>`;
 }
 
 async function exportarPedidoExcel(){
