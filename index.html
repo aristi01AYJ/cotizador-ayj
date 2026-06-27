@@ -300,6 +300,10 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
         <input type="number" id="trmInput" value="3650" step="10" oninput="onTrmChange()">
         <span id="trmLabel">$ 4.200 COP/USD</span>
         <button onclick="resetTRM()" title="Restaurar TRM del Banco de la República" style="background:none;border:1px solid var(--border);border-radius:var(--radius);padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap"><i class="ti ti-refresh" style="font-size:11px;vertical-align:-1px"></i> BanRep</button>
+        <span style="color:var(--border);font-size:16px">|</span>
+        <label style="font-size:11px;color:#6B5CE7;font-weight:600">€ EUR</label>
+        <input type="number" id="eurInput" value="4200" step="10" oninput="calcTotales()" style="width:80px;padding:4px 6px;border:1px solid #c4b5fd;border-radius:var(--radius);font-size:13px;font-family:inherit;color:#6B5CE7">
+        <span style="font-size:11px;color:#6B5CE7" id="eurLabel">COP/EUR</span>
         <button onclick="abrirItemLibre()" style="background:#FEF3C7;border:1.5px solid #F59E0B;color:#92400E;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="ti ti-pencil-plus"></i> Ítem libre</button>
         <button onclick="solicitarClavePrecio()" id="precioLockBtn" title="Modificar precios" style="margin-left:auto;background:#f0f4e8;border:1.5px solid var(--green);color:var(--green-dark);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">💲 Precio</button>
       </div>
@@ -1166,6 +1170,7 @@ async function cargarMaquinas(){
         ytVideo:(()=>{const v=f.YTvideo||null;return v?(typeof v==='object'?(v.Url||''):String(v).trim()):'';})(),
         observaciones:(f.Observaciones||'').trim(),
         horasInstalacion:parseFloat(String(f.HorasInstalacion||f.Horas_Instalacion||'0').replace(',','.')||0),
+    moneda:(f.MO||'USD').trim().toUpperCase()==='EUR'?'EUR':'USD',
       };
     }).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
     const marcas=[...new Set(rawMaquinas.map(m=>m.marca).filter(Boolean))].sort();
@@ -1361,6 +1366,7 @@ function renderCarrito(){
         :item.tipo==='importacion'
           ?'<span class="item-tipo-badge importacion">🚢 En Importación</span>'
           :'<span class="item-tipo-badge pedido">📦 Bajo Pedido</span>';
+    const esEURitem=item.moneda==='EUR';
     const precioUnit=item.tarifa/(item.cantidad||1);
     const tr=document.createElement('tr');
     tr.innerHTML=`<td style="color:var(--text3);font-size:12px">${i+1}</td>`
@@ -1378,7 +1384,7 @@ function renderCarrito(){
       +`<td class="price-cell" style="vertical-align:middle">`
       +(window.precioDesbloqueado
         ?`<div style="display:flex;align-items:center;gap:3px;justify-content:center"><span style="font-size:10px;color:var(--text2)">USD</span><input type="number" min="0" value="${Math.round(item.tarifa/(item.cantidad||1))}" onchange="editarPrecioItem(${i},this.value)" style="width:70px;padding:2px 4px;border:1px solid #F59E0B;border-radius:3px;font-size:12px;font-family:inherit;text-align:right;background:#fffbf0"></div>`
-        :`<div class="price-usd-item" id="pusd_${i}">${fmtUSD(item.tarifa)}</div>`)
+        :`<div class="price-usd-item" id="pusd_${i}">${esEURitem?'<span style="color:#6B5CE7;font-weight:700">€ '+Math.round(item.tarifa).toLocaleString('es-CO')+'</span>':fmtUSD(item.tarifa)}</div>`)
       +`</td>`
       +`<td class="price-cell" style="vertical-align:middle"><div class="price-cop-item" id="pcop_${i}">${fmtCOP(item.tarifa)}</div></td>`
       +`<td style="vertical-align:middle"><button class="btn-remove" onclick="removerItem(${i})"><i class="ti ti-x"></i></button></td>`;
@@ -1398,35 +1404,65 @@ function removerItem(i){carrito.splice(i,1);renderCarrito();calcTotales();render
 
 function calcTotales(){
   const desc=getDescuento();
-  const descEspecial=document.getElementById('descEspecialChk').checked;
   const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
   const ivaPct=19;
-  const subUSD=carrito.reduce((s,i)=>s+i.tarifa,0);
-  const descUSD=subUSD*desc/100;
-  const baseUSD=subUSD-descUSD;
-  const ivaUSD=baseUSD*ivaPct/100;
+  const eurRate=parseFloat(document.getElementById('eurInput')?.value)||4200;
+
+  // Separar items USD vs EUR
+  const itemsUSD=carrito.filter(i=>i.moneda!=='EUR');
+  const itemsEUR=carrito.filter(i=>i.moneda==='EUR');
+
+  const subUSD=itemsUSD.reduce((s,i)=>s+i.tarifa,0);
+  const subEUR=itemsEUR.reduce((s,i)=>s+i.tarifa,0);
+
+  // Todo a COP para el total
+  const subCOP=subUSD*trm + subEUR*eurRate;
+  const descCOP=subCOP*desc/100;
+  const baseCOP=subCOP-descCOP;
+  const ivaCOP=baseCOP*ivaPct/100;
+  const totalCOP=Math.round(baseCOP+ivaCOP+fleteCOP);
+
+  // Para mostrar en USD equivalente (referencia)
+  const subUSDref=subCOP/trm;
+  const descUSDref=descCOP/trm;
+  const baseUSDref=baseCOP/trm;
+  const ivaUSDref=ivaCOP/trm;
   const fleteUSD=trm>0?fleteCOP/trm:0;
-  const totalUSD=baseUSD+ivaUSD+fleteUSD;
-  const totalCOP=Math.round(totalUSD*trm);
-  document.getElementById('tSubUSD').textContent=fmtUSD(subUSD);
-  document.getElementById('tSubCOP').textContent=fmtCOP(subUSD);
-  document.getElementById('tDescUSD').textContent='-'+fmtUSD(descUSD);
-  document.getElementById('tDescCOP').textContent='-'+fmtCOP(descUSD);
-  // Precio antes de IVA = subtotal - descuento
-  const baseIvaUSD=baseUSD;
-  document.getElementById('tBaseIvaUSD').textContent=fmtUSD(baseIvaUSD);
-  document.getElementById('tBaseIvaCOP').textContent=fmtCOP(baseIvaUSD);
-  document.getElementById('tIVAUSD').textContent=fmtUSD(ivaUSD);
-  document.getElementById('tIVACOP').textContent=fmtCOP(ivaUSD);
-  const tFleteUSD=document.getElementById('tFleteUSD');
-  const tFleteCOP=document.getElementById('tFleteCOP');
-  if(tFleteUSD) tFleteUSD.textContent=fleteCOP>0?fmtUSD(fleteUSD):'USD 0';
-  if(tFleteCOP) tFleteCOP.textContent=fleteCOP>0?'COP '+Math.round(fleteCOP).toLocaleString('es-CO'):'COP 0';
-  const fleteLabel=document.getElementById('fleteUSDLabel');
-  if(fleteLabel) fleteLabel.textContent=fleteCOP>0?'≈ '+fmtUSD(fleteUSD):'';
-  document.getElementById('tTotalUSD').textContent=fmtUSD(totalUSD);
+  const totalUSDref=totalCOP/trm;
+
+  const haEUR=itemsEUR.length>0;
+
+  document.getElementById('tSubUSD').textContent=haEUR?fmtCOP2(subCOP):fmtUSD(subUSD);
+  document.getElementById('tSubCOP').textContent=haEUR?'':fmtCOP(subUSD);
+  document.getElementById('tDescUSD').textContent='-'+(haEUR?fmtCOP2(descCOP):fmtUSD(descUSDref));
+  document.getElementById('tDescCOP').textContent=haEUR?'':'-'+fmtCOP(descUSDref);
+  // Precio antes de IVA
+  const baseUSD=baseUSDref;
+  document.getElementById('tBaseIvaUSD').textContent=haEUR?fmtCOP2(baseCOP):fmtUSD(baseUSD);
+  document.getElementById('tBaseIvaCOP').textContent=haEUR?'':fmtCOP(baseUSD);
+  document.getElementById('tIVAUSD').textContent=haEUR?fmtCOP2(ivaCOP):fmtUSD(ivaUSDref);
+  document.getElementById('tIVACOP').textContent=haEUR?'':fmtCOP(ivaUSDref);
+  document.getElementById('tFleteUSD').textContent=haEUR?fmtCOP2(fleteCOP):fmtUSD(fleteUSD);
+  document.getElementById('tFleteCOP').textContent=haEUR?'':fmtCOP(fleteUSD);
+  document.getElementById('tTotalUSD').textContent=haEUR?fmtCOP2(totalCOP):fmtUSD(totalUSDref);
   document.getElementById('tTotalCOP').textContent='COP '+totalCOP.toLocaleString('es-CO');
-  calcMG();
+
+  // Flete label
+  const fl=document.getElementById('fleteUSDLabel');
+  if(fl&&fleteCOP>0) fl.textContent='≈ USD '+Math.round(fleteUSD).toLocaleString('es-CO');
+  else if(fl) fl.textContent='';
+
+  // Panel MG
+  calcMG(haEUR?baseUSDref:baseUSD);
+
+  // Actualizar precios en tabla por item
+  carrito.forEach((item,i)=>{
+    const esEUR=item.moneda==='EUR';
+    const el=document.getElementById('pusd_'+i);
+    const el2=document.getElementById('pcop_'+i);
+    if(el) el.textContent=esEUR?'€ '+Math.round(item.tarifa).toLocaleString('es-CO'):fmtUSD(item.tarifa);
+    if(el2) el2.textContent=esEUR?fmtCOP2(item.tarifa*eurRate):fmtCOP(item.tarifa);
+  });
 }
 
 // ── DESCUENTO ──────────────────────────────────────────
