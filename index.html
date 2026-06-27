@@ -300,6 +300,7 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
         <input type="number" id="trmInput" value="3650" step="10" oninput="onTrmChange()">
         <span id="trmLabel">$ 4.200 COP/USD</span>
         <button onclick="resetTRM()" title="Restaurar TRM del Banco de la República" style="background:none;border:1px solid var(--border);border-radius:var(--radius);padding:3px 8px;font-size:11px;cursor:pointer;color:var(--text2);font-family:inherit;white-space:nowrap"><i class="ti ti-refresh" style="font-size:11px;vertical-align:-1px"></i> BanRep</button>
+        <button onclick="abrirItemLibre()" style="background:#FEF3C7;border:1.5px solid #F59E0B;color:#92400E;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="ti ti-pencil-plus"></i> Ítem libre</button>
         <button onclick="solicitarClavePrecio()" id="precioLockBtn" title="Modificar precios" style="margin-left:auto;background:#f0f4e8;border:1.5px solid var(--green);color:var(--green-dark);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">💲 Precio</button>
       </div>
       <div class="maq-list" id="maqList">
@@ -370,10 +371,6 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <option value="__custom_voltaje__">✏️ Personalizar...</option>
           </select>
           <input type="text" id="voltajeCustom" placeholder="Especifica el voltaje..." style="display:none;margin-top:4px;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);font-family:inherit;width:100%">
-        </div>
-        <div class="field-group">
-          <label>Observaciones</label>
-          <input type="text" id="obsInput" placeholder="Notas para el cliente..." style="min-width:160px">
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
           <button id="modoCOPBtn" onclick="toggleModoCOPBtn()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.15s">
@@ -478,6 +475,9 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <span id="fleteUSDLabel" style="font-size:11px;color:var(--text2);white-space:nowrap"></span>
           </div>
         </div>
+        <div style="padding:8px 0 4px">
+          <input type="text" id="obsInput" placeholder="📝 Observaciones para el cliente..." style="width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:inherit;color:var(--text2);background:#fafafa">
+        </div>
         <div class="totales">
           <div class="total-item">
             <span class="total-label">Subtotal</span>
@@ -510,7 +510,6 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
             <span class="total-val big2" id="tTotalCOP">COP 0</span>
           </div>
           <button class="btn-sec" onclick="nuevaCotizacion()"><i class="ti ti-plus"></i> Nueva Cotización</button>
-          <button class="btn-sec" onclick="abrirItemLibre()" style="border-color:var(--amber);color:#92400E" title="Agregar ítem personalizado"><i class="ti ti-pencil-plus"></i> Ítem libre</button>
           <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar y PDF</button>
         </div>
       </div>
