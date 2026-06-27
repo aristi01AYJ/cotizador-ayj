@@ -2864,6 +2864,13 @@ function liqSwitchTab(tab){
 }
 
 // ── LIQUIDACIÓN ──────────────────────────────────────
+function liqOtrosChange(){
+  const val=parseFloat(document.getElementById('liqOtros')?.value)||0;
+  const desc=document.getElementById('liqOtrosDesc');
+  if(desc) desc.style.display=val>0?'block':'none';
+  liqCalc();
+}
+
 function liqCalc(){
   const FOB=parseFloat(document.getElementById('liqFOB')?.value)||0;
   const TRM=parseFloat(document.getElementById('liqTRM')?.value)||3650;
@@ -3538,7 +3545,7 @@ function liqImprimir(){
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Garantías (${Math.round(garantiaPct*100)}%)</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(garantiaUSD)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Instalación</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(instalacion)}</td></tr>
         <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Costo Financiación</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(costoFin)}</td></tr>
-        <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Otros</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(otros)}</td></tr>
+        <tr><td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">Otros${document.getElementById('liqOtrosDesc')?.value?' — '+document.getElementById('liqOtrosDesc').value:''}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${fU(otros)}</td></tr>
         <tr style="background:#fafafa"><td style="padding:6px 8px;font-weight:700">TOTAL COSTOS (sin IVA)</td><td style="padding:6px 8px;text-align:right;font-weight:700;color:#EF4444">${fU(totalCostosUSD)}<br><span style="font-size:10px;color:#aaa">${fC(totalCostosUSD)}</span></td></tr>
         <tr style="background:#FEF3C7"><td style="padding:5px 8px;color:#92400E">⚠ IVA Nacionalización 19% (recuperable)</td><td style="padding:5px 8px;text-align:right;color:#F59E0B;font-weight:600">${fU(ivaImportUSD)}<br><span style="font-size:10px;color:#aaa">${fC(ivaImportUSD)}</span></td></tr>
         <tr style="background:#f0f0f0"><td style="padding:6px 8px;font-weight:700">TOTAL REAL (con IVA)</td><td style="padding:6px 8px;text-align:right;font-weight:700;color:#575756">${fU(totalConIvaUSD)}<br><span style="font-size:10px;color:#aaa">${fC(totalConIvaUSD)}</span></td></tr>
@@ -3569,8 +3576,7 @@ function liqImprimir(){
   <div class="confidencial">🔒 DOCUMENTO CONFIDENCIAL — Solo para uso interno AYJ</div>
 
   <div class="section-title">Máquina: ${instMaqNombre}</div>
-  <div class="grid2" style="margin-bottom:16px">
-    <table>
+  <table style="margin-bottom:16px">
       <tr><th>Concepto</th><th>Cantidad/Horas</th><th style="text-align:right">USD</th><th style="text-align:right">COP ref.</th></tr>
       <tr><td style="padding:5px 8px;border-bottom:1px solid #eee">Horas técnico (× COP 51.300)</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${horas}h = ${dias}d</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${fU(horas*51300/TRM)}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">${fC(horas*51300/TRM)}</td></tr>
       <tr><td style="padding:5px 8px;border-bottom:1px solid #eee">Tiquetes nacionales (× COP 900.000)</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${cantTiqNal}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${fU(cantTiqNal*900000/TRM)}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">${fC(cantTiqNal*900000/TRM)}</td></tr>
@@ -3581,8 +3587,7 @@ function liqImprimir(){
       <tr><td style="padding:5px 8px;border-bottom:1px solid #eee">Gastos diarios (${dias}d × COP 75.000)</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${dias} días</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${fU(dias*75000/TRM)}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">${fC(dias*75000/TRM)}</td></tr>
       ${premontaje?`<tr><td style="padding:5px 8px;border-bottom:1px solid #eee">Visita premontaje (50%)</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">—</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right">${fU(instTotal*0.5/(premontaje?1.5:1))}</td><td style="padding:5px 8px;border-bottom:1px solid #eee;text-align:right;color:#888">—</td></tr>`:''}
       <tr style="background:#f5f5f5"><td style="padding:6px 8px;font-weight:700" colspan="2">TOTAL INSTALACIÓN</td><td style="padding:6px 8px;text-align:right;font-weight:700;color:#80A61B">${fU(instTotal)}</td><td style="padding:6px 8px;text-align:right;font-weight:700;color:#aaa">${fC(instTotal)}</td></tr>
-    </table>
-  </div>
+  </table>
   <div style="margin-top:auto;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:8px;text-align:center">
     AYJ Maquinaria · Uso exclusivo interno · ${fecha}
   </div>
@@ -3815,7 +3820,10 @@ initMsal();
           </div>
           <div class="liq-field"><label>Flete Nacional (USD)</label><input type="number" id="liqFleteNal" value="0" oninput="liqCalc()"></div>
           <div class="liq-field"><label>Descargue en cliente (USD)</label><input type="number" id="liqDescargue" value="0" oninput="liqCalc()"></div>
-          <div class="liq-field"><label>Otros costos (USD)</label><input type="number" id="liqOtros" value="0" oninput="liqCalc()"></div>
+          <div class="liq-field"><label>Otros costos (USD)</label>
+            <input type="number" id="liqOtros" value="0" oninput="liqOtrosChange()">
+            <input type="text" id="liqOtrosDesc" placeholder="Descripción de otros costos..." style="display:none;margin-top:4px;width:100%;padding:5px 8px;border:1px solid #F59E0B;border-radius:4px;font-size:12px;font-family:inherit;background:#fffbf0" oninput="liqCalc()">
+          </div>
           <div class="liq-field"><label>Garantías + Marketing (%FOB)</label>
             <select id="liqGarantia" onchange="liqCalc()" style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;font-size:13px">
               <option value="0">0% — No aplica</option>
@@ -3842,7 +3850,7 @@ initMsal();
           <div style="font-size:11px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #80A61B">Precio de Venta</div>
           <div class="liq-field">
             <label>Margen AYJ: <strong id="liqMargenLabel" style="color:#80A61B">50%</strong></label>
-            <input type="range" id="liqMargenSlider" min="10" max="70" value="50" oninput="document.getElementById('liqMargenLabel').textContent=this.value+'%';liqCalc()" style="width:100%;accent-color:#80A61B">
+            <input type="range" id="liqMargenSlider" min="25" max="65" value="50" oninput="document.getElementById('liqMargenLabel').textContent=this.value+'%';liqCalc()" style="width:100%;accent-color:#80A61B">
           </div>
           <div class="liq-field">
             <label>Descuento al cliente: <strong id="liqDescLabel" style="color:#575756">0%</strong></label>
