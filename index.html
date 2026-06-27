@@ -734,6 +734,8 @@ const msalConfig={auth:{clientId:CLIENT_ID,authority:`https://login.microsoftonl
 const loginRequest={scopes:['Sites.ReadWrite.All','User.Read']};
 let msalInstance,siteId,listIdMaquinas,listIdClientes,listIdCotizaciones,listIdLiquidaciones;
 let rawMaquinas=[],grupos=[],bajosPedido=[],carrito=[],cotNum=1,trm=4200;
+let historialData=[];
+let modoEdicion=null;
 let currentUserName='';
 
 // ── TIEMPO DE ENTREGA PERSONALIZADO ──────────────────
