@@ -2648,7 +2648,7 @@ let stockTabActivo='nivel';
 
 function stockTab(tab){
   stockTabActivo=tab;
-  document.getElementById('panelNivel').style.display=tab==='nivel'?'block':'none';
+  document.getElementById('panelNivel').style.display=tab==='nivel'?'flex':'none';
   document.getElementById('panelPedido').style.display=tab==='pedido'?'flex':'none';
   document.getElementById('stab1').style.borderBottomColor=tab==='nivel'?'var(--green)':'transparent';
   document.getElementById('stab1').style.color=tab==='nivel'?'var(--green-dark)':'var(--text2)';
@@ -2656,7 +2656,18 @@ function stockTab(tab){
   document.getElementById('stab2').style.borderBottomColor=tab==='pedido'?'var(--green)':'transparent';
   document.getElementById('stab2').style.color=tab==='pedido'?'var(--green-dark)':'var(--text2)';
   document.getElementById('stab2').style.fontWeight=tab==='pedido'?'600':'500';
-  if(tab==='pedido') renderPedido();
+  if(tab==='pedido'){
+    // Auto-poblar con máquinas que tienen aPedir > 0
+    stockData.forEach(m=>{
+      const minFinal=m.stockMinSP||stockMin[m.title]||0;
+      const disp=m.stock+m.importacion;
+      const aPedir=Math.max(0,minFinal-disp);
+      if(aPedir>0&&!pedido[m.title]){
+        pedido[m.title]={titulo:m.title,qty:aPedir,tarifa:m.tarifa||0,prioridad:stockPrioridad[m.title]||0};
+      }
+    });
+    renderPedido();
+  }
 }
 
 async function cargarStock(){
