@@ -1815,6 +1815,16 @@ function generarPDF(d, soloRetornar=false){
       +'</div>'
       :'')
       +'</td>'
+      +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:center;vertical-align:top;font-size:13px;font-weight:600;color:#575756;">'
+      +(item.cantidad||1)
+      +'</td>'
+      +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;vertical-align:top;white-space:nowrap;">'
+      +(d.modoCOP
+        ?'<div style="font-size:12px;color:#575756;">'+fCOP((item.tarifa||0)/(item.cantidad||1))+'</div>'
+        :'<div style="font-size:12px;color:#575756;">'+fUSD((item.tarifa||0)/(item.cantidad||1))+'</div>'
+         +'<div style="font-size:10px;color:#aaa;margin-top:1px;">'+fCOP((item.tarifa||0)/(item.cantidad||1))+'</div>'
+      )
+      +'</td>'
       +'<td style="padding:8px 10px;border-bottom:1px solid #ececec;text-align:right;white-space:nowrap;vertical-align:top;">'
       +(d.modoCOP
         ?'<div style="font-weight:700;font-size:13px;color:#575756;">'+fCOP(item.tarifa||0)+'</div>'
@@ -1860,6 +1870,17 @@ function generarPDF(d, soloRetornar=false){
     +'<strong style="color:#575756;">Aspectos Legales:</strong> Autorizamos a Aristizábal y Jinete S.A.S. para uso comercial de los datos suministrados, bajo Ley 1581 de 2012. '
     +'Consultas: info@ayj.com.co · 601-2688600. El COMPRADOR garantiza que los recursos provienen de actividades lícitas. '
     +'Discrepancias se dirimen en Bogotá D.C., Colombia.'
+    +'</div>'
+    +'<div style="margin-top:16px;background:#f5f7f0;border:1px solid #d8e0c0;border-radius:8px;padding:14px 16px;">'
+    +'<div style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Datos Bancarios</div>'
+    +'<div style="font-size:11px;color:#444;line-height:2;">'
+    +'<strong>Banco de Bogotá</strong> · Cuenta Corriente No. <strong>095-330239</strong> · Aristizábal y Jinete SAS · NIT 860.079.605-6<br>'
+    +'<strong>Bancolombia</strong> · Cuenta Corriente No. <strong>043 627 135 05</strong> · Aristizábal y Jinete SAS · NIT 860.079.605-6<br>'
+    +'<strong>Link Pagos Online:</strong> <a href="https://portalpagos.davivienda.com/#/comercio/8676/ARISTIZABAL%20Y%20JINETE%20SAS" style="color:#1D9E75">Portal Pagos Davivienda</a>'
+    +'</div>'
+    +'<div style="margin-top:8px;font-size:10px;color:#854F0B;background:#FEF3C7;padding:6px 10px;border-radius:4px;">'
+    +'Una vez realizada la transferencia, favor enviar soporte del pago a <strong>soporte.tecnico@ayj.com.co</strong>, <strong>pagos@ayj.com.co</strong> o al fax: 57.1.2688600 (135)'
+    +'</div>'
     +'</div>'
     +'<div style="margin-top:32px;display:flex;gap:40px;padding-top:16px;border-top:1px solid #e0e0dc;">'
     +'<div style="flex:1;">'
@@ -1936,7 +1957,9 @@ function generarPDF(d, soloRetornar=false){
     +'<thead><tr style="background:#575756;color:#fff;">'
     +'<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:600;width:28px;">#</th>'
     +'<th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Descripción del Equipo</th>'
-    +(d.modoCOP?'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:160px;text-transform:uppercase;letter-spacing:0.5px;">Precio COP</th>':'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:150px;text-transform:uppercase;letter-spacing:0.5px;">Precio</th>')
+    +'<th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:600;width:50px;text-transform:uppercase;">Cant.</th>'
+    +'<th style="padding:10px 10px;text-align:right;font-size:10px;font-weight:600;width:120px;text-transform:uppercase;">P. Unit.</th>'
+    +(d.modoCOP?'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:140px;text-transform:uppercase;">Total COP</th>':'<th style="padding:10px 12px;text-align:right;font-size:10px;font-weight:600;width:130px;text-transform:uppercase;">Total USD</th>')
     +'</tr></thead>'
     +'<tbody>'+filas+'</tbody></table>'
 
