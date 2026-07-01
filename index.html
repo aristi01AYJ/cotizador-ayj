@@ -561,8 +561,8 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
           <input type="date" id="hFiltHasta" onchange="filtrarHistorial()" style="min-width:130px">
         </div>
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--text2);margin-left:auto;white-space:nowrap">
-          <input type="checkbox" id="histVerTodas" onchange="filtrarHistorial()" style="cursor:pointer">
-          Ver todas
+          <input type="checkbox" id="histVerTodas" onchange="filtrarMisOfertas(this.checked)" style="cursor:pointer">
+          Mis ofertas
         </label>
         <button class="btn-sec" onclick="cargarHistorial()"><i class="ti ti-refresh"></i></button>
       </div>
@@ -2049,10 +2049,6 @@ function generarPDF(d, soloRetornar=false){
 async function cargarHistorial(){
   if(!siteId||!listIdCotizaciones){document.getElementById('historialBody').innerHTML='<div class="loading-list">Lista no disponible</div>';return;}
   document.getElementById('historialBody').innerHTML='<div class="loading-list"><span class="spinner dark"></span> Cargando...</div>';
-  // Pre-llenar el filtro vendedor con el usuario actual si no está marcado "ver todas"
-  const verTodas=document.getElementById('histVerTodas')?.checked||false;
-  const filtVen=document.getElementById('hFiltVendedor');
-  if(filtVen&&!verTodas&&!filtVen.value) filtVen.value=currentUserName||'';
   try{
     const data=await graphGetAll(`/sites/${siteId}/lists/${listIdCotizaciones}/items?expand=fields&$orderby=id desc&$top=200`);
     historialData=data.map(i=>{
@@ -2076,11 +2072,15 @@ async function cargarHistorial(){
   }catch(e){document.getElementById('historialBody').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
 }
 
+function filtrarMisOfertas(checked){
+  const filtVen=document.getElementById('hFiltVendedor');
+  if(filtVen) filtVen.value=checked?(currentUserName||''):'';
+  filtrarHistorial();
+}
+
 function filtrarHistorial(){
   const qCli=(document.getElementById('hFiltCliente')?.value||'').toLowerCase();
-  const verTodas=document.getElementById('histVerTodas')?.checked||false;
-  // Por defecto filtra por el usuario logueado
-  const qVen=verTodas?'':(document.getElementById('hFiltVendedor')?.value||currentUserName||'').toLowerCase();
+  const qVen=(document.getElementById('hFiltVendedor')?.value||'').toLowerCase();
   const qEst=document.getElementById('hFiltEstado')?.value||'';
   const desde=document.getElementById('hFiltDesde')?.value?new Date(document.getElementById('hFiltDesde').value):null;
   const hasta=document.getElementById('hFiltHasta')?.value?new Date(document.getElementById('hFiltHasta').value+'T23:59:59'):null;
