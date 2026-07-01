@@ -231,6 +231,13 @@ body.modo-cop #tSubCOP,body.modo-cop #tDescCOP,body.modo-cop #tIVACOP,body.modo-
 body.modo-cop #tSubUSD,body.modo-cop #tDescUSD,body.modo-cop #tIVAUSD,body.modo-cop #tTotalUSD,body.modo-cop #tFleteUSD{display:none}
 body.modo-cop .trm-bar{opacity:0.6}
 body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-child(4){display:none}
+/* Modo solo USD */
+body.modo-usd .precio-usd{font-size:13px;font-weight:700;color:var(--green-dark)}
+body.modo-usd .precio-cop{display:none}
+body.modo-usd .price-cop-item{display:none}
+body.modo-usd .price-usd-item{font-size:13px;font-weight:700;color:var(--text)}
+body.modo-usd #tSubCOP,body.modo-usd #tDescCOP,body.modo-usd #tIVACOP,body.modo-usd #tTotalCOP,body.modo-usd #tFleteCOP,body.modo-usd #tBaseIvaCOP{display:none}
+body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-usd #tTotalUSD,body.modo-usd #tFleteUSD,body.modo-usd #tBaseIvaUSD{font-size:14px;font-weight:700;color:var(--text)}
 </style>
 </head>
 <body>
@@ -343,9 +350,14 @@ body.modo-cop .items-table th:nth-child(4),body.modo-cop .items-table td:nth-chi
           </select>
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-          <button id="modoCOPBtn" onclick="toggleModoCOPBtn()" style="font-size:11px;padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:all 0.15s">
-            <span id="modoCOPIcon">💲</span> <span id="modoCOPTxt">Ver en COP</span>
-          </button>
+          <div style="display:flex;gap:5px">
+            <button id="modoCOPBtn" onclick="toggleModoCOPBtn()" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all 0.15s">
+              <span id="modoCOPIcon">💲</span> <span id="modoCOPTxt">Ver COP</span>
+            </button>
+            <button id="modoUSDBtn" onclick="toggleModoUSDBtn()" style="font-size:11px;padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);background:#fff;color:var(--text2);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all 0.15s">
+              <span>🇺🇸</span> <span id="modoUSDTxt">Ver USD</span>
+            </button>
+          </div>
           <input type="checkbox" id="modoCOPChk" onchange="toggleModoCOP(this.checked)" style="display:none">
           <div class="oferta-badge" id="ofertaNum">COT-2026-001</div>
           <div style="display:flex;align-items:center;gap:6px;">
@@ -1610,6 +1622,27 @@ function getDescuento(){
 // ── MODO COP ──────────────────────────────────────────
 let modoCOP=false;
 
+function toggleModoUSDBtn(){
+  const activo=document.body.classList.contains('modo-usd');
+  if(activo){
+    document.body.classList.remove('modo-usd');
+    const btn=document.getElementById('modoUSDBtn');
+    btn.style.background='#fff'; btn.style.color='var(--text2)'; btn.style.borderColor='var(--border)'; btn.style.fontWeight='400';
+    document.getElementById('modoUSDTxt').textContent='Ver USD';
+  } else {
+    // Desactivar modo COP si está activo
+    if(document.body.classList.contains('modo-cop')){
+      document.getElementById('modoCOPChk').checked=false;
+      toggleModoCOP(false);
+    }
+    document.body.classList.add('modo-usd');
+    const btn=document.getElementById('modoUSDBtn');
+    btn.style.background='#1D4ED8'; btn.style.color='#fff'; btn.style.borderColor='#1D4ED8'; btn.style.fontWeight='600';
+    document.getElementById('modoUSDTxt').textContent='Solo USD ✓';
+  }
+  renderCarrito(); calcTotales();
+}
+
 function toggleModoCOPBtn(){
   const chk=document.getElementById('modoCOPChk');
   chk.checked=!chk.checked;
@@ -1617,6 +1650,13 @@ function toggleModoCOPBtn(){
 }
 
 function toggleModoCOP(checked){
+  // Desactivar modo USD si está activo
+  if(checked&&document.body.classList.contains('modo-usd')){
+    document.body.classList.remove('modo-usd');
+    const btnU=document.getElementById('modoUSDBtn');
+    if(btnU){btnU.style.background='#fff';btnU.style.color='var(--text2)';btnU.style.borderColor='var(--border)';btnU.style.fontWeight='400';}
+    document.getElementById('modoUSDTxt').textContent='Ver USD';
+  }
   const btn=document.getElementById('modoCOPBtn');
   const icon=document.getElementById('modoCOPIcon');
   const txt=document.getElementById('modoCOPTxt');
