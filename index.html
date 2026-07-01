@@ -1973,6 +1973,7 @@ function generarPDF(d, soloRetornar=false){
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
     +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">Subtotal</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+(d.modoCOP?fCOP(d.subUSD):fUSD(d.subUSD)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.subUSD)+'</span>')+'</td></tr>'
     +descRow
+    +'<tr style="background:#f5f7f0"><td style="padding:6px 10px;color:#575756;font-weight:700;border-bottom:1px solid #eee;">Subtotal s/IVA</td><td style="padding:6px 10px;text-align:right;border-bottom:1px solid #eee;font-weight:700;">'+(d.modoCOP?fCOP((d.subUSD||0)-(d.descUSD||0)):fUSD((d.subUSD||0)-(d.descUSD||0))+'<br><span style="font-size:10px;color:#aaa;">'+fCOP((d.subUSD||0)-(d.descUSD||0))+'</span>')+'</td></tr>'
     +'<tr><td style="padding:5px 10px;color:#666;border-bottom:1px solid #eee;">IVA 19%</td><td style="padding:5px 10px;text-align:right;border-bottom:1px solid #eee;">'+(d.modoCOP?fCOP(d.ivaUSD||0):fUSD(d.ivaUSD||0)+'<br><span style="font-size:10px;color:#aaa;">'+fCOP(d.ivaUSD||0)+'</span>')+'</td></tr>'
     +fleteRow
     +'<tr style="background:#80A61B;">'
