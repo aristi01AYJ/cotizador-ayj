@@ -1200,9 +1200,7 @@ function procesarCatalogo(){
   if(rawMaquinas.length>0){
     const sample=rawMaquinas.slice(0,3);
     console.log('[AYJ] Muestra campos horas:',sample.map(m=>({title:m.title,horasInstalacion:m.horasInstalacion})));
-    console.log('[AYJ] Muestra COSTO_AYJ:',sample.map(m=>({title:m.title,costoAYJ:m.costoAYJ})));
-    // Log campos raw del primer item para ver nombre exacto en SP
-    if(todos.length>0){const f0=todos[0].fields;const keys=Object.keys(f0).filter(k=>k.toLowerCase().includes('costo')||k.toLowerCase().includes('cost'));console.log('[AYJ] Campos costo en SP:',keys,keys.map(k=>f0[k]));}
+    if(todos.length>0) console.log('[AYJ] TODOS LOS CAMPOS item[0]:',Object.keys(todos[0].fields));
   }
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
   bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO').sort((a,b)=>a.title.localeCompare(b.title,'es'));
