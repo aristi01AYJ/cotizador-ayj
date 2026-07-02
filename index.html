@@ -1156,6 +1156,7 @@ async function cargarMaquinas(){
     }catch(e){}
 
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
+    if(todos.length>0) console.log('[AYJ] CAMPOS RAW item[0]:',Object.keys(todos[0].fields));
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
 
@@ -1200,7 +1201,8 @@ function procesarCatalogo(){
   if(rawMaquinas.length>0){
     const sample=rawMaquinas.slice(0,3);
     console.log('[AYJ] Muestra campos horas:',sample.map(m=>({title:m.title,horasInstalacion:m.horasInstalacion})));
-    if(todos.length>0) console.log('[AYJ] TODOS LOS CAMPOS item[0]:',Object.keys(todos[0].fields));
+    console.log('[AYJ] Muestra COSTO_AYJ:',sample.map(m=>({title:m.title,costoAYJ:m.costoAYJ})));
+    if(todos.length>0) console.log('[AYJ] CAMPOS RAW item[0]:',Object.keys(todos[0].fields));
   }
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
   bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO').sort((a,b)=>a.title.localeCompare(b.title,'es'));
