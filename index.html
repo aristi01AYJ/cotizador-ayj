@@ -3136,6 +3136,10 @@ function liqCalc(){
   let FOB=0, CIF=0, arancelUSD=0, agenteUSD=0, ivaImportUSD=0, garantiaUSD=0;
   let filasCosto='';
 
+  const fU=n=>'USD '+Math.round(n).toLocaleString('es-CO');
+  const fC=n=>'COP '+Math.round(n*TRM).toLocaleString('es-CO');
+  const fila=(l,u,c)=>`<div class="liq-row"><span>${l}</span><span style="text-align:right"><span style="color:#3B82F6;font-size:11px">${u}</span><br><span style="color:#888;font-size:10px">${c}</span></span></div>`;
+
   if(esFOB){
     FOB=parseFloat(document.getElementById('liqFOB')?.value)||0;
     const fleteInt=parseFloat(document.getElementById('liqFleteInt')?.value)||0;
@@ -3170,9 +3174,6 @@ function liqCalc(){
   const PVIVA=PVD+IVAIVA;
   const margenReal=PVD>0?(PVD-totalCostosUSD)/PVD*100:0;
   const utilidadUSD=PVD-totalCostosUSD;
-
-  const fU=n=>'USD '+Math.round(n).toLocaleString('es-CO');
-  const fC=n=>'COP '+Math.round(n*TRM).toLocaleString('es-CO');
 
   document.getElementById('liqCostosTable').innerHTML=
     filasCosto
