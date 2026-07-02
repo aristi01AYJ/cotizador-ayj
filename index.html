@@ -1126,6 +1126,7 @@ function mapItem(i){
     id:i.id,title:(f.Title||'').trim(),modelo:(f.Modelo||'').trim(),marca:(f.Marca||f.Marca0||f.MO||'').trim(),
     tipologia:(f.Tipologia||'').trim(),estadoDisp:(f.ESTADO_||'').trim().toUpperCase(),
     estadoStock:(f.ESTADO||'').trim(),tarifa,
+    costoAYJ:parseFloat(String(f.COSTO_AYJ||f.CostoAYJ||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0,
     ubicacion:(f.Ubicaci_x00f3_n||f.Ubicacion||'').trim(),
     descripcion:(f.Descripci_x00f3_n||f.Descripcion||f.Descripci_n||'').trim(),
     fichaTecnica,
@@ -1205,7 +1206,7 @@ function procesarCatalogo(){
   const mapa={};
   disponibles.forEach(m=>{
     const key=m.title.toLowerCase().trim();
-    if(!mapa[key])mapa[key]={key,title:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',stockCount:0,importCount:0,horasInstalacion:m.horasInstalacion||0};
+    if(!mapa[key])mapa[key]={key,title:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia,tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',stockCount:0,importCount:0,horasInstalacion:m.horasInstalacion||0,costoAYJ:m.costoAYJ||0};
     if(m.ytVideo&&!mapa[key].ytVideo)mapa[key].ytVideo=m.ytVideo;
     const st=m.estadoStock.toLowerCase();
     if(st.includes('importa'))mapa[key].importCount++;else mapa[key].stockCount++;
@@ -3496,8 +3497,26 @@ function liqSyncInstMaquina(){
   const liqSel=document.getElementById('liqMaquinaSel');
   const instSel=document.getElementById('instMaquina');
   if(!liqSel||!instSel) return;
-  const val=liqSel.value; // ej: "g_af01" o "bp_123"
+  const val=liqSel.value;
   if(!val) return;
+
+  // Autorellenar COSTO_AYJ desde el catálogo
+  const inputCosto=document.getElementById('liqCostoAYJ');
+  if(inputCosto){
+    let costoAYJ=0;
+    if(val.startsWith('g_')){
+      const g=grupos.find(x=>x.key===val.slice(2));
+      costoAYJ=g?.costoAYJ||0;
+    } else if(val.startsWith('bp_')){
+      const m=bajosPedido.find(x=>x.id===val.slice(3));
+      costoAYJ=m?.costoAYJ||0;
+    }
+    if(costoAYJ>0){
+      inputCosto.value=costoAYJ;
+      showToast('✓ COSTO_AYJ cargado: USD '+costoAYJ.toLocaleString('es-CO'),'success');
+      liqCalc();
+    }
+  }
 
   // Buscar opción en instMaquina por value exacto
   let opt=[...instSel.options].find(o=>o.value===val);
