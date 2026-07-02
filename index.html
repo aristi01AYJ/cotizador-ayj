@@ -1155,8 +1155,8 @@ async function cargarMaquinas(){
       });
     }catch(e){}
 
-    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$select=id,fields&$top=200`);
-    if(todos.length>0) console.log('[AYJ] CAMPOS RAW item[0]:',Object.keys(todos[0].fields));
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields($select=Title,Modelo,Marca0,Tipologia,ESTADO_,ESTADO,TARIFA,TARIFA_SUGERIDO,Ubicaci_x00f3_n,Descripci_x00f3_n,Ficha_x0020_Tecnica,YTvideo,Observaciones,HorasInstalacion,Horas_Instalacion,COSTO_AYJ,Stock_minimo,StockMinimo)&$top=200`);
+    if(todos.length>0) console.log('[AYJ] COSTO_AYJ raw:',todos[0].fields?.COSTO_AYJ);
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
 
@@ -1201,7 +1201,6 @@ function procesarCatalogo(){
   if(rawMaquinas.length>0){
     const sample=rawMaquinas.slice(0,3);
     console.log('[AYJ] Muestra campos horas:',sample.map(m=>({title:m.title,horasInstalacion:m.horasInstalacion})));
-    console.log('[AYJ] Muestra COSTO_AYJ:',sample.map(m=>({title:m.title,costoAYJ:m.costoAYJ})));
     if(todos.length>0) console.log('[AYJ] CAMPOS RAW item[0]:',Object.keys(todos[0].fields));
   }
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
