@@ -1178,6 +1178,7 @@ async function cargarMaquinas(){
         fichaTecnica,
         ytVideo:(()=>{const v=f.YTvideo||null;return v?(typeof v==='object'?(v.Url||''):String(v).trim()):'';})(),
         observaciones:(f.Observaciones||'').trim(),
+        costoAYJ:parseFloat(String(f.COSTO_AYJ||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0,
         horasInstalacion:parseFloat(String(f.HorasInstalacion||f.Horas_Instalacion||'0').replace(',','.')||0),
       };
     }).filter(m=>m.estadoDisp==='DISPONIBLE'||m.estadoDisp==='BAJO PEDIDO');
@@ -1196,11 +1197,9 @@ async function cargarMaquinas(){
 }
 
 function procesarCatalogo(){
-  // DEBUG horas instalacion — ver en consola
   if(rawMaquinas.length>0){
     const sample=rawMaquinas.slice(0,3);
     console.log('[AYJ] Muestra campos horas:',sample.map(m=>({title:m.title,horasInstalacion:m.horasInstalacion})));
-    if(todos.length>0) console.log('[AYJ] CAMPOS RAW item[0]:',Object.keys(todos[0].fields));
   }
   const disponibles=rawMaquinas.filter(m=>m.estadoDisp==='DISPONIBLE');
   bajosPedido=rawMaquinas.filter(m=>m.estadoDisp==='BAJO PEDIDO').sort((a,b)=>a.title.localeCompare(b.title,'es'));
