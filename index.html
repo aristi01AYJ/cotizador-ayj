@@ -1155,7 +1155,7 @@ async function cargarMaquinas(){
       });
     }catch(e){}
 
-    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields($select=Title,Modelo,Marca0,Tipologia,ESTADO_,ESTADO,TARIFA,TARIFA_SUGERIDO,Ubicaci_x00f3_n,Descripci_x00f3_n,Ficha_x0020_Tecnica,YTvideo,Observaciones,HorasInstalacion,Horas_Instalacion,COSTO_AYJ,Stock_minimo,StockMinimo)&$top=200`);
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$top=200`);
     if(todos.length>0) console.log('[AYJ] COSTO_AYJ raw:',todos[0].fields?.COSTO_AYJ);
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
