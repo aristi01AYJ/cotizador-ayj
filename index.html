@@ -1144,7 +1144,6 @@ function mapItem(i){
 async function cargarMaquinas(){
   if(!siteId||!listIdMaquinas){document.getElementById('maqList').innerHTML='<div class="loading-list">Lista no encontrada</div>';return;}
   try{
-    // Primero detectar nombres internos de columnas clave
     let marcaField='Marca', tipologiaField='Tipologia';
     try{
       const cols=await graphGet(`/sites/${siteId}/lists/${listIdMaquinas}/columns?$select=name,displayName`);
@@ -1193,7 +1192,10 @@ async function cargarMaquinas(){
     procesarCatalogo();
     document.getElementById('catalogoCount').textContent=`${grupos.length} productos · ${bajosPedido.length} bajo pedido`;
     renderCatalogo();
-  }catch(e){document.getElementById('maqList').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;}
+  }catch(e){
+    console.error('[AYJ] cargarMaquinas error:', e.message, e.stack);
+    document.getElementById('maqList').innerHTML=`<div class="loading-list">Error: ${e.message}</div>`;
+  }
 }
 
 function procesarCatalogo(){
