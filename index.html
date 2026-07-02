@@ -1156,7 +1156,6 @@ async function cargarMaquinas(){
     }catch(e){}
 
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdMaquinas}/items?expand=fields&$top=200`);
-    if(todos.length>0) console.log('[AYJ] COSTO_AYJ raw:',todos[0].fields?.COSTO_AYJ);
     rawMaquinas=todos.map(i=>{
       const f=i.fields;
 
