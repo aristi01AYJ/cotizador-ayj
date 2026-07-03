@@ -3733,14 +3733,26 @@ function liqImprimir(){
   const finTRM=parseFloat(document.getElementById('finTRM')?.value)||3650;
   const finTotal=window._finCosto||0;
 
-  // Cálculos
-  const CIF=FOB+fleteInt;
-  const arancelUSD=CIF*arancel;
-  const agenteUSD=CIF*agente;
-  const ivaImportUSD=CIF*0.19;
-  const garantiaUSD=FOB*garantiaPct;
-  const totalCostosUSD=CIF+arancelUSD+agenteUSD+fleteNal+descargue+garantiaUSD+instalacion+costoFin+otros; // SIN IVA (recuperable)
-  const totalConIvaUSD=totalCostosUSD+ivaImportUSD; // total real con IVA
+  // Cálculos — mismo modo que liqCalc
+  const esFOB=document.getElementById('liqModoFOB')?.checked||false;
+  let CIF=0, arancelUSD=0, agenteUSD=0, ivaImportUSD=0, garantiaUSD=0;
+
+  if(esFOB){
+    CIF=FOB+fleteInt;
+    arancelUSD=CIF*arancel;
+    agenteUSD=CIF*agente;
+    ivaImportUSD=CIF*0.19;
+    garantiaUSD=FOB*garantiaPct;
+  } else {
+    const costoAYJ=parseFloat(document.getElementById('liqCostoAYJ')?.value)||0;
+    CIF=costoAYJ;
+    arancelUSD=0; agenteUSD=0;
+    ivaImportUSD=CIF*0.19;
+    garantiaUSD=CIF*garantiaPct;
+  }
+
+  const totalCostosUSD=CIF+arancelUSD+agenteUSD+fleteNal+descargue+garantiaUSD+instalacion+costoFin+otros;
+  const totalConIvaUSD=totalCostosUSD+ivaImportUSD;
   const m=margenPct/100;
   const PVN=m<1?totalCostosUSD/(1-m):totalCostosUSD*2;
   const PVD=PVN*(1-descCliente/100);
