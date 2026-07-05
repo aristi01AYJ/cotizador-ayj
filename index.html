@@ -2407,9 +2407,10 @@ function renderTablaClientes(){
 
 let _clienteSelIdx = -1;
 
+let _contactosMapa = {}; // mapa por key para editar
+
 async function seleccionarClienteDetalle(idx){
   _clienteSelIdx = idx;
-  // Resaltar fila seleccionada
   document.querySelectorAll('[id^="cliRow_"]').forEach(el=>{
     el.style.background = el.id===`cliRow_${idx}` ? '#EDF7E3' : '#fff';
   });
@@ -2420,10 +2421,11 @@ async function seleccionarClienteDetalle(idx){
 
   await cargarListaContactos();
   const contactos = await cargarContactosPorCliente(c.titulo);
+  _contactosMapa = {};
+  contactos.forEach((ct,i)=>{ _contactosMapa[i]=ct; });
 
   panel.innerHTML = `
     <div style="max-width:600px">
-      <!-- Info cliente -->
       <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px;margin-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
@@ -2437,7 +2439,6 @@ async function seleccionarClienteDetalle(idx){
           </div>
         </div>
       </div>
-      <!-- Contactos -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:13px;font-weight:700;color:var(--text)">👤 Contactos <span style="font-size:11px;color:var(--text2);font-weight:400">(${contactos.length})</span></div>
         <button onclick="abrirModalNuevoContacto('${c.titulo.replace(/'/g,"\\'")}',${idx})" class="btn-primary" style="padding:5px 12px;font-size:12px"><i class="ti ti-user-plus"></i> Agregar</button>
@@ -2452,13 +2453,49 @@ async function seleccionarClienteDetalle(idx){
               ${ct.telefono?`<div style="font-size:11px;color:var(--text2)">${ct.telefono}</div>`:''}
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px">
-              <button onclick="editarContacto('${c.titulo.replace(/'/g,"\\'")}',${ci},${JSON.stringify(ct).replace(/'/g,"\\'")})" class="btn-sec" style="padding:4px 8px;font-size:11px"><i class="ti ti-pencil"></i></button>
-              <button onclick="eliminarContacto('${ct.nombre.replace(/'/g,"\\'")}','${c.titulo.replace(/'/g,"\\'")}',${idx})" class="btn-sec" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444"><i class="ti ti-trash"></i></button>
+              <button onclick="editarContactoIdx(${ci},'${c.titulo.replace(/'/g,"\\'")}')" class="btn-sec" style="padding:4px 8px;font-size:11px"><i class="ti ti-pencil"></i></button>
+              <button onclick="eliminarContactoIdx(${ci},'${c.titulo.replace(/'/g,"\\'")}')" class="btn-sec" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444"><i class="ti ti-trash"></i></button>
             </div>
           </div>`).join('')
         : '<div style="color:var(--text3);font-size:13px;padding:20px;text-align:center">Sin contactos registrados</div>'}
       </div>
     </div>`;
+}
+
+async function editarContactoIdx(ci, nombreCliente){
+  const ct = _contactosMapa[ci];
+  if(!ct) return;
+  const nombre=prompt('Nombre:',ct.nombre);
+  if(!nombre?.trim()) return;
+  const cargo=prompt('Cargo:',ct.cargo)||'';
+  const email=prompt('Email:',ct.email)||'';
+  const telefono=prompt('Teléfono:',ct.telefono)||'';
+  await cargarListaContactos();
+  try{
+    const token=await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${ct.id}/fields`,{
+      method:'PATCH',
+      headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+      body:JSON.stringify({Title:nombre.trim(),Cargo:cargo,Email:email,Telefono:telefono})
+    });
+    showToast('✓ Contacto actualizado','success');
+    seleccionarClienteDetalle(_clienteSelIdx);
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
+
+async function eliminarContactoIdx(ci, nombreCliente){
+  const ct = _contactosMapa[ci];
+  if(!ct||!confirm(`¿Eliminar contacto "${ct.nombre}"?`)) return;
+  await cargarListaContactos();
+  try{
+    const token=await getToken();
+    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${ct.id}`,{
+      method:'DELETE',headers:{Authorization:'Bearer '+token}
+    });
+    showToast('✓ Contacto eliminado','success');
+    seleccionarClienteDetalle(_clienteSelIdx);
+  }catch(e){showToast('Error: '+e.message,'error');}
+}
 }
 
 async function cargarContactosPorCliente(nombreCliente){
@@ -2590,14 +2627,14 @@ function abrirModalCliente(){
 function editarCliente(c){
   clienteEditandoId=c.id;
   document.getElementById('mc_titulo').value=c.titulo||'';
-  document.getElementById('mc_nombre').value=c.nombre||'';
-  document.getElementById('mc_email').value=c.email||'';
-  document.getElementById('mc_telefono').value=c.telefono||'';
   document.getElementById('mc_ciudad').value=c.ciudad||'';
   document.getElementById('mc_pais').value=c.pais||'Colombia';
   document.getElementById('mc_nit').value=c.nit||'';
+  document.getElementById('mcContactosWrap').innerHTML='';
+  mcContactosCount=0;
+  mcAgregarContacto(); // campo vacío para agregar nuevo si quiere
   document.getElementById('modalClienteTitulo').textContent='Editar Cliente';
-  document.getElementById('btnGuardarCliente').innerHTML='<i class="ti ti-check"></i> Actualizar Cliente';
+  document.getElementById('btnGuardarCliente').innerHTML='<i class="ti ti-check"></i> Actualizar';
   document.getElementById('modalCliente').style.display='flex';
 }
 function cerrarModalCliente(){document.getElementById('modalCliente').style.display='none';}
