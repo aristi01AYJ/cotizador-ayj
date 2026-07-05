@@ -1087,6 +1087,7 @@ async function onClienteSeleccionado(nombreCliente){
       `https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items?expand=fields($select=Title,Cliente,Cargo,Email,Telefono,Activo)&$top=500`,
       {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
     console.log('[AYJ] Total contactos SP:', r.value?.length);
+    if(r.value?.length) console.log('[AYJ] Contacto[0] fields:', r.value[0].fields);
     const contactos=(r.value||[])
       .filter(i=>i.fields?.Activo!==false&&(i.fields?.Cliente||'').toLowerCase()===nombreCliente.toLowerCase())
       .map(i=>({
