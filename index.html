@@ -1083,9 +1083,11 @@ async function onClienteSeleccionado(nombreCliente){
   try{
     const token=await getToken();
     const filter=encodeURIComponent(`fields/Cliente eq '${nombreCliente}'`);
+    console.log('[AYJ] Buscando contactos para:', nombreCliente, 'filter:', filter);
     const r=await fetch(
       `https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items?expand=fields($select=Title,Cliente,Cargo,Email,Telefono,Activo)&$filter=${filter}&$top=50`,
       {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+    console.log('[AYJ] Contactos raw:', r.value?.length, r.value?.[0]?.fields);
     const contactos=(r.value||[])
       .filter(i=>i.fields?.Activo!==false)
       .map(i=>({
