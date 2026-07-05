@@ -725,57 +725,57 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
 
 <!-- MODAL NUEVO CLIENTE -->
 <div id="modalCliente" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:480px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:28px 32px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
       <strong style="font-size:15px" id="modalClienteTitulo">Nuevo Cliente</strong>
       <button onclick="cerrarModalCliente()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">×</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="field-group" style="grid-column:1/-1">
-        <label>Razón Social *</label>
-        <input type="text" id="mc_titulo" placeholder="Nombre de la empresa..." style="width:100%">
-      </div>
-      <div class="field-group">
-        <label>Contacto (Nombre)</label>
-        <input type="text" id="mc_nombre" placeholder="Nombre del contacto...">
-      </div>
-      <div class="field-group">
-        <label>Email</label>
-        <input type="email" id="mc_email" placeholder="correo@empresa.com">
-      </div>
-      <div class="field-group">
-        <label>Teléfono</label>
-        <input type="text" id="mc_telefono" placeholder="3001234567">
-      </div>
-      <div class="field-group">
-        <label>Ciudad</label>
-        <input type="text" id="mc_ciudad" placeholder="Selecciona o escribe una ciudad..." list="ciudadesList" autocomplete="off">
-        <datalist id="ciudadesList">
-          <option value="Bogotá"><option value="Medellín"><option value="Cali">
-          <option value="Barranquilla"><option value="Bucaramanga"><option value="Pereira">
-          <option value="Manizales"><option value="Cúcuta"><option value="Ibagué">
-          <option value="Cartagena"><option value="Armenia"><option value="Pasto">
-          <option value="Villavicencio"><option value="Montería"><option value="Sincelejo">
-          <option value="Valledupar"><option value="Santa Marta"><option value="Neiva">
-          <option value="Popayán"><option value="Tunja"><option value="Palmira">
-          <option value="Bello"><option value="Itagüí"><option value="Envigado">
-          <option value="Rionegro"><option value="Dosquebradas">
-          <option value="Quito"><option value="Lima"><option value="Ciudad de Panamá">
-          <option value="Caracas">
-        </datalist>
-      </div>
-      <div class="field-group">
-        <label>País</label>
-        <input type="text" id="mc_pais" value="Colombia">
-      </div>
-      <div class="field-group" style="grid-column:1/-1">
-        <label>NIT / RUT</label>
-        <input type="text" id="mc_nit" placeholder="860.079.605-6">
+
+    <!-- SECCIÓN 1: Datos de la empresa -->
+    <div style="background:#f5f7f0;border-radius:var(--radius);padding:12px 14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">🏢 Datos de la Empresa</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field-group" style="grid-column:1/-1;margin:0">
+          <label>Razón Social *</label>
+          <input type="text" id="mc_titulo" placeholder="Nombre de la empresa..." style="width:100%">
+        </div>
+        <div class="field-group" style="margin:0">
+          <label>Ciudad</label>
+          <input type="text" id="mc_ciudad" placeholder="Ciudad..." list="ciudadesList" autocomplete="off">
+          <datalist id="ciudadesList">
+            <option value="Bogotá"><option value="Medellín"><option value="Cali">
+            <option value="Barranquilla"><option value="Bucaramanga"><option value="Pereira">
+            <option value="Manizales"><option value="Cúcuta"><option value="Ibagué">
+            <option value="Cartagena"><option value="Armenia"><option value="Pasto">
+            <option value="Villavicencio"><option value="Montería"><option value="Santa Marta">
+            <option value="Quito"><option value="Lima"><option value="Ciudad de Panamá">
+          </datalist>
+        </div>
+        <div class="field-group" style="margin:0">
+          <label>País</label>
+          <input type="text" id="mc_pais" value="Colombia">
+        </div>
+        <div class="field-group" style="grid-column:1/-1;margin:0">
+          <label>NIT / RUT</label>
+          <input type="text" id="mc_nit" placeholder="860.079.605-6">
+        </div>
       </div>
     </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+
+    <!-- SECCIÓN 2: Contactos -->
+    <div style="background:#EFF6FF;border-radius:var(--radius);padding:12px 14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:#1E3A8A;text-transform:uppercase;letter-spacing:0.5px">👤 Contactos</div>
+        <button onclick="mcAgregarContacto()" style="background:#1E3A8A;color:#fff;border:none;border-radius:var(--radius);padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit">+ Agregar contacto</button>
+      </div>
+      <div id="mcContactosWrap">
+        <!-- El primer contacto se agrega dinámicamente -->
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
       <button class="btn-sec" onclick="cerrarModalCliente()">Cancelar</button>
-      <button class="btn-primary" id="btnGuardarCliente" onclick="guardarCliente()"><i class="ti ti-check"></i> Guardar Cliente</button>
+      <button class="btn-primary" id="btnGuardarCliente" onclick="guardarCliente()"><i class="ti ti-check"></i> Guardar</button>
     </div>
   </div>
 </div>
@@ -796,7 +796,52 @@ let historialData=[];
 let modoEdicion=null;
 let currentUserName='';
 
-// ── TIEMPO DE ENTREGA PERSONALIZADO ──────────────────
+// ── MODAL CLIENTE: contactos dinámicos ──────────────────
+let mcContactosCount = 0;
+
+function mcAgregarContacto(datos={}){
+  const wrap = document.getElementById('mcContactosWrap');
+  const idx = mcContactosCount++;
+  const div = document.createElement('div');
+  div.id = `mcContacto_${idx}`;
+  div.style.cssText = 'background:#fff;border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;border:1px solid #BFDBFE;position:relative';
+  div.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="field-group" style="grid-column:1/-1;margin:0">
+        <label style="font-size:10px">Nombre *</label>
+        <input type="text" id="mc_cont_nombre_${idx}" placeholder="Nombre completo..." value="${datos.nombre||''}" style="width:100%">
+      </div>
+      <div class="field-group" style="margin:0">
+        <label style="font-size:10px">Cargo</label>
+        <input type="text" id="mc_cont_cargo_${idx}" placeholder="Gerente, Jefe..." value="${datos.cargo||''}">
+      </div>
+      <div class="field-group" style="margin:0">
+        <label style="font-size:10px">Teléfono</label>
+        <input type="text" id="mc_cont_tel_${idx}" placeholder="300 123 4567" value="${datos.telefono||''}">
+      </div>
+      <div class="field-group" style="grid-column:1/-1;margin:0">
+        <label style="font-size:10px">Email</label>
+        <input type="email" id="mc_cont_email_${idx}" placeholder="correo@empresa.com" value="${datos.email||''}" style="width:100%">
+      </div>
+    </div>
+    ${idx>0?`<button onclick="document.getElementById('mcContacto_${idx}').remove()" style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:#888;font-size:14px">×</button>`:''}
+  `;
+  wrap.appendChild(div);
+}
+
+function abrirModalCliente(){
+  document.getElementById('modalClienteTitulo').textContent='Nuevo Cliente';
+  ['mc_titulo','mc_ciudad','mc_pais','mc_nit'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.value=id==='mc_pais'?'Colombia':'';}
+  });
+  document.getElementById('mcContactosWrap').innerHTML='';
+  mcContactosCount=0;
+  mcAgregarContacto();
+  clienteEditandoId=null;
+  document.getElementById('modalCliente').style.display='flex';
+  setTimeout(()=>document.getElementById('mc_titulo')?.focus(),100);
+}
 let entregaPersonalizada='';
 
 function onVoltajeChange(val){
@@ -2439,39 +2484,75 @@ async function guardarCliente(){
     const existe=clientesData.find(c=>c.titulo.toLowerCase()===titulo.toLowerCase());
     if(existe){
       const usar=confirm(`Ya existe un cliente con ese nombre:\n"${existe.titulo}"\n\n¿Deseas usarlo en la oferta actual en lugar de crear uno nuevo?`);
-      if(usar){cerrarModalCliente();usarCliente(existe.titulo,existe.nombre,existe.ciudad,existe.telefono);}
+      if(usar){cerrarModalCliente();usarCliente(existe.titulo,'',existe.ciudad,existe.telefono);}
       return;
     }
   }
 
+  // Recopilar contactos del modal
+  const contactos=[];
+  document.querySelectorAll('[id^="mc_cont_nombre_"]').forEach(el=>{
+    const idx=el.id.replace('mc_cont_nombre_','');
+    const nombre=el.value.trim();
+    if(nombre) contactos.push({
+      nombre,
+      cargo:document.getElementById(`mc_cont_cargo_${idx}`)?.value.trim()||'',
+      email:document.getElementById(`mc_cont_email_${idx}`)?.value.trim()||'',
+      telefono:document.getElementById(`mc_cont_tel_${idx}`)?.value.trim()||'',
+    });
+  });
+
   const btn=document.getElementById('btnGuardarCliente');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Guardando...';
+
   const fields={
     Title:titulo,
-    Nombre:document.getElementById('mc_nombre').value.trim(),
-    Email:document.getElementById('mc_email').value.trim(),
-    Telefono:document.getElementById('mc_telefono').value.trim(),
     Ciudad:document.getElementById('mc_ciudad').value.trim(),
     Pais:document.getElementById('mc_pais').value.trim(),
     Asesor:currentUserName,
   };
+  const nit=document.getElementById('mc_nit')?.value.trim();
+  if(nit) fields.NIT=nit;
+
   try{
+    const token=await getToken();
     if(clienteEditandoId){
-      // PATCH — actualizar existente
-      const token=await getToken();
       await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdClientes}/items/${clienteEditandoId}/fields`,{
         method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(fields)
       });
       showToast('✓ Cliente actualizado','success');
     } else {
       await graphPost(`/sites/${siteId}/lists/${listIdClientes}/items`,{fields});
-      showToast('✓ Cliente guardado: '+titulo,'success');
+      // Guardar contactos en lista Contactos
+      if(contactos.length>0){
+        await cargarListaContactos();
+        if(listIdContactos){
+          for(const c of contactos){
+            try{
+              await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
+                method:'POST',
+                headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
+                body:JSON.stringify({fields:{Title:c.nombre,Cliente:titulo,Cargo:c.cargo,Email:c.email,Telefono:c.telefono,Activo:true}})
+              });
+            }catch(e){console.warn('Error guardando contacto:',e.message);}
+          }
+          showToast(`✓ Cliente + ${contactos.length} contacto(s) guardados`,'success');
+        } else {
+          showToast('✓ Cliente guardado (lista Contactos no encontrada)','success');
+        }
+      } else {
+        showToast('✓ Cliente guardado: '+titulo,'success');
+      }
     }
     cerrarModalCliente();
     await cargarClientes(true);
-    if(!clienteEditandoId) usarCliente(titulo,fields.Nombre,fields.Ciudad,fields.Telefono);
+    if(!clienteEditandoId){
+      const primerContacto=contactos[0];
+      usarCliente(titulo, primerContacto?.nombre||'', fields.Ciudad||'', primerContacto?.telefono||'');
+      if(primerContacto) onClienteSeleccionado(titulo);
+    }
   }catch(e){showToast('Error: '+e.message,'error');}
-  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Guardar Cliente';}
+  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Guardar';}
 }
 
 function showToast(msg,type=''){
