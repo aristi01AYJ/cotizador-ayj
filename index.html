@@ -2496,7 +2496,6 @@ async function eliminarContactoIdx(ci, nombreCliente){
     seleccionarClienteDetalle(_clienteSelIdx);
   }catch(e){showToast('Error: '+e.message,'error');}
 }
-}
 
 async function cargarContactosPorCliente(nombreCliente){
   if(!listIdContactos) return [];
@@ -2541,46 +2540,6 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
-async function eliminarContacto(nombreContacto, nombreCliente, clienteIdx){
-  if(!confirm(`¿Eliminar contacto "${nombreContacto}"?`)) return;
-  await cargarListaContactos();
-  try{
-    const token=await getToken();
-    const r=await fetch(
-      `https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items?expand=fields($select=Title,Cliente)&$top=500`,
-      {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-    const item=r.value?.find(i=>
-      i.fields?.Title?.trim()===nombreContacto&&
-      (i.fields?.Cliente||'').trim().toLowerCase()===nombreCliente.trim().toLowerCase()
-    );
-    if(!item){showToast('Contacto no encontrado','error');return;}
-    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${item.id}`,{
-      method:'DELETE',headers:{Authorization:'Bearer '+token}
-    });
-    showToast('✓ Contacto eliminado','success');
-    seleccionarClienteDetalle(clienteIdx);
-  }catch(e){showToast('Error: '+e.message,'error');}
-}
-
-async function editarContacto(nombreCliente, ci, datos){
-  if(typeof datos==='string') datos=JSON.parse(datos);
-  const nombre=prompt('Nombre:',datos.nombre);
-  if(!nombre?.trim()) return;
-  const cargo=prompt('Cargo:',datos.cargo)||'';
-  const email=prompt('Email:',datos.email)||'';
-  const telefono=prompt('Teléfono:',datos.telefono)||'';
-  await cargarListaContactos();
-  try{
-    const token=await getToken();
-    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${datos.id}/fields`,{
-      method:'PATCH',
-      headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-      body:JSON.stringify({Title:nombre.trim(),Cargo:cargo,Email:email,Telefono:telefono})
-    });
-    showToast('✓ Contacto actualizado','success');
-    seleccionarClienteDetalle(_clienteSelIdx);
-  }catch(e){showToast('Error: '+e.message,'error');}
-}
 
 async function eliminarClienteIdx(idx){
   const c=_listaFiltradaClientes[idx];
