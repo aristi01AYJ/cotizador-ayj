@@ -1940,6 +1940,17 @@ async function guardarCotizacion(){
     }
     const itemId=itemCreado?.id||null;
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
+    // Agregar datos del contacto seleccionado
+    const contactoSel=document.getElementById('contactoSel');
+    if(contactoSel&&contactoSel.value!==''&&contactoSel._contactos){
+      const ct=contactoSel._contactos[parseInt(contactoSel.value)];
+      if(ct){
+        clienteInfo.nombre=ct.nombre||clienteInfo.nombre||'';
+        clienteInfo.email=ct.email||clienteInfo.email||'';
+        clienteInfo.telefono=ct.telefono||clienteInfo.telefono||'';
+        clienteInfo.cargo=ct.cargo||'';
+      }
+    }
     // Generar HTML, subir a SharePoint, luego abrir con link
     const voltaje=getVoltaje();
     const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,modoUSD:document.body.classList.contains('modo-usd'),trm,items:[...carrito]},true);
@@ -2124,7 +2135,7 @@ function generarPDF(d, soloRetornar=false){
     +'<td style="width:55%;padding:14px 18px;background:#f5f7f0;border-radius:8px 0 0 8px;border:1px solid #d8e0c0;border-right:none;vertical-align:top;">'
     +'<div style="font-size:9px;font-weight:700;color:#80A61B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Cliente</div>'
     +'<div style="font-size:16px;font-weight:800;color:#575756;">'+d.cliente+'</div>'
-    +(cli.nombre?'<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> '+cli.nombre+'</div>':'')
+    +(cli.nombre?'<div style="font-size:12px;color:#555;margin-top:4px;"><strong>Contacto:</strong> '+cli.nombre+(cli.cargo?' · '+cli.cargo:'')+'</div>':'')
     +((cli.ciudad||cli.pais)?'<div style="font-size:11px;color:#777;margin-top:2px;">'+(cli.ciudad||'')+(cli.ciudad&&cli.pais?', ':'')+( cli.pais||'')+'</div>':'')
     +(cli.email?'<div style="font-size:11px;color:#777;margin-top:1px;">'+cli.email+'</div>':'')
     +'</td>'
