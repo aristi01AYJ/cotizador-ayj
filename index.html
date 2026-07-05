@@ -2567,9 +2567,46 @@ async function eliminarClienteIdx(idx){
   }catch(e){showToast('Error al eliminar: '+e.message,'error');}
 }
 
-function usarClienteIdx(idx){
+async function usarClienteIdx(idx){
   const c=_listaFiltradaClientes[idx];
-  if(c) usarCliente(c.titulo,c.nombre,c.ciudad,c.telefono);
+  if(!c) return;
+
+  // Cargar contactos del cliente
+  await cargarListaContactos();
+  const contactos=await cargarContactosPorCliente(c.titulo);
+
+  let contacto=null;
+  if(contactos.length===1){
+    contacto=contactos[0];
+  } else if(contactos.length>1){
+    // Mostrar selector rápido
+    const opciones=contactos.map((ct,i)=>`${i+1}. ${ct.nombre}${ct.cargo?' · '+ct.cargo:''}`).join('\n');
+    const sel=prompt(`${c.titulo} tiene ${contactos.length} contactos:\n${opciones}\n\nIngresa el número del contacto (o cancela para usar solo la empresa):`);
+    const num=parseInt(sel);
+    if(num>=1&&num<=contactos.length) contacto=contactos[num-1];
+  }
+
+  // Rellenar en la oferta
+  document.getElementById('clienteInput').value=c.titulo;
+  const info=document.getElementById('clienteInfo');
+  info.style.display='block';
+  let infoText=c.ciudad||'';
+  if(contacto){
+    infoText=`${contacto.nombre}${contacto.cargo?' · '+contacto.cargo:''}${c.ciudad?' · '+c.ciudad:''}`;
+    // Poblar dropdown contactoSel
+    const sel=document.getElementById('contactoSel');
+    const wrap=document.getElementById('contactoWrap');
+    if(sel&&wrap){
+      wrap.style.display='block';
+      sel.innerHTML=contactos.map((ct,i)=>`<option value="${i}">${ct.nombre}${ct.cargo?' · '+ct.cargo:''}</option>`).join('');
+      sel._contactos=contactos;
+      const selIdx=contactos.indexOf(contacto);
+      if(selIdx>=0) sel.value=String(selIdx);
+    }
+  }
+  info.textContent=infoText;
+  switchView('nueva');
+  showToast('Cliente cargado: '+c.titulo+(contacto?' · '+contacto.nombre:''),'success');
 }
 function editarClienteIdx(idx){
   const c=_listaFiltradaClientes[idx];
