@@ -536,6 +536,7 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
           <button class="btn-sec" onclick="nuevaCotizacion()"><i class="ti ti-plus"></i> Nueva Cotización</button>
           <button class="btn-sec" onclick="abrirItemLibre()" style="border-color:var(--amber);color:#92400E" title="Agregar ítem personalizado"><i class="ti ti-pencil-plus"></i> Ítem libre</button>
           <button class="btn-primary" id="btnGuardar" onclick="guardarCotizacion()"><i class="ti ti-device-floppy"></i> Guardar y PDF</button>
+          <button onclick="nuevaOferta()" style="background:#575756;border:none;color:#fff;padding:8px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px"><i class="ti ti-plus"></i> Nueva</button>
         </div>
       </div>
     </div>
@@ -2018,13 +2019,30 @@ async function guardarCotizacion(){
         });
       }catch(e){console.warn('No se pudo actualizar LinkPDF:',e.message);}
     }
-    await generarNumOferta();
+    // NO generar nuevo número — el usuario debe hacer clic en "Nueva Oferta" explícitamente
+    btn.innerHTML='<i class="ti ti-check"></i> Guardada ✓';
+    setTimeout(()=>{btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';},3000);
   if(esMobil()){const s=document.querySelector('.sidebar');if(s)s.classList.add('mobile-active');}
   }catch(e){showToast('Error: '+e.message,'error');}
-  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
+  finally{btn.disabled=false;}
 }
 
-function generarPDF(d, soloRetornar=false){
+async function nuevaOferta(){
+  if(!confirm('¿Iniciar una nueva oferta? Se limpiará el carrito y los datos actuales.')) return;
+  carrito=[];
+  document.getElementById('clienteInput').value='';
+  document.getElementById('clienteInfo').style.display='none';
+  document.getElementById('clienteInfo').textContent='';
+  const wrap=document.getElementById('contactoWrap');
+  if(wrap) wrap.style.display='none';
+  document.getElementById('obsInput').value='';
+  document.getElementById('idSynergyInput').value='';
+  renderCarrito();calcTotales();renderCatalogo();
+  await generarNumOferta();
+  showToast('Nueva oferta lista: '+document.getElementById('ofertaNum').textContent,'success');
+}
+
+
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
   const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
