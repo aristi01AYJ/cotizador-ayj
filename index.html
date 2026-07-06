@@ -3905,9 +3905,11 @@ async function guardarLiquidacion(){
     const fields={Title:num};
     if(camposDisp.has('Maquina')) fields.Maquina=maqNombre;
     if(camposDisp.has('Vendedor')) fields.Vendedor=vendedor;
+    if(camposDisp.has('FOB')) fields.FOB=FOB;
     if(camposDisp.has('TRM')) fields.TRM=TRM;
     if(camposDisp.has('TotalCostos')) fields.TotalCostos=Math.round(precio);
     if(camposDisp.has('Margen')) fields.Margen=margen;
+    if(camposDisp.has('Snapshot')) fields.Snapshot=JSON.stringify(snapshot).substring(0,900);
     console.log('[LIQ] Guardando fields:', JSON.stringify(fields).substring(0,200));
     const itemResp=await graphPost(`/sites/${siteId}/lists/${listIdLiquidaciones}/items`,{fields});
     console.log('[LIQ] Item creado:', itemResp?.id);
@@ -3931,7 +3933,7 @@ async function guardarLiquidacion(){
       if(linkHTML&&itemResp?.id){
         await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdLiquidaciones}/items/${itemResp.id}/fields`,{
           method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-          body:JSON.stringify({LinkHTML:linkHTML})
+          body:JSON.stringify({LinkHTML:linkHTML})  // SP Hyperlink field
         }).catch(e=>console.warn('No se pudo actualizar LinkHTML:',e.message));
       }
     }catch(eHTML){console.warn('[LIQ] HTML no subido:',eHTML.message);}
