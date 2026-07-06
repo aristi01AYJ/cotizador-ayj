@@ -2590,7 +2590,12 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
       body:JSON.stringify({fields:{Title:datos.nombre,Cliente:nombreCliente,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true}})
     });
     const respData=await resp.json();
-    console.log('[AYJ] Contacto creado:', resp.status, JSON.stringify(respData?.fields||respData?.error));
+    // Leer el item creado para ver campos reales
+    if(resp.ok && respData.id){
+      const getResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${respData.id}/fields`,
+        {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+      console.log('[AYJ] Campos reales del item creado:', JSON.stringify(getResp));
+    }
     if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
     showToast('✓ Contacto agregado','success');
     seleccionarClienteDetalle(clienteIdx);
