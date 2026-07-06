@@ -3838,6 +3838,7 @@ function liqEnviarAlCarrito(){ liqAgregarAlCarrito(); }
 async function guardarLiquidacion(){
   const precio=window._liqPrecioUSD||0;
   if(!precio){showToast('Calcula primero la liquidación','error');return;}
+  console.log('[LIQ] siteId:', siteId, 'listIdLiquidaciones:', listIdLiquidaciones, 'precio:', precio);
   if(!siteId||!listIdLiquidaciones){showToast('Lista Liquidaciones no encontrada en SP','error');return;}
 
   const num=await generarNumLiquidacion();
