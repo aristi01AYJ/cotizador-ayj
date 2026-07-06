@@ -2104,6 +2104,7 @@ function mostrarResumenMargenes(){
   w.document.close();
 }
 
+function generarPDF(d, soloRetornar=false){
 
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
