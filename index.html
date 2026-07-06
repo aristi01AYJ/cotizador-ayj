@@ -1392,14 +1392,25 @@ async function cargarTRM(){
         const trmHoy=Math.round(parseFloat(data[0].valor));
         trm=trmHoy;
         document.getElementById('trmInput').value=trmHoy;
-        document.getElementById('trmLabel').textContent='$ '+trmHoy.toLocaleString('es-CO')+' COP/USD · Banco República';
+        document.getElementById('trmLabel').textContent='$ '+trmHoy.toLocaleString('es-CO')+' COP/USD · BanRep';
+        calcTotales();
         return;
       }
     }
-  }catch(e){}
-  // Si falla la API, mantener el valor por defecto
-  trm=parseFloat(document.getElementById('trmInput').value)||3650;
-  document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
+  }catch(e){console.warn('BanRep API falló, usando er-api:',e.message);}
+  // Fallback: open.er-api.com
+  try{
+    const r2=await fetch('https://open.er-api.com/v6/latest/USD');
+    const d=await r2.json();
+    const rate=Math.round(d.rates?.COP||4200);
+    trm=rate;
+    document.getElementById('trmInput').value=rate;
+    document.getElementById('trmLabel').textContent='$ '+rate.toLocaleString('es-CO')+' COP/USD · er-api';
+    calcTotales();
+  }catch(e2){
+    trm=parseFloat(document.getElementById('trmInput').value)||4200;
+    document.getElementById('trmLabel').textContent='$ '+Math.round(trm).toLocaleString('es-CO')+' COP/USD';
+  }
 }
 
 function resetTRM(){
