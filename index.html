@@ -2585,11 +2585,11 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   try{
     const token=await getToken();
     // Primero consultar el nombre interno del campo Cliente
-    const colsResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/columns?$select=name,displayName`,
+    const colsResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/columns?$select=name,displayName,type,text,lookup`,
       {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
     const campoCliente=colsResp.value?.find(c=>c.displayName==='Cliente'||c.name==='Cliente');
+    console.log('[AYJ] Campo Cliente tipo:', JSON.stringify(campoCliente));
     const nombreCampoCliente=campoCliente?.name||'Cliente';
-    console.log('[AYJ] Campo Cliente interno:', nombreCampoCliente, '| todas:', colsResp.value?.map(c=>c.name+':'+c.displayName).join(', '));
 
     const fields={Title:datos.nombre,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true};
     fields[nombreCampoCliente]=nombreCliente;
