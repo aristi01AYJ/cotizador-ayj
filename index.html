@@ -2444,7 +2444,6 @@ async function seleccionarClienteDetalle(idx){
             <div style="font-size:12px;color:var(--text2);margin-top:4px">${[c.ciudad,c.pais].filter(Boolean).join(' · ')}${c.nit?' · NIT: '+c.nit:''}</div>
           </div>
           <div style="display:flex;gap:6px">
-            <button onclick="usarClienteIdx(${idx})" class="btn-primary" style="padding:5px 12px;font-size:12px"><i class="ti ti-arrow-right"></i> Usar</button>
             <button onclick="editarClienteIdx(${idx})" class="btn-sec" style="padding:5px 10px;font-size:12px"><i class="ti ti-pencil"></i></button>
             <button onclick="eliminarClienteIdx(${idx})" class="btn-sec" style="padding:5px 10px;font-size:12px;border-color:#EF4444;color:#EF4444"><i class="ti ti-trash"></i></button>
           </div>
@@ -2464,6 +2463,7 @@ async function seleccionarClienteDetalle(idx){
               ${ct.telefono?`<div style="font-size:11px;color:var(--text2)">${ct.telefono}</div>`:''}
             </div>
             <div style="display:flex;gap:6px;flex-shrink:0;margin-left:10px">
+              <button onclick="usarContactoIdx(${ci},'${c.titulo.replace(/'/g,"\\'")}')" class="btn-primary" style="padding:4px 10px;font-size:11px"><i class="ti ti-arrow-right"></i> Usar</button>
               <button onclick="editarContactoIdx(${ci},'${c.titulo.replace(/'/g,"\\'")}')" class="btn-sec" style="padding:4px 8px;font-size:11px"><i class="ti ti-pencil"></i></button>
               <button onclick="eliminarContactoIdx(${ci},'${c.titulo.replace(/'/g,"\\'")}')" class="btn-sec" style="padding:4px 8px;font-size:11px;border-color:#EF4444;color:#EF4444"><i class="ti ti-trash"></i></button>
             </div>
@@ -2538,7 +2538,8 @@ function abrirModalNuevoContacto(nombreCliente, clienteIdx){
 
 async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   await cargarListaContactos();
-  if(!listIdContactos){showToast('Lista Contactos no encontrada','error');return;}
+  console.log('[AYJ] Guardando contacto, listIdContactos:', listIdContactos, 'siteIdComercial:', siteIdComercial);
+  if(!listIdContactos){showToast('Lista Contactos no encontrada — recarga la página','error');return;}
   try{
     const token=await getToken();
     await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
@@ -2616,6 +2617,33 @@ function editarClienteIdx(idx){
   const c=_listaFiltradaClientes[idx];
   if(c) editarCliente(c);
 }
+
+function usarContactoIdx(ci, nombreCliente){
+  const ct=_contactosMapa[ci];
+  if(!ct) return;
+  // Cambiar vista primero
+  switchView('nueva');
+  // Rellenar cliente
+  document.getElementById('clienteInput').value=nombreCliente;
+  const info=document.getElementById('clienteInfo');
+  if(info){
+    info.style.display='block';
+    info.textContent=ct.nombre+(ct.cargo?' · '+ct.cargo:'')+(info._ciudad?' · '+info._ciudad:'');
+  }
+  // Poblar y seleccionar en el dropdown
+  const wrap=document.getElementById('contactoWrap');
+  const selEl=document.getElementById('contactoSel');
+  if(wrap&&selEl){
+    wrap.style.display='block';
+    // Construir options con todos los contactos del mapa
+    const allContacts=Object.values(_contactosMapa);
+    selEl.innerHTML=allContacts.map((c,i)=>`<option value="${Object.keys(_contactosMapa)[i]}">${c.nombre}${c.cargo?' · '+c.cargo:''}</option>`).join('');
+    selEl._contactos=allContacts;
+    selEl.value=String(ci);
+  }
+  showToast('Contacto cargado: '+ct.nombre+' — '+nombreCliente,'success');
+}
+
 
 function usarCliente(titulo,nombre,ciudad,telefono){
   document.getElementById('clienteInput').value=titulo;
