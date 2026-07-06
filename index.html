@@ -2590,7 +2590,7 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
       body:JSON.stringify({fields:{Title:datos.nombre,Cliente:nombreCliente,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true}})
     });
     const respData=await resp.json();
-    console.log('[AYJ] Resp guardar contacto:', resp.status, respData?.error?.message||'OK');
+    console.log('[AYJ] Contacto creado:', resp.status, JSON.stringify(respData?.fields||respData?.error));
     if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
     showToast('✓ Contacto agregado','success');
     seleccionarClienteDetalle(clienteIdx);
