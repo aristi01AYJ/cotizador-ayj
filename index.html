@@ -3736,7 +3736,7 @@ function liqCalc(){
 
   const descTotal=Math.min(65,Math.round(descCliente));
   const mgRow=TABLA_MG[descTotal]||[0,0];
-  const comPct=mgRow[1];
+  const comPct=Math.max(0,margenReal)*0.15;
   const comUSD=PVD*comPct/100;
 
   document.getElementById('liqResultados').innerHTML=
