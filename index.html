@@ -2585,14 +2585,19 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   try{
     const token=await getToken();
     // Primero consultar el nombre interno del campo Cliente
-    const colsResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/columns?$select=name,displayName,type,text,lookup`,
-      {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-    const campoCliente=colsResp.value?.find(c=>c.displayName==='Cliente'||c.name==='Cliente');
-    console.log('[AYJ] Campo Cliente tipo:', JSON.stringify(campoCliente));
-    const nombreCampoCliente=campoCliente?.name||'Cliente';
+    // Campo Cliente es Lookup — necesita el ID del item en lista Clientes
+    let clienteLookupId=null;
+    try{
+      const clientesResp=await fetch(
+        `https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdClientes}/items?expand=fields($select=Title,id)&$top=500`,
+        {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+      const clienteItem=clientesResp.value?.find(i=>(i.fields?.Title||'').trim().toLowerCase()===nombreCliente.trim().toLowerCase());
+      if(clienteItem) clienteLookupId=parseInt(clienteItem.id);
+      console.log('[AYJ] ClienteLookupId:', clienteLookupId, 'para:', nombreCliente);
+    }catch(e){console.warn('No se pudo obtener ID cliente:',e.message);}
 
     const fields={Title:datos.nombre,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true};
-    fields[nombreCampoCliente]=nombreCliente;
+    if(clienteLookupId) fields.ClienteLookupId=clienteLookupId;
 
     const resp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
       method:'POST',
@@ -2600,11 +2605,8 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
       body:JSON.stringify({fields})
     });
     const respData=await resp.json();
-    if(resp.ok && respData.id){
-      const getResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${respData.id}/fields`,
-        {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-      console.log('[AYJ] Campos guardados:', JSON.stringify(getResp));
-    }
+    if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
+    console.log('[AYJ] Contacto guardado ID:', respData.id);
     if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
     showToast('✓ Contacto agregado','success');
     seleccionarClienteDetalle(clienteIdx);
