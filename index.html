@@ -2058,7 +2058,7 @@ function mostrarResumenMargenes(){
       <td style="padding:8px 12px;text-align:right;color:#e24b4a">${desc>0?'-'+Math.round(desc*100)+'%':'—'}</td>
       <td style="padding:8px 12px;text-align:right;font-weight:700">USD ${Math.round(precioOferta).toLocaleString('es-CO')}</td>
       <td style="padding:8px 12px;text-align:right;background:${bg};color:${color};font-weight:700">${costo>0?margen.toFixed(1)+'%':'—'}</td>
-      <td style="padding:8px 12px;text-align:right;color:#1e40af">${costo>0?'USD '+Math.round(comision).toLocaleString('es-CO'):'—'}</td>
+      <td style="padding:8px 12px;text-align:right;color:#1e40af">${costo>0?'USD '+Math.round(comision).toLocaleString('es-CO')+'<br><span style="font-size:10px;color:#888">'+comisionPct.toFixed(2)+'%</span>':'—'}</td>
     </tr>`;
   });
 
@@ -2087,7 +2087,7 @@ function mostrarResumenMargenes(){
   <table>
     <thead><tr>
       <th>Máquina</th><th>Cant.</th><th>Costo AYJ</th><th>Tarifa Lista</th>
-      <th>Descuento</th><th>P. Venta</th><th>Margen</th><th>Comisión (15%)</th>
+      <th>Descuento</th><th>P. Venta</th><th>Margen</th><th>Comisión</th>
     </tr></thead>
     <tbody>${filas}</tbody>
     <tfoot><tr class="total-row">
