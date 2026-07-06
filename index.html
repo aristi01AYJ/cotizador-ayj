@@ -2027,22 +2027,7 @@ async function guardarCotizacion(){
   finally{btn.disabled=false;}
 }
 
-async function nuevaOferta(){
-  if(!confirm('¿Iniciar una nueva oferta? Se limpiará el carrito y los datos actuales.')) return;
-  carrito=[];
-  document.getElementById('clienteInput').value='';
-  document.getElementById('clienteInfo').style.display='none';
-  document.getElementById('clienteInfo').textContent='';
-  const wrap=document.getElementById('contactoWrap');
-  if(wrap) wrap.style.display='none';
-  document.getElementById('obsInput').value='';
-  document.getElementById('idSynergyInput').value='';
-  renderCarrito();calcTotales();renderCatalogo();
-  await generarNumOferta();
-  showToast('Nueva oferta lista: '+document.getElementById('ofertaNum').textContent,'success');
-}
-
-
+function generarPDF(d, soloRetornar=false){
   const fecha=new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'});
   const fUSD=n=>'USD '+Math.round(n||0).toLocaleString('es-CO');
   const fCOP=n=>'COP '+Math.round((n||0)*d.trm).toLocaleString('es-CO');
@@ -4753,3 +4738,19 @@ initMsal();
 
 
 </body></html>
+async function nuevaOferta(){
+  if(!confirm('¿Iniciar una nueva oferta? Se limpiará el carrito y los datos actuales.')) return;
+  carrito=[];
+  document.getElementById('clienteInput').value='';
+  document.getElementById('clienteInfo').style.display='none';
+  document.getElementById('clienteInfo').textContent='';
+  const wrap=document.getElementById('contactoWrap');
+  if(wrap) wrap.style.display='none';
+  document.getElementById('obsInput').value='';
+  document.getElementById('idSynergyInput').value='';
+  renderCarrito();calcTotales();renderCatalogo();
+  await generarNumOferta();
+  showToast('Nueva oferta lista: '+document.getElementById('ofertaNum').textContent,'success');
+}
+
+
