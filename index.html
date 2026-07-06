@@ -1820,10 +1820,11 @@ async function guardarCotizacion(){
         });
       }catch(e){console.warn('No se pudo actualizar LinkPDF:',e.message);}
     }
-    await generarNumOferta();
+    btn.innerHTML='<i class="ti ti-check"></i> ✓ Guardada';
+    setTimeout(()=>{btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';},3000);
   if(esMobil()){const s=document.querySelector('.sidebar');if(s)s.classList.add('mobile-active');}
   }catch(e){showToast('Error: '+e.message,'error');}
-  finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-device-floppy"></i> Guardar y PDF';}
+  finally{btn.disabled=false;}
 }
 
 function generarPDF(d, soloRetornar=false){
