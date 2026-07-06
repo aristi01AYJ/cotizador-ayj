@@ -349,7 +349,7 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
         </div>
         <div class="field-group">
           <label>Garantía</label>
-          <select id="garantiaSel">
+          <select id="garantiaSel" onchange="onGarantiaChange(this.value)">
             <option value="12m">12 meses o 2.000 horas</option>
             <option value="24m">24 meses o 4.000 horas</option>
           </select>
@@ -1413,6 +1413,12 @@ async function cargarTRM(){
   }
 }
 
+function onGarantiaChange(val){
+  const inp=document.getElementById('garantiaCustomInput');
+  if(inp) inp.style.display=val==='__custom_garantia__'?'block':'none';
+  if(val!=='__custom_garantia__') window._garantiaPersonalizada='';
+}
+
 function resetTRM(){
   cargarTRM();
   showToast('Actualizando TRM del Banco de la República...','success');
@@ -1925,7 +1931,12 @@ async function guardarCotizacion(){
   const cuotasPago=document.getElementById('condPagoSel').value==='__custom__'?[...condCuotas]:null;
   const validez=document.getElementById('validezSel').value;
   const entrega=getEntrega();
-  const garantia=document.getElementById('garantiaSel').value==='24m'?'24 meses o 4.000 horas':'12 meses o 2.000 horas';
+  const _garSel=document.getElementById('garantiaSel');
+  let _garCustom=window._garantiaPersonalizada||'';
+  const garantia=_garSel.value==='24m'?'24 meses o 4.000 horas':
+    _garSel.value==='6m'?'6 meses — Máquina Usada':
+    _garSel.value==='__custom_garantia__'?(_garCustom||'A convenir'):
+    '12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
   const desc=getDescuento();
   const descEspecial=document.getElementById('descEspecialChk').checked;
@@ -1989,7 +2000,7 @@ async function guardarCotizacion(){
     const voltaje=getVoltaje();
     const htmlSinLink=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,modoUSD:document.body.classList.contains('modo-usd'),trm,items:[...carrito]},true);
     const linkPDF=await guardarHTMLEnSharePoint(numOferta, htmlSinLink, cliente, idSynergy);
-    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,trm,items:[...carrito],linkSharePoint:linkPDF},true);
+    const htmlFinal=generarPDF({numOferta,idSynergy,cliente,clienteInfo,vendedor,condPago,cuotasPago,garantia,validez,entrega,voltaje,obs,desc,descEspecial,causalEspecial:getCausalEspecial(),ivaPct,fleteCOP,subUSD,descUSD,ivaUSD,totalUSD,totalCOP,modoCOP,modoUSD:document.body.classList.contains('modo-usd'),trm,items:[...carrito],linkSharePoint:linkPDF},true);
     const pdfWin=window.open('','_blank','width=960,height=860');
     if(pdfWin){pdfWin.document.write(htmlFinal);pdfWin.document.close();}
     // Actualizar LinkPDF en la lista
