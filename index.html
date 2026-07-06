@@ -789,6 +789,29 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
   </div>
 </div>
 
+<!-- MODAL NUEVO CONTACTO -->
+<div id="modalNuevoContacto" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:600;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-lg);padding:24px 28px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <strong style="font-size:14px">Nuevo Contacto</strong>
+      <button onclick="document.getElementById('modalNuevoContacto').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3)">×</button>
+    </div>
+    <div style="background:#EFF6FF;border-radius:var(--radius);padding:8px 12px;margin-bottom:14px;font-size:12px;color:#1E3A8A">
+      🏢 Cliente: <strong id="modalContactoClienteNombre"></strong>
+    </div>
+    <input type="hidden" id="modalContactoClienteIdx">
+    <div style="display:grid;gap:10px">
+      <div class="field-group" style="margin:0"><label>Nombre *</label><input type="text" id="mc_cont_nombre_new" placeholder="Nombre completo..." style="width:100%"></div>
+      <div class="field-group" style="margin:0"><label>Cargo</label><input type="text" id="mc_cont_cargo_new" placeholder="Gerente, Jefe de Compras..."></div>
+      <div class="field-group" style="margin:0"><label>Email</label><input type="email" id="mc_cont_email_new" placeholder="correo@empresa.com" style="width:100%"></div>
+      <div class="field-group" style="margin:0"><label>Teléfono</label><input type="text" id="mc_cont_tel_new" placeholder="300 123 4567"></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+      <button class="btn-sec" onclick="document.getElementById('modalNuevoContacto').style.display='none'">Cancelar</button>
+      <button class="btn-primary" onclick="guardarNuevoContactoModal()"><i class="ti ti-check"></i> Guardar Contacto</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -2528,15 +2551,33 @@ async function cargarContactosPorCliente(nombreCliente){
 }
 
 function abrirModalNuevoContacto(nombreCliente, clienteIdx){
-  const nombre=prompt('Nombre del contacto:');
-  if(!nombre?.trim()) return;
-  const cargo=prompt('Cargo (opcional):')||'';
-  const email=prompt('Email (opcional):')||'';
-  const telefono=prompt('Teléfono (opcional):')||'';
-  _guardarNuevoContacto(nombreCliente, {nombre:nombre.trim(),cargo,email,telefono}, clienteIdx);
+  // Abrir modal de contacto con cliente pre-llenado
+  document.getElementById('modalContactoClienteNombre').textContent = nombreCliente;
+  document.getElementById('modalContactoClienteIdx').value = clienteIdx;
+  document.getElementById('mc_cont_nombre_new').value = '';
+  document.getElementById('mc_cont_cargo_new').value = '';
+  document.getElementById('mc_cont_email_new').value = '';
+  document.getElementById('mc_cont_tel_new').value = '';
+  document.getElementById('modalNuevoContacto').style.display = 'flex';
+  setTimeout(()=>document.getElementById('mc_cont_nombre_new')?.focus(),100);
 }
 
-async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
+async function guardarNuevoContactoModal(){
+  const nombre=document.getElementById('mc_cont_nombre_new')?.value.trim();
+  if(!nombre){showToast('El nombre es obligatorio','error');return;}
+  const nombreCliente=document.getElementById('modalContactoClienteNombre')?.textContent||'';
+  const clienteIdx=parseInt(document.getElementById('modalContactoClienteIdx')?.value||'-1');
+  const datos={
+    nombre,
+    cargo:document.getElementById('mc_cont_cargo_new')?.value.trim()||'',
+    email:document.getElementById('mc_cont_email_new')?.value.trim()||'',
+    telefono:document.getElementById('mc_cont_tel_new')?.value.trim()||'',
+  };
+  document.getElementById('modalNuevoContacto').style.display='none';
+  await _guardarNuevoContacto(nombreCliente, datos, clienteIdx);
+}
+
+
   await cargarListaContactos();
   console.log('[AYJ] Guardando contacto, listIdContactos:', listIdContactos, 'siteIdComercial:', siteIdComercial);
   if(!listIdContactos){showToast('Lista Contactos no encontrada — recarga la página','error');return;}
