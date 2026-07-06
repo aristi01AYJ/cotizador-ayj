@@ -3905,39 +3905,12 @@ async function guardarLiquidacion(){
     const fields={Title:num};
     if(camposDisp.has('Maquina')) fields.Maquina=maqNombre;
     if(camposDisp.has('Vendedor')) fields.Vendedor=vendedor;
-    if(camposDisp.has('FOB')) fields.FOB=FOB;
+    if(camposDisp.has('FOB')) fields.FOB=FOB||0;
     if(camposDisp.has('TRM')) fields.TRM=TRM;
     if(camposDisp.has('TotalCostos')) fields.TotalCostos=Math.round(precio);
     if(camposDisp.has('Margen')) fields.Margen=margen;
     if(camposDisp.has('Snapshot')) fields.Snapshot=JSON.stringify(snapshot).substring(0,900);
-    console.log('[LIQ] Guardando fields:', JSON.stringify(fields).substring(0,200));
     const itemResp=await graphPost(`/sites/${siteId}/lists/${listIdLiquidaciones}/items`,{fields});
-    console.log('[LIQ] Item creado:', itemResp?.id);
-
-    // Luego intentar subir HTML y actualizar LinkHTML
-    try{
-      const htmlContent=liqGenerarHTML();
-      const anio=new Date().getFullYear();
-      const folderPath=`General/AYJ_COTIZADOR/Liquidaciones/${vendedor.split(' ')[0]}/${anio}`;
-      await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}`,{
-        method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-        body:JSON.stringify({folder:{}})
-      }).catch(()=>{});
-      const htmlBytes=new TextEncoder().encode(htmlContent);
-      const uploadResp=await fetch(
-        `https://graph.microsoft.com/v1.0/sites/${siteId}/drive/root:/${folderPath}/${nombreArchivoLiq(num, vendedor)}.html:/content`,
-        {method:'PUT',headers:{Authorization:'Bearer '+token,'Content-Type':'text/html'},body:htmlBytes}
-      );
-      const uploadData=await uploadResp.json();
-      const linkHTML=uploadData.webUrl||'';
-      if(linkHTML&&itemResp?.id){
-        await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdLiquidaciones}/items/${itemResp.id}/fields`,{
-          method:'PATCH',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-          body:JSON.stringify({LinkHTML:linkHTML})  // SP Hyperlink field
-        }).catch(e=>console.warn('No se pudo actualizar LinkHTML:',e.message));
-      }
-    }catch(eHTML){console.warn('[LIQ] HTML no subido:',eHTML.message);}
-
     showToast('✓ Liquidación '+num+' guardada en SharePoint','success');
   }catch(e){
     showToast('Error guardando: '+e.message,'error');
