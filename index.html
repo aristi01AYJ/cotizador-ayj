@@ -1014,8 +1014,9 @@ function getCondPago(){
   return sel;
 }
 
-function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false, fleteCOP=0, trm=1){
+function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false, fleteCOP=0, trm=1, mUSD=false){
   // cuotas: array [{concepto, pct}] si es personalizada, sino null
+  const esUSD=!!mUSD;
   let items=[];
   if(cuotas&&cuotas.length){
     items=cuotas.map(c=>({label:c.concepto+' ('+c.pct+'%)',pct:c.pct/100}));
@@ -1046,7 +1047,7 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false, flet
   const rows=items.map(c=>'<tr>'
     +'<td style="padding:6px 12px;border-bottom:1px solid #eee;">'+c.label+'</td>'
     +(esCOP?'':'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:600;">'+fmtUSD(totalUSD*c.pct)+'</td>')
-    +'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;'+(esCOP?'font-weight:600;':'color:#666;')+'">'+fmtCOP(totalUSD*c.pct)+'</td>'
+    +(esUSD?'':'<td style="padding:6px 12px;border-bottom:1px solid #eee;text-align:right;'+(esCOP?'font-weight:600;':'color:#666;')+'">'+fmtCOP(totalUSD*c.pct)+'</td>')
     +'</tr>'
   ).join('');
 
@@ -1056,14 +1057,14 @@ function tablaPagos(condPago, cuotas, totalUSD, fmtUSD, fmtCOP, mCOP=false, flet
     +'<thead><tr style="background:#f5f7f0;">'
     +'<th style="padding:6px 12px;text-align:left;font-size:10px;color:#575756;font-weight:600;">Concepto</th>'
     +(esCOP?'':'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">USD</th>')
-    +'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">'+(esCOP?'COP':'COP (ref.)')+'</th>'
+    +(esUSD?'':'<th style="padding:6px 12px;text-align:right;font-size:10px;color:#575756;font-weight:600;">'+(esCOP?'COP':'COP (ref.)') +'</th>')
     +'</tr></thead>'
     +'<tbody>'+rows+'</tbody>'
     +'<tfoot><tr style="background:#f5f7f0;">'
     +'<td style="padding:6px 12px;font-weight:700;font-size:11px;color:#575756;">TOTAL</td>'
     +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalConFlete)+'</td>')
-    +'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalConFlete)+'</td>'
-    +'</tr></tfoot>'
+    +(esCOP?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtUSD(totalConFlete)+'</td>')
+    +(esUSD?'':'<td style="padding:6px 12px;text-align:right;font-weight:700;color:#80A61B;">'+fmtCOP(totalConFlete)+'</td>')
     +'</table></div>';
 }
 
@@ -2206,7 +2207,7 @@ function generarPDF(d, soloRetornar=false){
     +'<tr>'
     +'<td style="width:52%;vertical-align:top;">'
     +(d.obs?'<div style="padding:12px 16px;background:#fefce8;border-left:3px solid #80A61B;border-radius:0 6px 6px 0;font-size:11px;color:#555;"><strong>Observaciones:</strong> '+d.obs+'</div>':'')
-    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD-(d.fleteCOP>0?d.fleteCOP/d.trm:0),fUSD,fCOP,d.modoCOP,d.fleteCOP||0,d.trm||1)
+    +tablaPagos(d.condPago,d.cuotasPago||null,d.totalUSD-(d.fleteCOP>0?d.fleteCOP/d.trm:0),fUSD,fCOP,d.modoCOP,d.fleteCOP||0,d.trm||1,d.modoUSD||false)
     +'</td>'
     +'<td style="width:48%;padding-left:16px;vertical-align:top;">'
     +'<table style="width:100%;border-collapse:collapse;font-size:12px;">'
