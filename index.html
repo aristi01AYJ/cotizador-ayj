@@ -1529,14 +1529,14 @@ function buildBpCard(m){
 function agregarGrupo(key,tipo){
   const g=grupos.find(x=>x.key===key);
   if(!g||carrito.some(i=>i.grupoKey===key&&i.tipo===tipo))return;
-  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:1,stockCount:g.stockCount,importCount:g.importCount});
+  carrito.push({id:'g_'+key+'_'+tipo,grupoKey:key,tipo,nombre:g.title,marca:g.marca,modelo:g.modelo,tipologia:g.tipologia||'',tarifa:g.tarifa,costoAYJ:g.costoAYJ||0,descripcion:g.descripcion,fichaTecnica:g.fichaTecnica,ytVideo:g.ytVideo||'',cantidad:1,stockCount:g.stockCount,importCount:g.importCount});
   renderCarrito();renderCatalogo();calcTotales();showToast('Agregado: '+g.title,'success');
 }
 function quitarGrupo(key,tipo){carrito=carrito.filter(i=>!(i.grupoKey===key&&i.tipo===tipo));renderCarrito();renderCatalogo();calcTotales();}
 function toggleBP(id){
   const idx=carrito.findIndex(i=>i.id===id);
   if(idx>=0)carrito.splice(idx,1);
-  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia||'',tarifa:m.tarifa,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',cantidad:1});showToast('Agregado: '+m.title,'success');}
+  else{const m=bajosPedido.find(x=>x.id===id);if(!m)return;carrito.push({id:m.id,grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo,tipologia:m.tipologia||'',tarifa:m.tarifa,costoAYJ:m.costoAYJ||0,descripcion:m.descripcion,fichaTecnica:m.fichaTecnica,ytVideo:m.ytVideo||'',cantidad:1});showToast('Agregado: '+m.title,'success');}
   renderCarrito();renderCatalogo();calcTotales();
 }
 
@@ -2041,7 +2041,11 @@ function mostrarResumenMargenes(){
     const costo=item.costoAYJ||0;
     const utilidad=precioOferta-costo;
     const margen=precioOferta>0?(utilidad/precioOferta*100):0;
-    const comision=utilidad*0.15;
+    // Comisión usando TABLA_MG igual que el liquidador
+    const descPct=Math.min(50,Math.round(desc*100));
+    const mgRow=TABLA_MG[descPct]||[0,0];
+    const comisionPct=mgRow[1];
+    const comision=precioOferta*comisionPct/100;
     totalCosto+=costo;
     totalVenta+=precioOferta;
     const color=margen>=35?'#166534':margen>=20?'#92400E':'#991B1B';
@@ -2092,7 +2096,7 @@ function mostrarResumenMargenes(){
       <td></td><td></td>
       <td style="text-align:right">USD ${Math.round(totalVenta).toLocaleString('es-CO')}</td>
       <td style="text-align:right;color:${margenTotal>=35?'#166534':margenTotal>=20?'#92400E':'#991B1B'}">${totalCosto>0?margenTotal.toFixed(1)+'%':'—'}</td>
-      <td style="text-align:right;color:#1e40af">${totalCosto>0?'USD '+Math.round(utilidadTotal*0.15).toLocaleString('es-CO'):'—'}</td>
+      <td style="text-align:right;color:#1e40af">${totalCosto>0?'USD '+Math.round((totalVenta-totalCosto)*0.15).toLocaleString('es-CO'):'—'}</td>
     </tr></tfoot>
   </table>
   <div class="nota">* Margen calculado sobre precio con descuento. Comisión = 15% de la utilidad. Costo AYJ tomado de SharePoint — "—" indica que no está registrado en el catálogo.</div>
