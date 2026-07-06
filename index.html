@@ -2584,17 +2584,26 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   if(!listIdContactos){showToast('Lista Contactos no encontrada — recarga la página','error');return;}
   try{
     const token=await getToken();
+    // Primero consultar el nombre interno del campo Cliente
+    const colsResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/columns?$select=name,displayName`,
+      {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+    const campoCliente=colsResp.value?.find(c=>c.displayName==='Cliente'||c.name==='Cliente');
+    const nombreCampoCliente=campoCliente?.name||'Cliente';
+    console.log('[AYJ] Campo Cliente interno:', nombreCampoCliente, '| todas:', colsResp.value?.map(c=>c.name+':'+c.displayName).join(', '));
+
+    const fields={Title:datos.nombre,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true};
+    fields[nombreCampoCliente]=nombreCliente;
+
     const resp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
       method:'POST',
       headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
-      body:JSON.stringify({fields:{Title:datos.nombre,Cliente:nombreCliente,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true}})
+      body:JSON.stringify({fields})
     });
     const respData=await resp.json();
-    // Leer el item creado para ver campos reales
     if(resp.ok && respData.id){
       const getResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items/${respData.id}/fields`,
         {headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
-      console.log('[AYJ] Campos reales del item creado:', JSON.stringify(getResp));
+      console.log('[AYJ] Campos guardados:', JSON.stringify(getResp));
     }
     if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
     showToast('✓ Contacto agregado','success');
