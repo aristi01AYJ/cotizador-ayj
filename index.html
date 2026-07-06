@@ -3909,8 +3909,9 @@ async function guardarLiquidacion(){
     if(camposDisp.has('TRM')) fields.TRM=TRM;
     if(camposDisp.has('TotalCostos')) fields.TotalCostos=Math.round(precio);
     if(camposDisp.has('Margen')) fields.Margen=margen;
-    if(camposDisp.has('Snapshot')) fields.Snapshot=JSON.stringify(snapshot);
+    if(camposDisp.has('Snapshot')) fields.Snapshot=JSON.stringify(snapshot).substring(0,255);
     if(camposDisp.has('LinkHTML')) fields.LinkHTML=linkHTML;
+    console.log('[LIQ] Guardando fields:', JSON.stringify(fields).substring(0,200));
     await graphPost(`/sites/${siteId}/lists/${listIdLiquidaciones}/items`,{fields});
     showToast('✓ Liquidación '+num+' guardada en SharePoint','success');
   }catch(e){
