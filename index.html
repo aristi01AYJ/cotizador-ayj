@@ -2578,8 +2578,9 @@ async function guardarNuevoContactoModal(){
 }
 
 
+async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   await cargarListaContactos();
-  console.log('[AYJ] Guardando contacto, listIdContactos:', listIdContactos, 'siteIdComercial:', siteIdComercial);
+  console.log('[AYJ] Guardando contacto para:', nombreCliente, 'lista:', listIdContactos);
   if(!listIdContactos){showToast('Lista Contactos no encontrada — recarga la página','error');return;}
   try{
     const token=await getToken();
