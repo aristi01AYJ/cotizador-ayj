@@ -2542,11 +2542,14 @@ async function _guardarNuevoContacto(nombreCliente, datos, clienteIdx){
   if(!listIdContactos){showToast('Lista Contactos no encontrada — recarga la página','error');return;}
   try{
     const token=await getToken();
-    await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
+    const resp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items`,{
       method:'POST',
       headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},
       body:JSON.stringify({fields:{Title:datos.nombre,Cliente:nombreCliente,Cargo:datos.cargo,Email:datos.email,Telefono:datos.telefono,Activo:true}})
     });
+    const respData=await resp.json();
+    console.log('[AYJ] Resp guardar contacto:', resp.status, respData?.error?.message||'OK');
+    if(!resp.ok) throw new Error(respData?.error?.message||'Error '+resp.status);
     showToast('✓ Contacto agregado','success');
     seleccionarClienteDetalle(clienteIdx);
   }catch(e){showToast('Error: '+e.message,'error');}
