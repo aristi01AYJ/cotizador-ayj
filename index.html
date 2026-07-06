@@ -3645,7 +3645,7 @@ let liqNumActual='LIQ-2026-001';
 async function generarNumLiquidacion(){
   if(!siteId||!listIdLiquidaciones) return 'LIQ-2026-001';
   try{
-    const items=await graphGetAll(`/sites/${siteId}/lists/${listIdLiquidaciones}/items?expand=fields&$select=fields/Title&$top=500`);
+    const items=await graphGetAll(`/sites/${siteId}/lists/${listIdLiquidaciones}/items?expand=fields($select=Title)&$top=500`);
     const anio=new Date().getFullYear();
     const nums=items.map(i=>{
       const t=i.fields?.Title||'';
@@ -3896,17 +3896,21 @@ async function guardarLiquidacion(){
     const linkHTML=uploadData.webUrl||'';
 
     // Guardar registro en lista
-    const fields={
-      Title:num,
-      Maquina:maqNombre,
-      Vendedor:vendedor,
-      FOB:FOB,
-      TRM:TRM,
-      TotalCostos:Math.round(precio),
-      Margen:margen,
-      Snapshot:JSON.stringify(snapshot),
-      LinkHTML:linkHTML,
-    };
+    const token2=await getToken();
+    const colsResp=await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdLiquidaciones}/columns?$select=name,displayName`,
+      {headers:{Authorization:'Bearer '+token2}}).then(r=>r.json());
+    console.log('[LIQ] Columnas disponibles:', colsResp.value?.map(c=>c.name).join(', '));
+    const camposDisp=new Set(colsResp.value?.map(c=>c.name)||[]);
+
+    const fields={Title:num};
+    if(camposDisp.has('Maquina')) fields.Maquina=maqNombre;
+    if(camposDisp.has('Vendedor')) fields.Vendedor=vendedor;
+    if(camposDisp.has('FOB')) fields.FOB=FOB;
+    if(camposDisp.has('TRM')) fields.TRM=TRM;
+    if(camposDisp.has('TotalCostos')) fields.TotalCostos=Math.round(precio);
+    if(camposDisp.has('Margen')) fields.Margen=margen;
+    if(camposDisp.has('Snapshot')) fields.Snapshot=JSON.stringify(snapshot);
+    if(camposDisp.has('LinkHTML')) fields.LinkHTML=linkHTML;
     await graphPost(`/sites/${siteId}/lists/${listIdLiquidaciones}/items`,{fields});
     showToast('✓ Liquidación '+num+' guardada en SharePoint','success');
   }catch(e){
