@@ -2357,6 +2357,11 @@ async function cargarHistorial(){
         linkPDF:f.LinkPDF||'',
         prob:parseFloat(f.Probabilidad||0),
         id:i.id,
+        desc:parseFloat(f.Descuento||0),
+        condPago:f.CondicionPago||'',
+        garantia:f.Garantia||'',
+        validez:f.Validez||'',
+        idSynergy:f.IDSynergy||'',
       };
     });
     filtrarHistorial();
@@ -3167,12 +3172,78 @@ async function editarOferta(itemId, r){
   const clienteInput=document.getElementById('clienteInput');
   if(clienteInput) clienteInput.value=r.cliente||'';
 
-  // Cargar condición de pago
-  const condSel=document.getElementById('condPagoSel');
-  if(condSel){
-    const opciones=[...condSel.options].map(o=>o.value);
-    if(opciones.includes(r.estado)) condSel.value=r.estado;
+  // Restaurar descuento
+  if(r.desc>0){
+    const descEl=document.getElementById('descInput');
+    if(descEl) descEl.value=r.desc;
+    if(r.desc>20){
+      // Descuento especial — desbloquear
+      const chk=document.getElementById('descEspecialChk');
+      if(chk){ chk.checked=true; if(typeof onDescEspecial==='function') onDescEspecial(true); }
+    }
+    if(typeof calcTotales==='function') calcTotales();
   }
+
+  // Restaurar condición de pago
+  if(r.condPago){
+    const condSel=document.getElementById('condPagoSel');
+    if(condSel){
+      const opts=[...condSel.options].map(o=>o.value);
+      if(opts.includes(r.condPago)) condSel.value=r.condPago;
+    }
+  }
+
+  // Restaurar garantía
+  if(r.garantia){
+    const garSel=document.getElementById('garantiaSel');
+    if(garSel){
+      const opts=[...garSel.options].map(o=>o.value);
+      // Buscar opción que coincida con el texto guardado
+      const match=opts.find(o=>garSel.querySelector(`option[value="${o}"]`)?.textContent?.includes(r.garantia.split('—')[0].trim())||o===r.garantia);
+      if(r.garantia.includes('2.000')||r.garantia.includes('12')) garSel.value='12m';
+      else if(r.garantia.includes('4.000')||r.garantia.includes('24')) garSel.value='24m';
+      else if(r.garantia.includes('Usada')||r.garantia.includes('6 meses')) garSel.value='6m';
+      else{ garSel.value='__custom_garantia__'; window._garantiaPersonalizada=r.garantia; const inp=document.getElementById('garantiaCustomInput'); if(inp){inp.style.display='block';inp.value=r.garantia;} }
+    }
+  }
+
+  // Restaurar validez
+  if(r.validez){
+    const valSel=document.getElementById('validezSel');
+    if(valSel){ const opts=[...valSel.options].map(o=>o.value); if(opts.includes(r.validez)) valSel.value=r.validez; }
+  }
+
+  // Restaurar Synergy
+  const idSynInput=document.getElementById('idSynergyInput');
+  if(idSynInput) idSynInput.value=r.idSynergy||'';
+
+  // Restaurar contacto — cargar contactos del cliente y seleccionar
+  if(r.cliente){
+    setTimeout(async()=>{
+      try{
+        await cargarListaContactos();
+        const token=await getToken();
+        const resp=await fetch(
+          `https://graph.microsoft.com/v1.0/sites/${siteIdComercial}/lists/${listIdContactos}/items?expand=fields&$top=500`,
+          {headers:{Authorization:'Bearer '+token}}
+        ).then(res=>res.json());
+        const contactosCliente=(resp.value||[])
+          .filter(i=>(i.fields?.Title_x003a_Cliente||i.fields?.ClienteLookupId||i.fields?.Cliente||'').toString().toLowerCase().includes((r.cliente||'').toLowerCase().substring(0,10)))
+          .map(i=>({id:i.id,nombre:i.fields?.Title||'',cargo:i.fields?.Cargo||'',email:i.fields?.Email||'',telefono:i.fields?.Telefono||''}))
+          .filter(c=>c.nombre);
+        const wrap=document.getElementById('contactoWrap');
+        const sel=document.getElementById('contactoSel');
+        if(wrap&&sel&&contactosCliente.length>0){
+          sel.innerHTML='<option value="">— Sin contacto —</option>'+contactosCliente.map((c,i)=>`<option value="${i}">${c.nombre}${c.cargo?' · '+c.cargo:''}</option>`).join('');
+          sel._contactos=contactosCliente;
+          wrap.style.display='flex';
+        }
+      }catch(e){console.warn('No se pudieron cargar contactos al reabrir:',e.message);}
+    },800);
+  }
+
+  // Aviso liquidador
+  showToast('⚠ Liquidador no restaurado — recalcule manualmente si es necesario','error');
 
   // Generar número con sufijo de revisión
   const baseNum=r.num.replace(/-R\d+$/, ''); // quitar revisión anterior si existe
