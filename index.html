@@ -2009,7 +2009,15 @@ async function guardarCotizacion(){
       const {DescBase,DescEspecial,DescEspecialConcepto,...fieldsFallback}=fields;
       console.log('[SAVE] Fallback fields (sin Items):', JSON.stringify({...fieldsFallback, Items:'[...]'}));
       console.log('[SAVE] Items length:', (fieldsFallback.Items||'').length);
-      itemCreado=await guardarEnSP(fieldsFallback);
+      // Aislar el campo problemático — probar campo por campo
+      try{ itemCreado=await guardarEnSP(fieldsFallback); }
+      catch(e2){
+        console.warn('[SAVE] Fallback también falló:', e2.message);
+        // Intentar solo con campos mínimos
+        const fieldsMin={Title:fields.Title,ID_SYNERGY:fields.ID_SYNERGY,Cliente:fields.Cliente,GranTotal:fields.GranTotal,Estado:fields.Estado,Vendedor:fields.Vendedor};
+        console.log('[SAVE] Intentando con campos mínimos:', JSON.stringify(fieldsMin));
+        itemCreado=await guardarEnSP(fieldsMin);
+      }
     }
     const itemId=itemCreado?.id||null;
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
