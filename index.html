@@ -1984,7 +1984,7 @@ async function guardarCotizacion(){
       Garantia:garantia,
       CondicionPago:condPago,
       Validez:validez,
-      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa}))),
+      Items:JSON.stringify(carrito.map(i=>({nombre:i.nombre,tipo:i.tipo,cantidad:i.cantidad,tarifaUSD:i.tarifa,costoAYJ:i.costoAYJ||0,marca:i.marca||'',modelo:i.modelo||'',tipologia:i.tipologia||''}))),
     };
     let itemCreado;
     if(modoEdicion){
@@ -3156,17 +3156,30 @@ async function editarOferta(itemId, r){
   if(carrito.length>0){
     if(!confirm('El carrito actual se reemplazará con los datos de esta oferta. ¿Continuar?')) return;
   }
-  // Cargar items
-  carrito=r.items.map(i=>({
-    id:i.nombre,
-    grupoKey:null,
-    tipo:i.tipo||'stock',
-    nombre:i.nombre,
-    marca:'',modelo:'',tipologia:'',
-    tarifa:i.tarifaUSD||i.tarifa||0,
-    descripcion:'',fichaTecnica:'',ytVideo:'',
-    cantidad:i.cantidad||1,
-  }));
+  // Cargar items — buscar en grupos/rawMaquinas para recuperar datos completos
+  carrito=r.items.map(i=>{
+    // Buscar en grupos y rawMaquinas por nombre
+    const g=grupos.find(x=>x.title===i.nombre||x.key===i.nombre);
+    const m=rawMaquinas?.find(x=>x.title===i.nombre);
+    const fuente=g||m||{};
+    return {
+      id:i.nombre+'_edit',
+      grupoKey:g?.key||null,
+      tipo:i.tipo||'stock',
+      nombre:i.nombre,
+      marca:i.marca||fuente.marca||'',
+      modelo:i.modelo||fuente.modelo||'',
+      tipologia:i.tipologia||fuente.tipologia||'',
+      tarifa:i.tarifaUSD||i.tarifa||0,
+      costoAYJ:i.costoAYJ||fuente.costoAYJ||0,
+      descripcion:fuente.descripcion||'',
+      fichaTecnica:fuente.fichaTecnica||'',
+      ytVideo:fuente.ytVideo||'',
+      cantidad:i.cantidad||1,
+      stockCount:fuente.stockCount||0,
+      horasInstalacion:fuente.horasInstalacion||0,
+    };
+  });
 
   // Cargar cliente
   const clienteInput=document.getElementById('clienteInput');
