@@ -1980,9 +1980,6 @@ async function guardarCotizacion(){
       Vendedor:vendedor||currentUserName||'Sin vendedor',
       TRM:trm,
       Descuento:desc,
-      DescBase:parseFloat(document.getElementById('descInput')?.value)||0,
-      DescEspecial:document.getElementById('descEspecialChk')?.checked===true,
-      DescEspecialConcepto:document.getElementById('descEspecialChk')?.checked?(getCausalEspecial()||''):'',
       Flete:fleteCOP,
       Garantia:garantia,
       CondicionPago:condPago,
@@ -2001,24 +1998,7 @@ async function guardarCotizacion(){
         return r;
       }
     };
-    try{
-      itemCreado=await guardarEnSP(fields);
-    }catch(e){
-      // Si falla con campos nuevos, intentar sin DescBase/DescEspecial/DescEspecialConcepto
-      console.warn('Fallo con campos nuevos, reintentando sin ellos:',e.message);
-      const {DescBase,DescEspecial,DescEspecialConcepto,...fieldsFallback}=fields;
-      console.log('[SAVE] Fallback fields (sin Items):', JSON.stringify({...fieldsFallback, Items:'[...]'}));
-      console.log('[SAVE] Items length:', (fieldsFallback.Items||'').length);
-      // Aislar el campo problemático — probar campo por campo
-      try{ itemCreado=await guardarEnSP(fieldsFallback); }
-      catch(e2){
-        console.warn('[SAVE] Fallback también falló:', e2.message);
-        // Intentar solo con campos mínimos
-        const fieldsMin={Title:fields.Title,ID_SYNERGY:fields.ID_SYNERGY,Cliente:fields.Cliente,GranTotal:fields.GranTotal,Estado:fields.Estado,Vendedor:fields.Vendedor};
-        console.log('[SAVE] Intentando con campos mínimos:', JSON.stringify(fieldsMin));
-        itemCreado=await guardarEnSP(fieldsMin);
-      }
-    }
+    itemCreado=await guardarEnSP(fields);
     const itemId=itemCreado?.id||null;
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Agregar datos del contacto seleccionado
@@ -3186,7 +3166,6 @@ async function editarOferta(itemId, r){
   switchView('nueva');
 
   // Cargar items — buscar en grupos/rawMaquinas para recuperar datos completos
-  console.log('[EDIT] items en r:', r.items?.length, JSON.stringify(r.items?.slice(0,2)));
   carrito=r.items.map(i=>{
     // Buscar en grupos y rawMaquinas por nombre
     const g=grupos.find(x=>x.title===i.nombre||x.key===i.nombre);
