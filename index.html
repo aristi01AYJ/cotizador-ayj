@@ -1982,6 +1982,7 @@ async function guardarCotizacion(){
       Descuento:desc,
       DescBase:parseFloat(document.getElementById('descInput')?.value)||0,
       DescEspecial:document.getElementById('descEspecialChk')?.checked?true:false,
+      DescEspecialConcepto:document.getElementById('descEspecialChk')?.checked?(getCausalEspecial()||''):''
       Flete:fleteCOP,
       Garantia:garantia,
       CondicionPago:condPago,
@@ -2361,6 +2362,7 @@ async function cargarHistorial(){
         id:i.id,
         desc:parseFloat(f.DescBase||f.Descuento||0),
         descEspecial:!!(f.DescEspecial),
+        descEspecialConcepto:f.DescEspecialConcepto||'',
         condPago:f.CondicionPago||'',
         garantia:f.Garantia||'',
         validez:f.Validez||'',
@@ -3159,6 +3161,9 @@ async function editarOferta(itemId, r){
   if(carrito.length>0){
     if(!confirm('El carrito actual se reemplazará con los datos de esta oferta. ¿Continuar?')) return;
   }
+  // Ir a vista de cotización PRIMERO
+  switchView('nueva');
+
   // Cargar items — buscar en grupos/rawMaquinas para recuperar datos completos
   console.log('[EDIT] items en r:', r.items?.length, JSON.stringify(r.items?.slice(0,2)));
   carrito=r.items.map(i=>{
@@ -3197,6 +3202,11 @@ async function editarOferta(itemId, r){
     if(chk&&r.descEspecial){
       chk.checked=true;
       if(typeof onDescEspecial==='function') onDescEspecial(true);
+      // Restaurar concepto
+      if(r.descEspecialConcepto){
+        const concepto=document.getElementById('descEspecialConcepto')||document.getElementById('causalEspecialInput');
+        if(concepto) concepto.value=r.descEspecialConcepto;
+      }
     }
     if(typeof calcTotales==='function') calcTotales();
   }
@@ -3226,8 +3236,8 @@ async function editarOferta(itemId, r){
 
   // Restaurar validez
   if(r.validez){
-    const valSel=document.getElementById('validezSel');
-    if(valSel){ const opts=[...valSel.options].map(o=>o.value); if(opts.includes(r.validez)) valSel.value=r.validez; }
+    const valEl=document.getElementById('validezSel');
+    if(valEl) valEl.value=r.validez;
   }
 
   // Restaurar Synergy
@@ -3287,7 +3297,6 @@ async function editarOferta(itemId, r){
   if(idSynInput) idSynInput.value='';
 
   showToast('Oferta '+r.num+' cargada para editar','success');
-  switchView('nueva');
   renderCarrito();
   calcTotales();
 }
