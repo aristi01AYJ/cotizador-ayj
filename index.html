@@ -2234,7 +2234,7 @@ function generarPDF(d, soloRetornar=false){
   const descBase=d.descBase||d.desc||0;
   const tieneEspecial=d.descEspecial||false;
   const descRow=(d.desc||0)>0
-    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">+3% especial: '+d.causalEspecial+'</span>':'')+(d.desc>20?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FCEBEB;color:#A32D2D;">Aut. Gerencia</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">'+(d.modoCOP?'-'+fCOP(d.descUSD||0):'-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span>')+'</td></tr>'
+    ?'<tr><td style="padding:5px 10px;color:#c0392b;border-bottom:1px solid #eee;">Descuento ('+(d.desc||0)+'%)'+(d.descEspecial?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FAEEDA;color:#854F0B;">+3% especial: '+d.causalEspecial+'</span>':'')+(d.desc>20?' <span style="font-size:9px;padding:1px 6px;border-radius:10px;background:#FCEBEB;color:#A32D2D;">Aut. Gerencia</span>':'')+'</td><td style="padding:5px 10px;text-align:right;color:#c0392b;border-bottom:1px solid #eee;">'+(d.modoCOP?'-'+fCOP(d.descUSD||0):d.modoUSD?'-'+fUSD(d.descUSD||0):'-'+fUSD(d.descUSD||0)+'<br><span style="font-size:10px;">-'+fCOP(d.descUSD||0)+'</span>')+'</td></tr>'
     :'';
   const fleteUSDpdf=d.trm>0?(d.fleteCOP||0)/d.trm:0;
   const fleteRow=(d.fleteCOP||0)>0
