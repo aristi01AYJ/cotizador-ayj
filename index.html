@@ -3214,8 +3214,8 @@ async function editarOferta(itemId, r){
   }
 
   // Restaurar Synergy
-  const idSynInput=document.getElementById('idSynergyInput');
-  if(idSynInput) idSynInput.value=r.idSynergy||'';
+  const idSynInputEdit=document.getElementById('idSynergyInput');
+  if(idSynInputEdit) idSynInputEdit.value=r.idSynergy||'';
 
   // Restaurar contacto — cargar contactos del cliente y seleccionar
   if(r.cliente){
