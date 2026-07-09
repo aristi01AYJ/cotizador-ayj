@@ -1999,6 +1999,19 @@ async function guardarCotizacion(){
       }
     };
     itemCreado=await guardarEnSP(fields);
+    // Guardar campos de descuento especial en PATCH separado
+    if(itemCreado?.id){
+      try{
+        const tokenPatch=await getToken();
+        const descBase=parseFloat(document.getElementById('descInput')?.value)||0;
+        const descEsp=document.getElementById('descEspecialChk')?.checked===true;
+        await fetch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listIdCotizaciones}/items/${itemCreado.id}/fields`,{
+          method:'PATCH',
+          headers:{Authorization:'Bearer '+tokenPatch,'Content-Type':'application/json'},
+          body:JSON.stringify({DescBase:descBase,DescEspecial:descEsp,DescEspecialConcepto:descEsp?(getCausalEspecial()||''):''})
+        });
+      }catch(ePatch){console.warn('DescBase/Especial no guardados:',ePatch.message);}
+    }
     const itemId=itemCreado?.id||null;
     const clienteInfo=clientesData.find(c=>c.titulo.toLowerCase()===cliente.toLowerCase())||{};
     // Agregar datos del contacto seleccionado
