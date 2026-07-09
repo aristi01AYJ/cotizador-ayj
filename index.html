@@ -2007,7 +2007,8 @@ async function guardarCotizacion(){
       // Si falla con campos nuevos, intentar sin DescBase/DescEspecial/DescEspecialConcepto
       console.warn('Fallo con campos nuevos, reintentando sin ellos:',e.message);
       const {DescBase,DescEspecial,DescEspecialConcepto,...fieldsFallback}=fields;
-      console.log('[SAVE] Fallback fields:', JSON.stringify(fieldsFallback).substring(0,300));
+      console.log('[SAVE] Fallback fields (sin Items):', JSON.stringify({...fieldsFallback, Items:'[...]'}));
+      console.log('[SAVE] Items length:', (fieldsFallback.Items||'').length);
       itemCreado=await guardarEnSP(fieldsFallback);
     }
     const itemId=itemCreado?.id||null;
