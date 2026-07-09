@@ -1980,6 +1980,8 @@ async function guardarCotizacion(){
       Vendedor:vendedor||currentUserName||'Sin vendedor',
       TRM:trm,
       Descuento:desc,
+      DescBase:parseFloat(document.getElementById('descInput')?.value)||0,
+      DescEspecial:document.getElementById('descEspecialChk')?.checked?true:false,
       Flete:fleteCOP,
       Garantia:garantia,
       CondicionPago:condPago,
@@ -2357,7 +2359,8 @@ async function cargarHistorial(){
         linkPDF:f.LinkPDF||'',
         prob:parseFloat(f.Probabilidad||0),
         id:i.id,
-        desc:parseFloat(f.Descuento||0),
+        desc:parseFloat(f.DescBase||f.Descuento||0),
+        descEspecial:!!(f.DescEspecial),
         condPago:f.CondicionPago||'',
         garantia:f.Garantia||'',
         validez:f.Validez||'',
@@ -3157,6 +3160,7 @@ async function editarOferta(itemId, r){
     if(!confirm('El carrito actual se reemplazará con los datos de esta oferta. ¿Continuar?')) return;
   }
   // Cargar items — buscar en grupos/rawMaquinas para recuperar datos completos
+  console.log('[EDIT] items en r:', r.items?.length, JSON.stringify(r.items?.slice(0,2)));
   carrito=r.items.map(i=>{
     // Buscar en grupos y rawMaquinas por nombre
     const g=grupos.find(x=>x.title===i.nombre||x.key===i.nombre);
@@ -3186,13 +3190,13 @@ async function editarOferta(itemId, r){
   if(clienteInput) clienteInput.value=r.cliente||'';
 
   // Restaurar descuento
-  if(r.desc>0){
+  if(r.desc>0||r.descEspecial){
     const descEl=document.getElementById('descInput');
     if(descEl) descEl.value=r.desc;
-    if(r.desc>20){
-      // Descuento especial — desbloquear
-      const chk=document.getElementById('descEspecialChk');
-      if(chk){ chk.checked=true; if(typeof onDescEspecial==='function') onDescEspecial(true); }
+    const chk=document.getElementById('descEspecialChk');
+    if(chk&&r.descEspecial){
+      chk.checked=true;
+      if(typeof onDescEspecial==='function') onDescEspecial(true);
     }
     if(typeof calcTotales==='function') calcTotales();
   }
