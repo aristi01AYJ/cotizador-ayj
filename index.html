@@ -2564,7 +2564,7 @@ async function cargarClientes(forzar=false){
         telefono:(f.Telefono||f.Tel_x00e9_fono||'').trim(),
         ciudad:(f.Ciudad||'').trim(),
         pais:(f.Pais||f.Pa_x00ed_s||'Colombia').trim(),
-        nit:((f['NIT_x002f_RUT']||f['NIT/RUT']||f.NIT||'')).trim(),
+        nit:(f.NIT_x002f_RUT||f.NIT||f['NIT/RUT']||'').toString().trim(),
         asesor:(f.Asesor||'').trim(),
       };
     }).filter(c=>c.titulo);
