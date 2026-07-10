@@ -2552,7 +2552,7 @@ async function cargarClientes(forzar=false){
   if(!siteId||!listIdClientes)return;
   if(clientesData.length>0&&!forzar){poblarDatalist();poblarCiudades();renderTablaClientes();return;}
   try{
-    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$select=fields&$top=500`);
+    const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$top=500`);
     clientesData=todos.map(i=>{
       const f=i.fields;
       return{
