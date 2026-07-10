@@ -2966,7 +2966,7 @@ async function guardarCliente(){
     Asesor:currentUserName,
   };
   const nit=document.getElementById('mc_nit')?.value.trim();
-  if(nit) fields.NIT=nit;
+  if(nit) fields['NIT_x002f_RUT']=nit;
 
   try{
     const token=await getToken();
