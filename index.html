@@ -2553,6 +2553,7 @@ async function cargarClientes(forzar=false){
   if(clientesData.length>0&&!forzar){poblarDatalist();poblarCiudades();renderTablaClientes();return;}
   try{
     const todos=await graphGetAll(`/sites/${siteId}/lists/${listIdClientes}/items?expand=fields&$top=500`);
+    console.log('[CLI] Total clientes recibidos:', todos?.length, 'primer item:', JSON.stringify(todos?.[0]?.fields).substring(0,100));
     clientesData=todos.map(i=>{
       const f=i.fields;
       return{
