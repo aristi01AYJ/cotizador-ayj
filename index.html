@@ -254,7 +254,7 @@ body.modo-usd #tSubUSD,body.modo-usd #tDescUSD,body.modo-usd #tIVAUSD,body.modo-
   </div>
 </div>
 
-<div id="appScreen" onclick="if(!event.target.closest('#liqMaquinaInput')&&!event.target.closest('#liqMaquinaDropdown')){const d=document.getElementById('liqMaquinaDropdown');if(d)d.style.display='none'}">
+<div id="appScreen">
   <div class="topbar">
     <div class="topbar-logo"><img src="logo.png" alt="AYJ Maquinaria" style="height:28px;width:auto;vertical-align:middle;margin-right:6px;filter:brightness(0) invert(1)"><span style="font-size:11px;color:rgba(255,255,255,0.6);font-weight:400;letter-spacing:0.5px">Cotizador</span> <span style="font-size:13px;color:#fff;font-weight:800;letter-spacing:1px">MAQUINARIA</span></div>
     <div class="nav">
@@ -4167,10 +4167,34 @@ function liqCalc(){
   const comPct=Math.max(0,margenReal)*0.15;
   const comUSD=PVD*comPct/100;
 
+  const otrosDesc=document.getElementById('liqOtrosDesc')?.value||'';
+  const instUSD=instalacion||0;
+  const finUSD=costoFin||0;
+  const otrosUSD=otros||0;
+
   document.getElementById('liqResultados').innerHTML=
-    `<div class="liq-kpi"><div class="liq-label">Precio Venta Neto — ${margenPct}% margen</div><div class="liq-value">${fU(PVN)}</div><div class="liq-sub">${fC(PVN)}</div></div>`
-    +`<div class="liq-kpi" style="border-left-color:#575756"><div class="liq-label">Con Descuento ${descCliente}%</div><div class="liq-value">${fU(PVD)}</div><div class="liq-sub">${fC(PVD)}</div></div>`
-    +`<div class="liq-kpi" style="border-left-color:#3B82F6"><div class="liq-label">Con IVA 19%</div><div class="liq-value">${fU(PVIVA)}</div><div class="liq-sub">${fC(PVIVA)}</div></div>`
+    `<div style="font-size:10px;font-weight:700;color:#575756;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #80A61B">💰 Precio de Venta</div>`
+    // Precio neto base
+    +`<div class="liq-kpi"><div class="liq-label">Precio Neto (${margenPct}% Margen)</div><div class="liq-value">${fU(PVN)}</div><div class="liq-sub">${fC(PVN)}</div></div>`
+    // Extras sumados
+    +(instUSD>0?`<div class="liq-row" style="padding:4px 2px"><span>+ Instalación</span><span style="font-weight:600">${fU(instUSD)}</span></div>`:'')
+    +(finUSD>0?`<div class="liq-row" style="padding:4px 2px"><span>+ Financiación</span><span style="font-weight:600">${fU(finUSD)}</span></div>`:'')
+    +(otrosUSD>0?`<div class="liq-row" style="padding:4px 2px"><span>+ ${otrosDesc||'Otros costos'}</span><span style="font-weight:600">${fU(otrosUSD)}</span></div>`:'')
+    // Precio tarifa total (base + extras)
+    +((instUSD+finUSD+otrosUSD)>0?`<div class="liq-row total-row" style="padding:5px 4px;background:#f5f7f0;border-radius:4px;margin:4px 0"><span style="font-weight:700">Precio Tarifa Total</span><span style="font-weight:700;color:#575756">${fU(PVN+instUSD+finUSD+otrosUSD)}</span></div>`:'')
+    // Separador
+    +`<div style="border-top:1px dashed #ddd;margin:8px 0"></div>`
+    // Descuento (siempre visible, 0% si no aplica)
+    +`<div class="liq-row" style="padding:4px 2px;color:#DC2626"><span>Descuento ${descCliente}%</span><span style="font-weight:600">-${fU((PVN+instUSD+finUSD+otrosUSD)*descCliente/100)}</span></div>`
+    // Subtotal
+    +`<div class="liq-row" style="padding:4px 2px"><span>Subtotal s/IVA</span><span style="font-weight:600">${fU(PVD)}</span></div>`
+    // IVA
+    +`<div class="liq-row" style="padding:4px 2px;color:#3B82F6"><span>IVA Nacionalización 19% <span style="font-size:9px">(recuperable)</span></span><span style="font-weight:600">${fU(ivaImportUSD)}</span></div>`
+    // Total final
+    +`<div class="liq-kpi" style="border-left-color:#DC2626;background:#FEF2F2;margin-top:6px"><div class="liq-label" style="color:#991B1B">Precio Final al Cliente</div><div class="liq-value" style="color:#991B1B">${fU(PVD)}</div><div class="liq-sub">${fC(PVD)}</div></div>`
+    // Separador
+    +`<div style="border-top:1px dashed #ddd;margin:8px 0"></div>`
+    // Margen y comisión
     +`<div class="liq-kpi" style="border-left-color:${margenReal>=35?'#22C55E':margenReal>=25?'#F59E0B':'#EF4444'}"><div class="liq-label">Margen Real · Utilidad</div><div class="liq-value" style="color:${margenReal>=35?'#166534':margenReal>=25?'#92400E':'#991B1B'}">${margenReal.toFixed(1)}%</div><div class="liq-sub">${fU(utilidadUSD)} · ${fC(utilidadUSD)}</div></div>`
     +`<div class="liq-kpi" style="border-left-color:#F59E0B;background:#fffbf0"><div class="liq-label">Comisión Asesor (${comPct.toFixed(3)}%)</div><div class="liq-value" style="color:#92400E">${fU(comUSD)}</div><div class="liq-sub">${fC(comUSD)}</div></div>`;
 
@@ -4222,10 +4246,19 @@ function liqGetItem(){
     if(m) item={grupoKey:null,tipo:'pedido',nombre:m.title,marca:m.marca,modelo:m.modelo||'',tipologia:m.tipologia||'',tarifa:precio,descripcion:m.descripcion||'',fichaTecnica:m.fichaTecnica||'',ytVideo:m.ytVideo||'',cantidad:1,stockCount:0,importCount:0};
   }
   if(!item){
-    // Fallback: usar texto del input de búsqueda como nombre
+    // Fallback: usar nombre personalizado o texto del input
+    const customNombre=document.getElementById('liqCustomNombre')?.value?.trim()||'';
+    const customMarca=document.getElementById('liqCustomMarca')?.value?.trim()||'';
     const inputText=document.getElementById('liqMaquinaInput')?.value?.trim()||'';
-    item={grupoKey:null,tipo:'pedido',nombre:inputText||'Máquina — Liquidador',marca:'',modelo:'',tipologia:'',tarifa:precio,descripcion:'',fichaTecnica:'',ytVideo:'',cantidad:1,stockCount:0,importCount:0};
+    const nombre=customNombre||inputText||'Máquina — Liquidador';
+    const marca=customMarca||'';
+    item={grupoKey:null,tipo:'pedido',nombre,marca,modelo:'',tipologia:'',tarifa:precio,descripcion:'',fichaTecnica:'',ytVideo:'',cantidad:1,stockCount:0,importCount:0};
   }
+  // Si hay personalización activa, sobreescribir nombre y marca
+  const customNombre=document.getElementById('liqCustomNombre')?.value?.trim()||'';
+  const customMarca=document.getElementById('liqCustomMarca')?.value?.trim()||'';
+  const panelAbierto=document.getElementById('liqPersonalizarWrap')?.style?.display!=='none';
+  if(panelAbierto&&customNombre) { item.nombre=customNombre; item.marca=customMarca||item.marca; }
   item.origen='liquidador';
   item.costoAYJ=window._liqCostoAYJ||0;
   item.costoTotal=window._liqCostoTotal||window._liqCostoAYJ||0;
@@ -4237,25 +4270,67 @@ function liqAgregarAlCarrito(){
   const item=liqGetItem();
   if(!item) return;
   if(liqEditandoId){
-    // Modo edición — actualizar item existente
+    // Modo edición — actualizar item existente con snapshot completo
     const idx=carrito.findIndex(i=>i.id===liqEditandoId);
     if(idx>=0){
-      const snap={
-        FOB:document.getElementById('liqFOB')?.value||0,
-        fleteInt:document.getElementById('liqFleteInt')?.value||0,
-        arancel:document.getElementById('liqArancel')?.value||0,
-        agente:document.getElementById('liqAgente')?.value||0.02,
-        fleteNal:document.getElementById('liqFleteNal')?.value||0,
-        descargue:document.getElementById('liqDescargue')?.value||0,
-        otros:document.getElementById('liqOtros')?.value||0,
-        garantia:document.getElementById('liqGarantia')?.value||0.03,
-        instalacion:document.getElementById('liqInstalacion')?.value||0,
-        costoFin:document.getElementById('liqCostoFin')?.value||0,
-        margen:document.getElementById('liqMargenSlider')?.value||50,
-        desc:document.getElementById('liqDescCliente')?.value||0,
+      // Aplicar nombre/marca personalizados si el panel está abierto
+      const panelAbierto=document.getElementById('liqPersonalizarWrap')?.style?.display!=='none';
+      const customNombre=document.getElementById('liqCustomNombre')?.value?.trim()||'';
+      const customMarca=document.getElementById('liqCustomMarca')?.value?.trim()||'';
+      if(panelAbierto&&customNombre){ item.nombre=customNombre; item.marca=customMarca||item.marca; }
+
+      // Snapshot completo igual que modo nuevo
+      item._liqSnapshot={
+        FOB:parseFloat(document.getElementById('liqFOB')?.value)||0,
+        fleteInt:parseFloat(document.getElementById('liqFleteInt')?.value)||0,
+        arancel:parseFloat(document.getElementById('liqArancel')?.value)||0,
+        agente:parseFloat(document.getElementById('liqAgente')?.value)||0.02,
+        fleteNal:parseFloat(document.getElementById('liqFleteNal')?.value)||0,
+        descargue:parseFloat(document.getElementById('liqDescargue')?.value)||0,
+        otros:parseFloat(document.getElementById('liqOtros')?.value)||0,
+        garantia:parseFloat(document.getElementById('liqGarantia')?.value)||0.03,
+        instalacion:parseFloat(document.getElementById('liqInstalacion')?.value)||0,
+        costoFin:parseFloat(document.getElementById('liqCostoFin')?.value)||0,
+        financiacion:parseFloat(document.getElementById('liqFinanciacion')?.value)||0,
+        marketing:parseFloat(document.getElementById('liqMarketing')?.value)||0,
+        margen:parseFloat(document.getElementById('liqMargenSlider')?.value)||50,
+        TRM:parseFloat(document.getElementById('liqTRM')?.value)||trm,
+        CIF:window._liqCostoAYJ||0,
+        costoTotal:window._liqCostoTotal||0,
+        precioVenta:window._liqPrecioUSD||0,
+        margenReal:window._liqMargenReal||0,
+        desc:0,
         maqSel:document.getElementById('liqMaquinaSel')?.value||'',
+        htmlCostos:document.getElementById('liqCostosTable')?.innerHTML||'',
+        htmlResultados:document.getElementById('liqResultados')?.innerHTML||'',
       };
-      carrito[idx]={...item,id:liqEditandoId,_liqSnapshot:snap};
+      // Snapshot instalación actualizado
+      const horasInst=parseFloat(document.getElementById('instHoras')?.value)||0;
+      item._instSnapshot={
+        horas:horasInst,
+        dias:parseFloat(document.getElementById('instDias')?.value)||0,
+        tiqNal:parseFloat(document.getElementById('instCantTiqNal')?.value)||0,
+        tiqInt:parseFloat(document.getElementById('instCantTiqInt')?.value)||0,
+        traslados:parseFloat(document.getElementById('instCantTraslado')?.value)||0,
+        noches:parseFloat(document.getElementById('instNoches')?.value)||0,
+        diasInt:parseFloat(document.getElementById('instDiasInt')?.value)||0,
+        costoUSD:parseFloat(document.getElementById('liqInstalacion')?.value)||0,
+        htmlDetalle:document.getElementById('instResultados')?.innerHTML||'',
+      };
+      // Snapshot financiación actualizado
+      item._finSnapshot={
+        tipo:document.getElementById('finTipo')?.value||'',
+        valor:parseFloat(document.getElementById('finValor')?.value)||0,
+        meses:parseFloat(document.getElementById('finMeses')?.value)||0,
+        costoUSD:parseFloat(document.getElementById('liqCostoFin')?.value)||0,
+        htmlDetalle:document.getElementById('finResultados')?.innerHTML||'',
+      };
+      // Actualizar campos del item
+      item.origen='liquidador';
+      item.costoAYJ=window._liqCostoAYJ||0;
+      item.costoTotal=window._liqCostoTotal||window._liqCostoAYJ||0;
+      item.margenLiq=window._liqMargenReal||0;
+      carrito[idx]={...carrito[idx],...item,id:liqEditandoId};
       showToast('✓ '+item.nombre+' actualizado','success');
     }
     liqEditandoId=null;
@@ -4329,6 +4404,11 @@ function liqLimpiarCampos(){
   if(sel) sel.value='';
   const inp=document.getElementById('liqMaquinaInput');
   if(inp) inp.value='';
+  // Limpiar y cerrar panel personalizar
+  const wrap=document.getElementById('liqPersonalizarWrap');
+  if(wrap) wrap.style.display='none';
+  const cn=document.getElementById('liqCustomNombre'); if(cn) cn.value='';
+  const cm=document.getElementById('liqCustomMarca'); if(cm) cm.value='';
   const ds=document.getElementById('liqDescSlider'); if(ds) ds.value=0;
   const dn=document.getElementById('liqDescCliente'); if(dn) dn.value=0;
   const dl=document.getElementById('liqDescLabel'); if(dl) dl.textContent='0%';
@@ -4524,6 +4604,26 @@ function liqGenerarHTML(){
 }
 
 // ── INSTALACIÓN ──────────────────────────────────────
+function liqTogglePersonalizar(){
+  const wrap=document.getElementById('liqPersonalizarWrap');
+  const inp=document.getElementById('liqMaquinaInput');
+  if(!wrap) return;
+  const abierto=wrap.style.display!=='none';
+  wrap.style.display=abierto?'none':'block';
+  if(!abierto){
+    // Al abrir: limpiar el buscador y enfocar el campo manual
+    if(inp) inp.value='';
+    const sel=document.getElementById('liqMaquinaSel');
+    if(sel) sel.value='';
+    setTimeout(()=>document.getElementById('liqCustomNombre')?.focus(),100);
+  } else {
+    // Al cerrar: limpiar campos manuales
+    document.getElementById('liqCustomNombre').value='';
+    document.getElementById('liqCustomMarca').value='';
+  }
+}
+
+
 function liqFiltrarMaquinas(q){
   const dd=document.getElementById('liqMaquinaDropdown');
   if(!dd) return;
@@ -5117,6 +5217,14 @@ function getIniciales(vendedor){
   return key?VENDEDOR_INICIALES[key]:'AYJ';
 }
 
+// Cerrar dropdown máquina liquidador al clicar fuera
+document.addEventListener('click', function(e){
+  const dd=document.getElementById('liqMaquinaDropdown');
+  if(!dd||dd.style.display==='none') return;
+  if(e.target.closest('#liqMaquinaInput')||e.target.closest('#liqMaquinaDropdown')) return;
+  dd.style.display='none';
+});
+
 initMsal();
 </script>
 
@@ -5195,13 +5303,30 @@ initMsal();
           <div class="liq-field">
             <label>Máquina del catálogo (para enviar al carrito)</label>
             <div style="position:relative">
-              <input type="text" id="liqMaquinaInput" placeholder="🔍 Buscar por nombre o código..." oninput="liqFiltrarMaquinas(this.value)" onfocus="liqFiltrarMaquinas(this.value)" autocomplete="off"
+              <input type="text" id="liqMaquinaInput" placeholder="🔍 Buscar por nombre o código..." oninput="liqFiltrarMaquinas(this.value)" autocomplete="off"
                 style="width:100%;padding:5px 8px;border:1px solid #ddd;border-radius:4px;font-family:inherit;font-size:12px">
               <div id="liqMaquinaDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #c5d9a0;border-top:none;border-radius:0 0 6px 6px;max-height:220px;overflow-y:auto;z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.12)"></div>
             </div>
             <select id="liqMaquinaSel" onchange="liqSyncInstMaquina()" style="display:none">
               <option value="">— Seleccionar máquina (opcional) —</option>
             </select>
+            <!-- Personalizar nombre/marca si no está en catálogo -->
+            <div id="liqPersonalizarWrap" style="margin-top:6px;display:none;background:#f8f4e8;border:1px solid #e0c97a;border-radius:6px;padding:8px">
+              <div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:6px">✏️ Máquina no encontrada — ingresa manualmente</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div>
+                  <label style="font-size:10px;color:#666">Nombre / Modelo</label>
+                  <input type="text" id="liqCustomNombre" placeholder="Ej: NCG3021L" oninput="liqCalc()"
+                    style="width:100%;padding:4px 6px;border:1px solid #e0c97a;border-radius:4px;font-family:inherit;font-size:12px;margin-top:2px">
+                </div>
+                <div>
+                  <label style="font-size:10px;color:#666">Marca</label>
+                  <input type="text" id="liqCustomMarca" placeholder="Ej: Nanxing" oninput="liqCalc()"
+                    style="width:100%;padding:4px 6px;border:1px solid #e0c97a;border-radius:4px;font-family:inherit;font-size:12px;margin-top:2px">
+                </div>
+              </div>
+            </div>
+            <button onclick="liqTogglePersonalizar()" style="font-size:10px;background:none;border:none;color:#80A61B;cursor:pointer;padding:2px 0;margin-top:4px;font-family:inherit">✏️ No está en el catálogo</button>
           </div>
           <div class="liq-field"><label>TRM (COP/USD)</label><input type="number" id="liqTRM" value="3650" oninput="liqCalc()"></div>
           <!-- Modo COSTO_AYJ -->
