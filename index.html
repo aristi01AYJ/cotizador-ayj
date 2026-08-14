@@ -4328,6 +4328,7 @@ function liqGetItem(){
 }
 
 function liqAgregarAlCarrito(){
+  console.log('[AGR] _liqPrecioUSD al agregar:', window._liqPrecioUSD, '| liqInstalacion:', document.getElementById('liqInstalacion')?.value, '| liqCostoAYJ:', document.getElementById('liqCostoAYJ')?.value);
   const item=liqGetItem();
   if(!item) return;
   if(liqEditandoId){
