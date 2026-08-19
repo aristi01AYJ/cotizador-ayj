@@ -2015,6 +2015,7 @@ async function guardarCotizacion(){
     '12 meses o 2.000 horas';
   const obs=document.getElementById('obsInput').value.trim();
   const desc=getDescuento();
+  const descBase=parseFloat(document.getElementById('descInput')?.value)||0;
   const descEspecial=document.getElementById('descEspecialChk').checked;
   const fleteCOP=parseFloat(document.getElementById('fleteVal').value)||0;
   const ivaPct=19;
