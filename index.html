@@ -2615,7 +2615,7 @@ function generarPDF(d, soloRetornar=false){
     +'</div>'
     +'</div>';
 
-  const descBase=d.descBase||(d.descEspecial?(d.desc||0)-3:(d.desc||0));
+  const descBase=typeof d.descBase!=='undefined'?d.descBase:(d.descEspecial?Math.max(0,(d.desc||0)-3):(d.desc||0));
 
   const tieneEspecial=d.descEspecial||false;
   const descRow=(d.desc||0)>0
